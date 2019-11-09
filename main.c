@@ -211,10 +211,41 @@ void sudokuFillCell(int sudoku[9][9], int row, int col, int side) {
         }
 
     }
-    int rowStart=(row/3)*3;
-    for (int i=rowStart;i<rowStart+3;i++){
+    int rowStart = (row / 3) * 3;
+    int colStart = (col / 3) * 3;
 
+    for (int i = rowStart; i < rowStart + 3; i++) {
+        for (int j = colStart; j < colStart + 3; j++) {
+            sudoku[i][j] = 1;
+        }
     }
+}
+
+
+int checkSudokuCell(int sudoku[9][9], int row, int col, int side) {
+    int existe[5] = {0}, rowStart = (row / 3) * 3, colStart = (col / 3) * 3;
+    for (int i = 0; i < side; i++) {
+        if (sudoku[row][i] == 0) {
+            existe[0]++;
+        }
+        if (sudoku[i][col] == 0) {
+            existe[1]++;
+        }
+        if (row == col && sudoku[i][i] == 0) {
+            existe[2]++;
+        }
+        if (row == side - col - 1 && sudoku[i][side - i - 1] == 0) {
+            existe[3]++;
+        }
+    }
+    for (int i = rowStart; i < rowStart + 3; i++) {
+        for (int j = colStart; j < colStart + 3; j++) {
+            if (sudoku[i][j] == 0) {
+                existe[4]++;
+            }
+        }
+    }
+    return existe[0] == 1 || existe[1] == 1 || existe[2] == 1 || existe[3] == 1 || existe[4] == 1;
 }
 
 void findSudokuBruteForce(int sudoku[][C], int row, int col, int side) {
@@ -248,7 +279,6 @@ void findSudokuAdvanced(int sudoku[10][9][9], int row, int col, int side) {
         }
     }
     while (1) {
-        count++;
         if (count == side * side) {
             break;
         }
@@ -257,12 +287,21 @@ void findSudokuAdvanced(int sudoku[10][9][9], int row, int col, int side) {
                 for (int j = 0; j < side; j++) {
                     if (sudoku[k][i][j] == sudoku[0][i][j] && sudoku[k][i][j] == k) {
                         sudokuFillCell(sudoku[k], i, j, side);
+
+                    }
+                    if (sudoku[k][i][j] == 0) {
+                        if (checkSudokuCell(sudoku[k], i, j, side)) {
+                            sudoku[0][i][j] = k;
+                            for (int l = 1; l < side; l++) {
+                                sudoku[l][i][j] = 1;
+                            }
+                            count++;
+                        }
                     }
                 }
             }
         }
     }
     printSudoku(sudoku[0]);
-
 
 }
