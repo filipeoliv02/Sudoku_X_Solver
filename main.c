@@ -22,8 +22,10 @@ int existsInRegion(int sudoku[][C], int num, int row, int col, int side);
 int existsInPrincipalDiagonal(int sudoku[][C], int num, int row, int col, int side);
 
 int existsInSecundaryDiagonal(int sudoku[][C], int num, int row, int col, int side);
+
 int checkSudokuCell(int sudoku[10][9][9], int k, int row, int col, int side);
-void sudokuFillCell(int sudoku[9][9], int row, int col, int side);
+
+void sudokuFillCell(int sudoku[10][9][9], int k, int row, int col, int side);
 
 int main() {
     int sudoku[L][C] = {{0, 0, 0, 0, 0, 6, 0, 0, 5},
@@ -36,15 +38,15 @@ int main() {
                         {6, 0, 0, 1, 0, 9, 0, 0, 0},
                         {0, 8, 0, 4, 6, 0, 0, 0, 2}};
 
-    int sudokuAdvanced[10][9][9] = {{{0, 5, 0, 2, 0, 8, 0, 0, 7},
-                                            {7, 0, 0, 4, 0, 0, 6, 0, 0},
-                                            {0, 4, 0, 6, 0, 0, 0, 8, 3},
-                                            {0, 0, 1, 0, 0, 0, 8, 0, 0},
-                                            {2, 0, 0, 0, 4, 0, 0, 0, 0},
-                                            {0, 0, 7, 8, 0, 6, 0, 0, 4},
-                                            {0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                            {0, 0, 0, 7, 0, 0, 0, 3, 0},
-                                            {0, 0, 0, 0, 0, 2, 9, 0, 0}},
+    int sudokuAdvanced[10][9][9] = {{{0, 0, 2, 0, 0, 0, 7, 1, 0},
+                                            {0, 7, 0, 0, 0, 0, 0, 0, 8},
+                                            {0, 0, 0, 0, 0, 2, 0, 0, 0},
+                                            {3, 0, 8, 0, 0, 0, 0, 0, 1},
+                                            {0, 0, 4, 0, 0, 0, 9, 0, 2},
+                                            {0, 6, 0, 9, 0, 0, 0, 0, 0},
+                                            {8, 0, 0, 7, 0, 5, 0, 0, 3},
+                                            {0, 2, 0, 0, 0, 0, 4, 0, 0},
+                                            {1, 0, 0, 0, 0, 0, 0, 0, 5}},
                                     {{0, 0, 0, 0, 0, 0, 0, 0, 0},
                                             {0, 0, 0, 0, 0, 0, 0, 0, 0},
                                             {0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -129,7 +131,7 @@ int main() {
     //printSudoku(sudoku);
     //findSudokuBruteForce(sudoku, 0, 0, 9);
     findSudokuAdvanced(sudokuAdvanced, 0, 0, 9);
-    printSudoku(sudoku);
+    //printSudoku(sudoku);
     return 0;
 }
 
@@ -199,56 +201,56 @@ int existsInSecundaryDiagonal(int sudoku[][C], int num, int row, int col, int si
     return 0;
 }
 
-void sudokuFillCell(int sudoku[9][9], int row, int col, int side) {
+void sudokuFillCell(int sudoku[10][9][9], int k, int row, int col, int side) {
     for (int i = 0; i < side; i++) {
-        sudoku[row][i] = 1;
-        sudoku[i][col] = 1;
+        sudoku[k][row][i] = 1;
+        sudoku[k][i][col] = 1;
+        sudoku[i + 1][row][col] = 1;
         if (row == col) {
-            sudoku[i][i] = 1;
+            sudoku[k][i][i] = 1;
         }
         if (row == side - col - 1) {
-            sudoku[i][side - i - 1] = 1;
+            sudoku[k][i][side - i - 1] = 1;
         }
-
     }
     int rowStart = (row / 3) * 3;
     int colStart = (col / 3) * 3;
 
     for (int i = rowStart; i < rowStart + 3; i++) {
         for (int j = colStart; j < colStart + 3; j++) {
-            sudoku[i][j] = 1;
+            sudoku[k][i][j] = 1;
         }
     }
 }
 
 
 int checkSudokuCell(int sudoku[10][9][9], int k, int row, int col, int side) {
-    int existe[6] = {0}, rowStart = (row / 3) * 3, colStart = (col / 3) * 3;
+    int count[6] = {0}, rowStart = (row / 3) * 3, colStart = (col / 3) * 3;
     for (int i = 0; i < side; i++) {
         if (sudoku[k][row][i] == 0) {
-            existe[0]++;
+            count[0]++;
         }
         if (sudoku[k][i][col] == 0) {
-            existe[1]++;
+            count[1]++;
         }
         if (row == col && sudoku[k][i][i] == 0) {
-            existe[2]++;
+            count[2]++;
         }
         if (row == side - col - 1 && sudoku[k][i][side - i - 1] == 0) {
-            existe[3]++;
+            count[3]++;
         }
-        if(sudoku[i+1][row][col] == 0) {
-            existe[4]++;
+        if (sudoku[i + 1][row][col] == 0) {
+            count[4]++;
         }
     }
     for (int i = rowStart; i < rowStart + 3; i++) {
         for (int j = colStart; j < colStart + 3; j++) {
             if (sudoku[k][i][j] == 0) {
-                existe[5]++;
+                count[5]++;
             }
         }
     }
-    return existe[0] == 1 || existe[1] == 1 || existe[2] == 1 || existe[3] == 1 || existe[4] == 1 || existe[5] == 1;
+    return count[0] == 1 || count[1] == 1 || count[2] == 1 || count[3] == 1 || count[4] == 1 || count[5] == 1;
 }
 
 void findSudokuBruteForce(int sudoku[][C], int row, int col, int side) {
@@ -281,6 +283,7 @@ void findSudokuAdvanced(int sudoku[10][9][9], int row, int col, int side) {
             }
         }
     }
+
     while (1) {
         if (count == side * side) {
             break;
@@ -290,17 +293,12 @@ void findSudokuAdvanced(int sudoku[10][9][9], int row, int col, int side) {
             for (int i = 0; i < side; i++) {
                 for (int j = 0; j < side; j++) {
                     if (sudoku[0][i][j] == k && sudoku[k][i][j] == 1) {
-                        sudokuFillCell(sudoku[k], i, j, side);
-
-                    }
-                    if (sudoku[k][i][j] == 0) {
+                        sudokuFillCell(sudoku, k, i, j, side);
+                    } else if (sudoku[k][i][j] == 0) {
                         if (checkSudokuCell(sudoku, k, i, j, side)) {
                             sudoku[0][i][j] = k;
-                            for (int l = 1; l < side+1; l++) {
-                                sudoku[l][i][j] = 1;
-                            }
+                            sudokuFillCell(sudoku, k, i, j, side);
                             count++;
-
                         }
                     }
                 }
