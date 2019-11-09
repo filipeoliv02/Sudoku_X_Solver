@@ -23,6 +23,8 @@ int existsInPrincipalDiagonal(int sudoku[][C], int num, int row, int col, int si
 
 int existsInSecundaryDiagonal(int sudoku[][C], int num, int row, int col, int side);
 
+void sudokuFillCell(int sudoku[9][9], int row, int col, int side);
+
 int main() {
     int sudoku[L][C] = {{0, 0, 0, 0, 0, 6, 0, 0, 5},
                         {0, 0, 0, 9, 0, 0, 0, 0, 0},
@@ -197,6 +199,24 @@ int existsInSecundaryDiagonal(int sudoku[][C], int num, int row, int col, int si
     return 0;
 }
 
+void sudokuFillCell(int sudoku[9][9], int row, int col, int side) {
+    for (int i = 0; i < side; i++) {
+        sudoku[row][i] = 1;
+        sudoku[i][col] = 1;
+        if (row == col) {
+            sudoku[i][i] = 1;
+        }
+        if (row == side - col - 1) {
+            sudoku[i][side - i - 1] = 1;
+        }
+
+    }
+    int rowStart=(row/3)*3;
+    for (int i=rowStart;i<rowStart+3;i++){
+
+    }
+}
+
 void findSudokuBruteForce(int sudoku[][C], int row, int col, int side) {
     int newRow = row + ((col + 1) / side), newCol = (col + 1) % side;
     if (row == side) {
@@ -236,7 +256,7 @@ void findSudokuAdvanced(int sudoku[10][9][9], int row, int col, int side) {
             for (int i = 0; i < side; i++) {
                 for (int j = 0; j < side; j++) {
                     if (sudoku[k][i][j] == sudoku[0][i][j] && sudoku[k][i][j] == k) {
-
+                        sudokuFillCell(sudoku[k], i, j, side);
                     }
                 }
             }
