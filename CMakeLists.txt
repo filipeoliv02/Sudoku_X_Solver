@@ -3,5 +3,5 @@ project(sudoku C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(sudoku main.c)
+add_executable(sudoku main.c algorithms.c algorithms.h fileio.c fileio.h utils.c utils.h)
 target_link_libraries(sudoku m)
