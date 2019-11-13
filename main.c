@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "algorithms.h"
 #include "fileio.h"
+#include "utils.h"
 
 
 int main() {
@@ -23,16 +24,7 @@ int main() {
 
             case 2:
                 load_boards(&allBoards);
-                for (int k = 0; k < allBoards.num; k++) {
-                    for (int i = 0; i < allBoards.sizes[k]; i++) {
-                        printf("\n");
-                        for (int j = 0; j < allBoards.sizes[k]; j++) {
-
-                            printf("%d ", allBoards.board[k][i][j]);
-                        }
-                    }
-                    printf("\n");
-                }
+                printAllStoredBoards(allBoards);
                 break;
             case 3:
 

@@ -1,5 +1,6 @@
 #include "utils.h"
-#include <stdio.h>
+
+
 
 
 void printSudoku(int **sudoku, int size) {
@@ -11,6 +12,26 @@ void printSudoku(int **sudoku, int size) {
     }
     printf("\n");
 }
+
+void printAllStoredBoards(Boards b){
+        for (int k = 0; k < b.num; k++) {
+            for (int i = 0; i < b.sizes[k]; i++) {
+                printf("\n");
+                for (int j = 0; j < b.sizes[k]; j++) {
+                    if (b.board[k][i][j] > 9) {
+                        printf("%d ", b.board[k][i][j]);
+
+                    } else {
+                        printf(" %d ", b.board[k][i][j]);
+
+                    }
+                }
+            }
+            printf("\n");
+        }
+};
+
+
 
 
 int *resizeArray(int *ptr, int size, int newSize) {

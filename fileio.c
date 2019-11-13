@@ -1,7 +1,7 @@
 #include "fileio.h"
-
+#include "utils.h"
 void load_boards(Boards *b) {
-    char line[2000] = "";
+    char line[200000] = "";
     b->num = 0;
     b->sizes = NULL;
     b->board = NULL;
