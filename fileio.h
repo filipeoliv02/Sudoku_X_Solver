@@ -4,16 +4,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "utils.h"
-struct boards{
+
+
+struct boards {
     int *sizes;
     int num;
     int ***board;
-}typedef Boards;
+} typedef Boards;
 
 
 void load_boards(Boards *b);
-
 
 
 #endif
