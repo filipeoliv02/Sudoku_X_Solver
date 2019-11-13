@@ -1,31 +1,30 @@
 #include "fileio.h"
 
-int **load_boards(int **boards) {
-    char line[200] = "";
-    int size;
-    boards = (int **) malloc(9 * sizeof(int *));
-    for (int i = 0; i < 9; i++) {
-        *(boards + i) = (int *) malloc(9 * sizeof(int));
+void load_boards(Boards *b) {
+    char line[2000] = "";
 
-    }
+    b->num = 0;
+
+
+
+
     FILE *fp = fopen("board.txt", "r");
     if (fp != NULL) {
         while (fgets(line, sizeof(line), fp)) {
             if (strcmp(line, "\n") != 0) {
-                size = line[0] - '0';
-                for (int i = 0; i < size; i++) {
-                    for (int j = 0; j < size; j++) {
-                        int *boardLine = *(boards + i);
-                        *(boardLine + j) = line[(i * size + j) * 2 + 2] - '0';
-
+                b->sizes = resizeArray(b->sizes, b->num, b->num + 1);
+                b->board = resizeBoards(b->board, b->num, b->num + 1);
+                b->sizes[b->num] = line[0] - '0';
+                b->board[b->num] = createBoard(b->board[b->num], b->sizes[b->num]);
+                for (int i = 0; i < b->sizes[b->num]; i++) {
+                    for (int j = 0; j < b->sizes[b->num]; j++) {
+                        int *boardLine = *(b->board[b->num] + i);
+                        *(boardLine + j) = line[(i * b->sizes[b->num] + j) * 2 + 2] - '0';
                     }
                 }
-
-
+                b->num++;
             }
         }
-
         fclose(fp);
     }
-    return boards;
 }

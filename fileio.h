@@ -4,9 +4,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "utils.h"
+struct boards{
+    int *sizes;
+    int num;
+    int ***board;
+}typedef Boards;
 
 
-int **load_boards(int **boards);
+void load_boards(Boards *b);
+
 
 
 #endif

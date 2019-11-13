@@ -4,7 +4,7 @@
 
 
 int main() {
-
+    Boards allBoards;
 
     int selection, exit = 0;
     int **boards = NULL;
@@ -22,16 +22,17 @@ int main() {
 
 
             case 2:
-                boards = load_boards(boards);
-                for (int i = 0; i < 9; i++) {
-                    printf("\n");
-                    for (int j = 0; j < 9; j++) {
+                load_boards(&allBoards);
+                for (int k = 0; k < allBoards.num; k++) {
+                    for (int i = 0; i < allBoards.sizes[k]; i++) {
+                        printf("\n");
+                        for (int j = 0; j < allBoards.sizes[k]; j++) {
 
-                        printf("%d ", *(*(boards + i) + j));
+                            printf("%d ", allBoards.board[k][i][j]);
+                        }
                     }
+                    printf("\n");
                 }
-                printf("\n");
-
                 break;
             case 3:
 
