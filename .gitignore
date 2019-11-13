@@ -55,4 +55,3 @@ dkms.conf
 .idea/
 doxygen/
 cmake-build-debug/
-temp.txt
