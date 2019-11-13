@@ -14,40 +14,36 @@ void printSudoku(int **sudoku, int size) {
 
 
 int *resizeArray(int *ptr, int size, int newSize) {
-
     int *pAux = (int *) calloc(newSize, sizeof(int));
-
 
     for (int i = 0; i < size; i++) {
         *(pAux + i) = *(ptr + i);
 
     }
-    free(ptr);
+    if(ptr != NULL)
+        free(ptr);
+
     return pAux;
 }
 
 int ***resizeBoards(int ***ptr, int size, int newSize) {
-
     int ***pAux = (int ***) calloc(newSize, sizeof(int **));
-
 
     for (int i = 0; i < size; i++) {
         *(pAux + i) = *(ptr + i);
 
     }
-    free(ptr);
+    if(ptr != NULL)
+        free(ptr);
+
     return pAux;
 }
 
 int **createBoard(int **ptr, int size) {
-
     int **pAux = (int **) malloc(size * sizeof(int *));
-
 
     for (int i = 0; i < size; i++) {
         *(pAux + i) = (int *) calloc(size, sizeof(int));
-
-
     }
     return pAux;
 }

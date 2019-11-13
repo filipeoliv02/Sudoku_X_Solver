@@ -46,20 +46,6 @@ int main() {
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /*printSudoku(sudoku);
     findSudokuBruteForce(sudoku, 0, 0, 9);
     printSudoku(sudokuAdvanced[0]);

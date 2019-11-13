@@ -2,11 +2,9 @@
 
 void load_boards(Boards *b) {
     char line[2000] = "";
-
     b->num = 0;
-
-
-
+    b->sizes = NULL;
+    b->board = NULL;
 
     FILE *fp = fopen("board.txt", "r");
     if (fp != NULL) {
@@ -14,6 +12,7 @@ void load_boards(Boards *b) {
             if (strcmp(line, "\n") != 0) {
                 b->sizes = resizeArray(b->sizes, b->num, b->num + 1);
                 b->board = resizeBoards(b->board, b->num, b->num + 1);
+                //sscanf(line,"%d", &b->sizes[b->num]);
                 b->sizes[b->num] = line[0] - '0';
                 b->board[b->num] = createBoard(b->board[b->num], b->sizes[b->num]);
                 for (int i = 0; i < b->sizes[b->num]; i++) {
