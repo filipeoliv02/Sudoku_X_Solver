@@ -20,8 +20,7 @@ int *resizeArray(int *ptr, int size, int newSize) {
         *(pAux + i) = *(ptr + i);
 
     }
-    if(ptr != NULL)
-        free(ptr);
+    free(ptr);
 
     return pAux;
 }
@@ -33,8 +32,7 @@ int ***resizeBoards(int ***ptr, int size, int newSize) {
         *(pAux + i) = *(ptr + i);
 
     }
-    if(ptr != NULL)
-        free(ptr);
+    free(ptr);
 
     return pAux;
 }
