@@ -4,15 +4,20 @@
 #include <stdlib.h>
 #include "fileio.h"
 #include <stdio.h>
+#include "algorithms.h"
 
 void printSudoku(int **sudoku, int size);
 
 int *resizeArray(int *ptr, int size, int newSize);
 
 int ***resizeBoards(int ***ptr, int size, int newSize);
+
 Sudoku *resizeSudokus(Sudoku *ptr, int size, int newSize);
+
 int **createBoard(int size);
 
 void printAllStoredBoards(ListSudoku s);
+
+Sudoku gen_sudoku(int size, int n);
 
 #endif
