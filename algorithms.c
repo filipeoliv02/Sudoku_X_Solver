@@ -4,7 +4,6 @@
 #include <math.h>
 
 
-
 int existsInCol(int **sudoku, int num, int col, int side);
 
 int existsInRow(int **sudoku, int num, int row, int side);
@@ -76,17 +75,26 @@ int existsInSecundaryDiagonal(int **sudoku, int num, int row, int col, int side)
     return 0;
 }
 
-void findSudokuBruteForce(int **sudoku, int row, int col, int side) {
+void findSudokuBruteForce(int **sudoku, int row, int col, int side, ListSudoku *solved) {
     int newRow = row + ((col + 1) / side), newCol = (col + 1) % side;
     if (row == side) {
         printSudoku(sudoku, side);
+        solved->sudokus = resizeSudokus(solved->sudokus, solved->total, solved->total + 1);
+        solved->sudokus[solved->total].size = side;
+        solved->sudokus[solved->total].board = createBoard(side);
+        for (int i = 0; i < side; i++) {
+            for (int j = 0; j < side; j++) {
+                solved->sudokus[solved->total].board[i][j] = sudoku[i][j];
+            }
+        }
+        solved->total++;
     } else if (sudoku[row][col] > 0) {
-        findSudokuBruteForce(sudoku, newRow, newCol, side);
+        findSudokuBruteForce(sudoku, newRow, newCol, side, solved);
     } else {
         for (int num = 1; num <= side; num++) {
             if (isValidPlacement(sudoku, num, row, col, side)) {
                 sudoku[row][col] = num;
-                findSudokuBruteForce(sudoku, newRow, newCol, side);
+                findSudokuBruteForce(sudoku, newRow, newCol, side, solved);
             }
         }
         sudoku[row][col] = 0;
@@ -144,7 +152,7 @@ int checkSudokuCell(ListSudoku list, int k, int row, int col) {
     return count[0] == 1 || count[1] == 1 || count[2] == 1 || count[3] == 1 || count[4] == 1 || count[5] == 1;
 }
 
-void findSudokuAdvanced(Sudoku s) {
+void findSudokuAdvanced(Sudoku s, ListSudoku *solved) {
     ListSudoku cube;
     cube.sudokus = NULL;
     cube.sudokus = resizeSudokus(cube.sudokus, 0, s.size);
@@ -195,5 +203,7 @@ void findSudokuAdvanced(Sudoku s) {
         }
     }
 
-    findSudokuBruteForce(s.board, 0, 0, s.size);
+    findSudokuBruteForce(s.board, 0, 0, s.size, solved);
 }
+
+
