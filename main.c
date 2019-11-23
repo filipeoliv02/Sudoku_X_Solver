@@ -15,7 +15,9 @@ void menu_gen_sudoku(ListSudoku unsolved, ListSudoku *solved);
 int main() {
     srand(time(NULL));
     ListSudoku unsolved, solved;
+    unsolved.total=0;
     solved.total=0;
+    solved.sudokus = NULL;
     int selection, exit = 0;
     while (!exit) {
         printf("Menu Principal\n");
