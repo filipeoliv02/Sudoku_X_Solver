@@ -79,6 +79,7 @@ void findSudokuBruteForce(int **sudoku, int row, int col, int side, ListSudoku *
     int newRow = row + ((col + 1) / side), newCol = (col + 1) % side;
     if (row == side) {
         printSudoku(sudoku, side);
+
         solved->sudokus = resizeSudokus(solved->sudokus, solved->total, solved->total + 1);
         solved->sudokus[solved->total].size = side;
         solved->sudokus[solved->total].board = createBoard(side);
