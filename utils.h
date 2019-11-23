@@ -10,9 +10,9 @@ void printSudoku(int **sudoku, int size);
 int *resizeArray(int *ptr, int size, int newSize);
 
 int ***resizeBoards(int ***ptr, int size, int newSize);
+Sudoku *resizeSudokus(Sudoku *ptr, int size, int newSize);
+int **createBoard(int size);
 
-int **createBoard(int **ptr, int size);
-
-void printAllStoredBoards(Boards b);
+void printAllStoredBoards(ListSudoku s);
 
 #endif

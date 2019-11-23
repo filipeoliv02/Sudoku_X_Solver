@@ -5,10 +5,9 @@
 
 
 int main() {
-    Boards allBoards;
+    ListSudoku unsolved, solved;
 
     int selection, exit = 0;
-    int **boards = NULL;
     while (!exit) {
         printf("Menu Principal\n");
         printf("1- Ver tabuleiros em memoria\n"
@@ -18,16 +17,13 @@ int main() {
         scanf("%d", &selection);
         switch (selection) {
             case 1:
-
+                printAllStoredBoards(unsolved);
                 break;
-
-
             case 2:
-                load_boards(&allBoards);
-                printAllStoredBoards(allBoards);
+                unsolved = load_sudokus("unsolved.txt");
                 break;
             case 3:
-
+                //save_sudokus(solved, "solved.txt");
                 break;
             case 0:
                 exit = 1;

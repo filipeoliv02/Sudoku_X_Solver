@@ -5,15 +5,17 @@
 #include <string.h>
 #include <stdlib.h>
 
+struct sudoku {
+    int size;
+    int **board;
+} typedef Sudoku;
 
-struct boards {
-    int *sizes;
-    int num;
-    int ***board;
-} typedef Boards;
+struct listsudoku {
+    int total;
+    Sudoku *sudokus;
+} typedef ListSudoku;
 
 
-void load_boards(Boards *b);
-
+ListSudoku load_sudokus(char *file);
 
 #endif
