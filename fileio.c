@@ -11,7 +11,7 @@ ListSudoku load_sudokus(char *file) {
     if (fp != NULL) {
         while (fscanf(fp, "%d", &size) != EOF) {
 
-            s.sudokus = resizeSudokus(s.sudokus, s.total, s.total+1);
+            s.sudokus = resizeSudokus(s.sudokus, s.total, s.total + 1);
             s.sudokus[s.total].size = size;
             s.sudokus[s.total].board = createBoard(size);
 
@@ -27,3 +27,19 @@ ListSudoku load_sudokus(char *file) {
     return s;
 }
 
+void save_sudokus(ListSudoku list, char *file) {
+    FILE *fp = fopen(file, "w");
+
+    if (fp != NULL) {
+        for (int i = 0; i < list.total; i++) {
+            fprintf(fp, "%d\n", list.sudokus[i].size);
+            for (int j = 0; j < list.sudokus[i].size; j++) {
+                for (int k = 0; k < list.sudokus[i].size; k++) {
+                    fprintf(fp, "%d ", list.sudokus[i].board[j][k]);
+                }
+                fprintf(fp, "\n");
+            }
+        }
+        fclose(fp);
+    }
+}
