@@ -16,11 +16,9 @@ int existsInPrincipalDiagonal(int **sudoku, int num, int row, int col, int side)
 
 int existsInSecundaryDiagonal(int **sudoku, int num, int row, int col, int side);
 
-int checkSudokuCell(int ***sudoku, int k, int row, int col, int side);
+int checkSudokuCell(ListSudoku list, int k, int row, int col);
 
-void sudokuFillCell(int ***sudoku, int k, int row, int col, int side);
-
-
+void sudokuFillCell(ListSudoku list, int k, int row, int col);
 
 
 int isValidPlacement(int **sudoku, int num, int row, int col, int side) {
@@ -79,61 +77,10 @@ int existsInSecundaryDiagonal(int **sudoku, int num, int row, int col, int side)
     return 0;
 }
 
-void sudokuFillCell(int ***sudoku, int k, int row, int col, int side) {
-    for (int i = 0; i < side; i++) {
-        sudoku[k][row][i] = 1;
-        sudoku[k][i][col] = 1;
-        sudoku[i + 1][row][col] = 1;
-        if (row == col) {
-            sudoku[k][i][i] = 1;
-        }
-        if (row == side - col - 1) {
-            sudoku[k][i][side - i - 1] = 1;
-        }
-    }
-    int rowStart = (row / 3) * 3;
-    int colStart = (col / 3) * 3;
-
-    for (int i = rowStart; i < rowStart + 3; i++) {
-        for (int j = colStart; j < colStart + 3; j++) {
-            sudoku[k][i][j] = 1;
-        }
-    }
-}
-
-int checkSudokuCell(int ***sudoku, int k, int row, int col, int side) {
-    int count[6] = {0}, rowStart = (row / 3) * 3, colStart = (col / 3) * 3;
-    for (int i = 0; i < side; i++) {
-        if (sudoku[k][row][i] == 0) {
-            count[0]++;
-        }
-        if (sudoku[k][i][col] == 0) {
-            count[1]++;
-        }
-        if (row == col && sudoku[k][i][i] == 0) {
-            count[2]++;
-        }
-        if (row == side - col - 1 && sudoku[k][i][side - i - 1] == 0) {
-            count[3]++;
-        }
-        if (sudoku[i + 1][row][col] == 0) {
-            count[4]++;
-        }
-    }
-    for (int i = rowStart; i < rowStart + 3; i++) {
-        for (int j = colStart; j < colStart + 3; j++) {
-            if (sudoku[k][i][j] == 0) {
-                count[5]++;
-            }
-        }
-    }
-    return count[0] == 1 || count[1] == 1 || count[2] == 1 || count[3] == 1 || count[4] == 1 || count[5] == 1;
-}
-
 void findSudokuBruteForce(int **sudoku, int row, int col, int side) {
     int newRow = row + ((col + 1) / side), newCol = (col + 1) % side;
     if (row == side) {
-        printSudoku(sudoku,side);
+        printSudoku(sudoku, side);
     } else if (sudoku[row][col] > 0) {
         findSudokuBruteForce(sudoku, newRow, newCol, side);
     } else {
@@ -147,40 +94,107 @@ void findSudokuBruteForce(int **sudoku, int row, int col, int side) {
     }
 }
 
-void findSudokuAdvanced(int ***sudoku, int row, int col, int side) {
-    int count = 0;
+void sudokuFillCell(ListSudoku list, int k, int row, int col) {
+    for (int i = 0; i < list.total; i++) {
+        list.sudokus[k - 1].board[row][i] = 1;
+        list.sudokus[k - 1].board[i][col] = 1;
+        list.sudokus[i].board[row][col] = 1;
+        if (row == col) {
+            list.sudokus[k - 1].board[i][i] = 1;
+        }
+        if (row == list.total - col - 1) {
+            list.sudokus[k - 1].board[i][list.total - i - 1] = 1;
+        }
+    }
+    int rowStart = (row / 3) * 3;
+    int colStart = (col / 3) * 3;
+
+    for (int i = rowStart; i < rowStart + 3; i++) {
+        for (int j = colStart; j < colStart + 3; j++) {
+            list.sudokus[k - 1].board[i][j] = 1;
+        }
+    }
+}
+
+int checkSudokuCell(ListSudoku list, int k, int row, int col) {
+    int count[6] = {0}, rowStart = (row / 3) * 3, colStart = (col / 3) * 3;
+    for (int i = 0; i < list.total; i++) {
+        if (list.sudokus[k - 1].board[row][i] == 0) {
+            count[0]++;
+        }
+        if (list.sudokus[k - 1].board[i][col] == 0) {
+            count[1]++;
+        }
+        if (row == col && list.sudokus[k - 1].board[i][i] == 0) {
+            count[2]++;
+        }
+        if (row == list.total - col - 1 && list.sudokus[k - 1].board[i][list.total - i - 1] == 0) {
+            count[3]++;
+        }
+        if (list.sudokus[i].board[row][col] == 0) {
+            count[4]++;
+        }
+    }
+    for (int i = rowStart; i < rowStart + 3; i++) {
+        for (int j = colStart; j < colStart + 3; j++) {
+            if (list.sudokus[k - 1].board[i][j] == 0) {
+                count[5]++;
+            }
+        }
+    }
+    return count[0] == 1 || count[1] == 1 || count[2] == 1 || count[3] == 1 || count[4] == 1 || count[5] == 1;
+}
+
+void findSudokuAdvanced(Sudoku s) {
+    ListSudoku cube;
+    cube.sudokus = NULL;
+    cube.sudokus = resizeSudokus(cube.sudokus, 0, s.size);
+    cube.total = s.size;
+    for (int i = 0; i < s.size; i++) {
+        cube.sudokus[i].size = s.size;
+        cube.sudokus[i].board = createBoard(s.size);
+    }
+
+    int count = 0, count_aux = 0;
     //percorrer tabuleiro original
-    for (int i = 0; i < side; i++) {
-        for (int j = 0; j < side; j++) {
-            if (sudoku[0][i][j] > 0) {
+    for (int i = 0; i < s.size; i++) {
+        for (int j = 0; j < s.size; j++) {
+            if (s.board[i][j] > 0) {
                 count++;
-                for (int k = 1; k < side + 1; k++) {
-                    sudoku[k][i][j] = 1;
+                for (int k = 0; k < s.size; k++) {
+                    cube.sudokus[k].board[i][j] = 1;
                 }
             }
         }
     }
 
     while (1) {
-        if (count == side * side) {
+        if (count_aux == count || count == s.size * s.size) {
             break;
         }
+        count_aux = count;
+        for (int k = 0; k < s.size; k++) {
+            for (int i = 0; i < s.size; i++) {
+                for (int j = 0; j < s.size; j++) {
+                    if (s.board[i][j] == k + 1 && cube.sudokus[k].board[i][j] == 1) {
+                        sudokuFillCell(cube, k + 1, i, j);
+                    }
+                }
+            }
+        }
 
-        for (int k = 1; k < side + 1; k++) {
-            for (int i = 0; i < side; i++) {
-                for (int j = 0; j < side; j++) {
-                    if (sudoku[0][i][j] == k && sudoku[k][i][j] == 1) {
-                        sudokuFillCell(sudoku, k, i, j, side);
-                    } else if (sudoku[k][i][j] == 0) {
-                        if (checkSudokuCell(sudoku, k, i, j, side)) {
-                            sudoku[0][i][j] = k;
-                            sudokuFillCell(sudoku, k, i, j, side);
-                            count++;
-                        }
+        for (int k = 0; k < s.size; k++) {
+            for (int i = 0; i < s.size; i++) {
+                for (int j = 0; j < s.size; j++) {
+                    if (cube.sudokus[k].board[i][j] == 0 && checkSudokuCell(cube, k + 1, i, j)) {
+                        s.board[i][j] = k + 1;
+                        sudokuFillCell(cube, k + 1, i, j);
+                        count++;
                     }
                 }
             }
         }
     }
-    printSudoku(sudoku[0],side);
+
+    findSudokuBruteForce(s.board, 0, 0, s.size);
 }
