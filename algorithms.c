@@ -4,7 +4,6 @@
 #include <math.h>
 
 
-int isValidPlacement(int **sudoku, int num, int row, int col, int side);
 
 int existsInCol(int **sudoku, int num, int col, int side);
 

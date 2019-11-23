@@ -2,11 +2,18 @@
 #include "algorithms.h"
 #include "fileio.h"
 #include "utils.h"
+#include <time.h>
+
 
 void menu_choose_sudoku(ListSudoku list);
+
 void menu_sudoku(Sudoku s);
 
+void menu_gen_sudoku();
+
+
 int main() {
+    srand(time(NULL));
     ListSudoku unsolved, solved;
 
     int selection, exit = 0;
@@ -15,6 +22,7 @@ int main() {
         printf("1- Ver tabuleiros em memoria\n"
                "2- Carregar tabuleiros do ficheiro\n"
                "3- Guardar tabuleiros no ficheiro\n"
+               "4- Gerar novos tabuleiros\n"
                "0- Sair\n");
         scanf("%d", &selection);
         switch (selection) {
@@ -26,6 +34,9 @@ int main() {
                 break;
             case 3:
                 //save_sudokus(solved, "solved.txt");
+                break;
+            case 4:
+                menu_gen_sudoku();
                 break;
             case 0:
                 exit = 1;
@@ -42,22 +53,20 @@ int main() {
 void menu_choose_sudoku(ListSudoku list) {
     int selection, exit = 0;
     while (!exit) {
-        if(list.total == 0) {
-           printf("Nao tem tabuleiros carregados na memoria\n");
-           break;
+        if (list.total == 0) {
+            printf("Nao tem tabuleiros carregados na memoria\n");
+            break;
         }
 
         printAllStoredBoards(list);
         printf("----------------------------------------------\n"
                "Escolha o tabuleiro [1 - %d] ou 0 para sair:\n", list.total);
         scanf("%d", &selection);
-        if(selection > 0 && selection <= list.total) {
-            menu_sudoku(list.sudokus[selection-1]);
-        }
-        else if(selection == 0) {
+        if (selection > 0 && selection <= list.total) {
+            menu_sudoku(list.sudokus[selection - 1]);
+        } else if (selection == 0) {
             exit = 1;
-        }
-        else {
+        } else {
             printf("Escolha uma opcao valida\n");
         }
     }
@@ -78,6 +87,39 @@ void menu_sudoku(Sudoku s) {
                 break;
             case 2:
                 findSudokuAdvanced(s);
+                break;
+            case 0:
+                exit = 1;
+                break;
+            default:
+                printf("Escolha uma opcao valida\n");
+                break;
+        }
+    }
+}
+
+void menu_gen_sudoku() {
+    Sudoku s;
+    int selection, exit = 0, size = 0, input;
+    while (!exit) {
+        printf("Escolha uma opção:\n"
+               "1 - 9x9\n"
+               "2 - 16x16\n"
+               "3 - 25x25\n"
+               "4 - 36x36\n");
+        scanf("%d", &selection);
+        size = selection + 2;
+        size *= size;
+        switch (selection) {
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+                printf("Quantos numeros pretende gerar?\n");
+                scanf("%d", &input);
+                s= gen_sudoku(size, input);
+                menu_sudoku(s);
+
                 break;
             case 0:
                 exit = 1;
