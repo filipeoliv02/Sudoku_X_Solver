@@ -15,8 +15,8 @@ void menu_gen_sudoku(ListSudoku unsolved, ListSudoku *solved);
 int main() {
     srand(time(NULL));
     ListSudoku unsolved, solved;
-    unsolved.total=0;
-    solved.total=0;
+    unsolved.total = 0;
+    solved.total = 0;
     solved.sudokus = NULL;
     int selection, exit = 0;
     while (!exit) {
@@ -24,7 +24,9 @@ int main() {
         printf("1- Ver tabuleiros em memoria\n"
                "2- Carregar tabuleiros do ficheiro\n"
                "3- Guardar tabuleiros no ficheiro\n"
-               "4- Gerar novos tabuleiros\n"
+               "4- Criar Ficheiro Binario com os Tabuleiros Resolvidos \n"
+               "5- Gerar novos tabuleiros\n"
+
                "0- Sair\n");
         scanf("%d", &selection);
         switch (selection) {
@@ -33,11 +35,16 @@ int main() {
                 break;
             case 2:
                 unsolved = load_sudokus("unsolved.txt");
+                solved = load_sudokus("solved.txt");
                 break;
             case 3:
                 save_sudokus(solved, "solved.txt");
                 break;
             case 4:
+                save2binary(solved,"binary_solved.bin");
+
+                break;
+            case 5:
                 menu_gen_sudoku(unsolved, &solved);
 
 
@@ -63,7 +70,7 @@ void menu_choose_sudoku(ListSudoku list, ListSudoku *solved) {
         }
 
         printAllStoredBoards(list);
-        printf("----------------------------------------------\n"
+        printf("------------------------------------------------\n"
                "Escolha o tabuleiro [1 - %d] ou 0 para sair:\n", list.total);
         scanf("%d", &selection);
         if (selection > 0 && selection <= list.total) {
@@ -77,12 +84,14 @@ void menu_choose_sudoku(ListSudoku list, ListSudoku *solved) {
 }
 
 void menu_sudoku(Sudoku s, ListSudoku *solved) {
-
-    int selection, exit = 0;
+    int selection, exit = 0, searchResult;
     while (!exit) {
+        printf("\nTabuleiro escolhido:\n");
         printSudoku(s.board, s.size);
         printf("1- Resolver usando bruteforce\n"
                "2- Resolver usando algoritmo optimizado\n"
+               "3- Pesquisar em tabuleiros ja resolvidos\n"
+               "4- Testar se o tabuleiro e consistente\n"
                "0- Sair\n");
         scanf("%d", &selection);
         switch (selection) {
@@ -90,7 +99,25 @@ void menu_sudoku(Sudoku s, ListSudoku *solved) {
                 findSudokuBruteForce(s.board, 0, 0, s.size, solved);
                 break;
             case 2:
-                findSudokuAdvanced(s,solved);
+                findSudokuAdvanced(s, solved);
+                break;
+            case 3:
+                searchResult = searchSudokus(*solved, s);
+                if (searchResult == -1) {
+                    printf("Tabuleiro nao encontrado\n");
+
+                } else {
+                    printf("Solucao encontrada com sucesso:\n");
+                    printSudoku(solved->sudokus[searchResult].board, s.size);
+                }
+                break;
+            case 4:
+
+                if (isConsistent(s)) {
+                    printf("Tabuleiro consistente\n");
+                } else {
+                    printf("Tabuleiro inconsistente\n");
+                }
                 break;
             case 0:
                 exit = 1;

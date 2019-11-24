@@ -24,4 +24,7 @@ int isEqual(Sudoku s1, Sudoku s2);
 
 ListSudoku merge_sudokus(ListSudoku target, ListSudoku source);
 
+int isConsistent(Sudoku sudoku);
+
+
 #endif
