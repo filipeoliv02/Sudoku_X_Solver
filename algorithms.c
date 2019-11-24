@@ -18,6 +18,8 @@ int checkSudokuCell(ListSudoku list, int k, int row, int col);
 
 void sudokuFillCell(ListSudoku list, int k, int row, int col);
 
+void findPairs(ListSudoku cube, int row, int col);
+
 
 int isValidPlacement(int **sudoku, int num, int row, int col, int side) {
     int s = (int) sqrt(side);
@@ -75,7 +77,7 @@ int existsInSecundaryDiagonal(int **sudoku, int num, int row, int col, int side)
     return 0;
 }
 
-void findSudokuBruteForce(int **sudoku, int row, int col, int side, ListSudoku *solved) {
+void findSudokuBruteForce(int **sudoku, int row, int col, int side, ListSudoku *solved, int *cost) {
     int newRow = row + ((col + 1) / side), newCol = (col + 1) % side;
     if (row == side) {
         printSudoku(sudoku, side);
@@ -90,12 +92,13 @@ void findSudokuBruteForce(int **sudoku, int row, int col, int side, ListSudoku *
         }
         solved->total++;
     } else if (sudoku[row][col] > 0) {
-        findSudokuBruteForce(sudoku, newRow, newCol, side, solved);
+        findSudokuBruteForce(sudoku, newRow, newCol, side, solved, cost);
     } else {
         for (int num = 1; num <= side; num++) {
+            *cost += 5 * side;
             if (isValidPlacement(sudoku, num, row, col, side)) {
                 sudoku[row][col] = num;
-                findSudokuBruteForce(sudoku, newRow, newCol, side, solved);
+                findSudokuBruteForce(sudoku, newRow, newCol, side, solved, cost);
             }
         }
         sudoku[row][col] = 0;
@@ -155,7 +158,7 @@ int checkSudokuCell(ListSudoku list, int k, int row, int col) {
     return count[0] == 1 || count[1] == 1 || count[2] == 1 || count[3] == 1 || count[4] == 1 || count[5] == 1;
 }
 
-void findSudokuAdvanced(Sudoku s, ListSudoku *solved) {
+void findSudokuAdvanced(Sudoku s, ListSudoku *solved, int *cost) {
     ListSudoku cube;
     cube.sudokus = NULL;
     cube.sudokus = resizeSudokus(cube.sudokus, 0, s.size);
@@ -169,11 +172,10 @@ void findSudokuAdvanced(Sudoku s, ListSudoku *solved) {
     //percorrer tabuleiro original
     for (int i = 0; i < s.size; i++) {
         for (int j = 0; j < s.size; j++) {
+            (*cost)++;
             if (s.board[i][j] > 0) {
                 count++;
-                for (int k = 0; k < s.size; k++) {
-                    cube.sudokus[k].board[i][j] = 1;
-                }
+                sudokuFillCell(cube, s.board[i][j], i, j);
             }
         }
     }
@@ -183,19 +185,14 @@ void findSudokuAdvanced(Sudoku s, ListSudoku *solved) {
             break;
         }
         count_aux = count;
-        for (int k = 0; k < s.size; k++) {
-            for (int i = 0; i < s.size; i++) {
-                for (int j = 0; j < s.size; j++) {
-                    if (s.board[i][j] == k + 1 && cube.sudokus[k].board[i][j] == 1) {
-                        sudokuFillCell(cube, k + 1, i, j);
-                    }
-                }
-            }
-        }
 
         for (int k = 0; k < s.size; k++) {
             for (int i = 0; i < s.size; i++) {
                 for (int j = 0; j < s.size; j++) {
+                    (*cost)++;
+                    if (s.board[i][j] == 0) {
+                        findPairs(cube, i, j);
+                    }
                     if (cube.sudokus[k].board[i][j] == 0 && checkSudokuCell(cube, k + 1, i, j)) {
                         s.board[i][j] = k + 1;
                         sudokuFillCell(cube, k + 1, i, j);
@@ -205,8 +202,18 @@ void findSudokuAdvanced(Sudoku s, ListSudoku *solved) {
             }
         }
     }
+    printf("Cost Otimizado: %d\n", *cost);
+    findSudokuBruteForce(s.board, 0, 0, s.size, solved, cost);
+}
 
-    findSudokuBruteForce(s.board, 0, 0, s.size, solved);
+void findPairs(ListSudoku cube, int row, int col) {
+    int size = cube.sudokus[0].size, num = 0, count = 0;
+
+    int **lists = (int **) malloc(size * sizeof(int *));
+    for (int i = 0; i < size; ++i) {
+        *(lists + i) = (int *) calloc(size, sizeof(int));
+    }
+
 }
 
 int isPattern(Sudoku pattern, Sudoku unsolved) {

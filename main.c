@@ -3,7 +3,7 @@
 #include "fileio.h"
 #include "utils.h"
 #include <time.h>
-
+#include <math.h>
 
 void menu_choose_sudoku(ListSudoku list, ListSudoku *solved);
 
@@ -84,7 +84,9 @@ void menu_choose_sudoku(ListSudoku list, ListSudoku *solved) {
 }
 
 void menu_sudoku(Sudoku s, ListSudoku *solved) {
-    int selection, exit = 0, searchResult;
+    int selection, exit = 0, searchResult, cost = 0;
+    long long time_usec_init, time_usec_end;
+    long elapsed_time;
     while (!exit) {
         printf("\nTabuleiro escolhido:\n");
         printSudoku(s.board, s.size);
@@ -96,10 +98,22 @@ void menu_sudoku(Sudoku s, ListSudoku *solved) {
         scanf("%d", &selection);
         switch (selection) {
             case 1:
-                findSudokuBruteForce(s.board, 0, 0, s.size, solved);
+                gettimeuseconds(&time_usec_init); // init time
+                findSudokuBruteForce(s.board, 0, 0, s.size, solved, &cost);
+                gettimeuseconds(&time_usec_end); // end time
+
+                elapsed_time = (long) (time_usec_end - time_usec_init);
+                printf("Bruteforce\nusec: %ld - sec: %lf\ncost: %d\n", elapsed_time,(elapsed_time*pow(10,-6)), cost);
+                cost = 0;
                 break;
             case 2:
-                findSudokuAdvanced(s, solved);
+                gettimeuseconds(&time_usec_init); // init time
+                findSudokuAdvanced(s, solved, &cost);
+                gettimeuseconds(&time_usec_end); // end time
+
+                elapsed_time = (long) (time_usec_end - time_usec_init);
+                printf("Optimized\nusec: %ld - sec: %lf\ncost: %d\n", elapsed_time,(elapsed_time*pow(10,-6)), cost);
+                cost = 0;
                 break;
             case 3:
                 searchResult = searchSudokus(*solved, s);

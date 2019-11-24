@@ -3,9 +3,9 @@
 
 #include "fileio.h"
 
-void findSudokuBruteForce(int **sudoku, int row, int col, int side, ListSudoku *solved);
+void findSudokuBruteForce(int **sudoku, int row, int col, int side, ListSudoku *solved, int *cost);
 
-void findSudokuAdvanced(Sudoku s, ListSudoku *solved);
+void findSudokuAdvanced(Sudoku s, ListSudoku *solved, int *cost);
 
 int isValidPlacement(int **sudoku, int num, int row, int col, int side);
 
