@@ -103,6 +103,7 @@ void findSudokuBruteForce(int **sudoku, int row, int col, int side, ListSudoku *
 }
 
 void sudokuFillCell(ListSudoku list, int k, int row, int col) {
+    int region_size = sqrt(list.sudokus->size);
     for (int i = 0; i < list.total; i++) {
         list.sudokus[k - 1].board[row][i] = 1;
         list.sudokus[k - 1].board[i][col] = 1;
@@ -114,18 +115,19 @@ void sudokuFillCell(ListSudoku list, int k, int row, int col) {
             list.sudokus[k - 1].board[i][list.total - i - 1] = 1;
         }
     }
-    int rowStart = (row / 3) * 3;
-    int colStart = (col / 3) * 3;
+    int rowStart = (row / region_size) * region_size;
+    int colStart = (col / region_size) * region_size;
 
-    for (int i = rowStart; i < rowStart + 3; i++) {
-        for (int j = colStart; j < colStart + 3; j++) {
+    for (int i = rowStart; i < rowStart + region_size; i++) {
+        for (int j = colStart; j < colStart + region_size; j++) {
             list.sudokus[k - 1].board[i][j] = 1;
         }
     }
 }
 
 int checkSudokuCell(ListSudoku list, int k, int row, int col) {
-    int count[6] = {0}, rowStart = (row / 3) * 3, colStart = (col / 3) * 3;
+    int region_size = sqrt(list.sudokus->size);
+    int count[6] = {0}, rowStart = (row / region_size) * region_size, colStart = (col / region_size) * region_size;
     for (int i = 0; i < list.total; i++) {
         if (list.sudokus[k - 1].board[row][i] == 0) {
             count[0]++;
@@ -143,8 +145,8 @@ int checkSudokuCell(ListSudoku list, int k, int row, int col) {
             count[4]++;
         }
     }
-    for (int i = rowStart; i < rowStart + 3; i++) {
-        for (int j = colStart; j < colStart + 3; j++) {
+    for (int i = rowStart; i < rowStart + region_size; i++) {
+        for (int j = colStart; j < colStart + region_size; j++) {
             if (list.sudokus[k - 1].board[i][j] == 0) {
                 count[5]++;
             }
@@ -208,3 +210,14 @@ void findSudokuAdvanced(Sudoku s, ListSudoku *solved) {
 }
 
 
+int isConsistency(Sudoku sudoku) {
+    for (int i = 0; i < sudoku.size; i++) {
+        for (int j = 0; j < sudoku.size; j++) {
+            if (!isValidPlacement(sudoku.board, sudoku.board[i][j], i, j, sudoku.size)) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+
+}

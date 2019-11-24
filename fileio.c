@@ -27,9 +27,12 @@ ListSudoku load_sudokus(char *file) {
     return s;
 }
 
-void save_sudokus(ListSudoku list, char *file) {
-    FILE *fp = fopen(file, "w");
+void save_sudokus(ListSudoku newlist, char *file) {
+    ListSudoku list;
+    list = load_sudokus(file);
+    list = merge_sudokus(list, newlist);
 
+    FILE *fp = fopen(file, "w");
     if (fp != NULL) {
         for (int i = 0; i < list.total; i++) {
             fprintf(fp, "%d\n", list.sudokus[i].size);
@@ -42,4 +45,7 @@ void save_sudokus(ListSudoku list, char *file) {
         }
         fclose(fp);
     }
+
 }
+
+

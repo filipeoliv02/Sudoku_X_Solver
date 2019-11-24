@@ -96,3 +96,37 @@ Sudoku gen_sudoku(int size, int n) {
 
 
 }
+
+int isEqual(Sudoku s1, Sudoku s2) {
+    if (s1.size != s2.size) {
+        return 0;
+    }
+    for (int i = 0; i < s1.size; i++) {
+        for (int j = 0; j < s2.size; j++) {
+            if (s1.board[i][j] != s2.board[i][j]) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+
+ListSudoku merge_sudokus(ListSudoku target, ListSudoku source) {
+    int alreadyExists;
+    for (int i = 0; i < source.total; i++) {
+        alreadyExists = 0;
+        for (int j = 0; j < target.total; j++) {
+            if (isEqual(target.sudokus[j], source.sudokus[i])) {             //Target->Source[j]
+                alreadyExists = 1;
+            }
+        }
+        if (alreadyExists == 0) {
+            target.sudokus = resizeSudokus(target.sudokus, target.total, target.total + 1);
+            target.sudokus[target.total].size = source.sudokus[i].size;
+            target.sudokus[target.total].board = source.sudokus[i].board;
+            target.total++;
+        }
+    }
+    return target;
+}
