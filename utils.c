@@ -130,3 +130,24 @@ ListSudoku merge_sudokus(ListSudoku target, ListSudoku source) {
     }
     return target;
 }
+
+
+
+int isConsistent(Sudoku sudoku) {
+    int auxCell;
+    for (int i = 0; i < sudoku.size; i++) {
+        for (int j = 0; j < sudoku.size; j++) {
+            if (sudoku.board[i][j] > 0) {
+                auxCell = sudoku.board[i][j];
+                sudoku.board[i][j] = 0;
+                if (!isValidPlacement(sudoku.board, auxCell, i, j, sudoku.size)) {
+                    sudoku.board[i][j] = auxCell;
+                    return 0;
+                }
+                sudoku.board[i][j] = auxCell;
+            }
+        }
+    }
+    return 1;
+}
+

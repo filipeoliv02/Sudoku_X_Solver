@@ -19,6 +19,7 @@ struct listsudoku {
 ListSudoku load_sudokus(char *file);
 
 void save_sudokus(ListSudoku newlist, char *file);
+void save2binary(ListSudoku solved, char *file) ;
 
 
 #endif

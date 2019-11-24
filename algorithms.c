@@ -209,15 +209,28 @@ void findSudokuAdvanced(Sudoku s, ListSudoku *solved) {
     findSudokuBruteForce(s.board, 0, 0, s.size, solved);
 }
 
-
-int isConsistency(Sudoku sudoku) {
-    for (int i = 0; i < sudoku.size; i++) {
-        for (int j = 0; j < sudoku.size; j++) {
-            if (!isValidPlacement(sudoku.board, sudoku.board[i][j], i, j, sudoku.size)) {
+int isPattern(Sudoku pattern, Sudoku unsolved) {
+    if (pattern.size != unsolved.size) {
+        return 0;
+    }
+    for (int i = 0; i < pattern.size; i++) {
+        for (int j = 0; j < unsolved.size; j++) {
+            if (pattern.board[i][j] != unsolved.board[i][j] && unsolved.board[i][j] > 0) {
                 return 0;
             }
         }
     }
     return 1;
-
 }
+
+
+int searchSudokus(ListSudoku searchList, Sudoku sudoku) {
+    for (int i = 0; i < searchList.total; i++) {
+        if (isPattern(searchList.sudokus[i], sudoku)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+

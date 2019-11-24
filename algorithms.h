@@ -9,6 +9,8 @@ void findSudokuAdvanced(Sudoku s, ListSudoku *solved);
 
 int isValidPlacement(int **sudoku, int num, int row, int col, int side);
 
-int isConsistency(Sudoku sudoku);
+int searchSudokus(ListSudoku searchList, Sudoku sudoku);
+
+int isPattern(Sudoku pattern, Sudoku unsolved);
 
 #endif

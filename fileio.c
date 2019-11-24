@@ -48,4 +48,23 @@ void save_sudokus(ListSudoku newlist, char *file) {
 
 }
 
+void save2binary(ListSudoku solved, char *file) {
+    FILE *fp = fopen(file, "wb");
+    int aux;
+    if (fp != NULL) {
+        for (int i = 0; i < solved.total; i++) {
+            aux = solved.sudokus[i].size;
+            fwrite(&aux, 1, 1, fp);
+            for (int j = 0; j < solved.sudokus[i].size; j++) {
+                for (int k = 0; k < solved.sudokus[i].size; k++) {
+                    aux= solved.sudokus[i].board[j][k];
+                    fwrite(&aux, 1, 1, fp);
+                }
+            }
+        }
+        fclose(fp);
+    }
+
+}
+
 
