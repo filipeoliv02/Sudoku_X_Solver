@@ -20,4 +20,8 @@ void printAllStoredBoards(ListSudoku s);
 
 Sudoku gen_sudoku(int size, int n);
 
+int isEqual(Sudoku s1, Sudoku s2);
+
+ListSudoku merge_sudokus(ListSudoku target, ListSudoku source);
+
 #endif
