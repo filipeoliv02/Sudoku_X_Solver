@@ -311,11 +311,9 @@ void findPairs(ListSudoku cube) {
                                 for (int diagsec_remove = 0; diagsec_remove < size; diagsec_remove++) {
                                     if (diagsec_remove != row && diagsec_remove != diagsec_pair) {
                                         for (int num_remove = 0; num_remove < size; num_remove++) {
-                                            if (cube.sudokus[num_remove].board[diagsec_remove][size - diagsec_pair -
-                                                                                               1] ==
+                                            if (cube.sudokus[num_remove].board[diagsec_remove][size - diagsec_pair - 1] ==
                                                 cube.sudokus[num_remove].board[row][col]) {
-                                                cube.sudokus[num_remove].board[diagsec_remove][size - diagsec_pair -
-                                                                                               1] = 0;
+                                                cube.sudokus[num_remove].board[diagsec_remove][size - diagsec_pair - 1] = 0;
                                             }
                                         }
                                     }
