@@ -19,7 +19,7 @@ int checkSudokuCell(ListSudoku list, int k, int row, int col);
 
 void sudokuFillCell(ListSudoku list, int k, int row, int col);
 
-void findPairs(ListSudoku cube, int row, int col);
+void findPairs(ListSudoku cube);
 
 
 int isValidPlacement(int **sudoku, int num, int row, int col, int side) {
@@ -197,18 +197,20 @@ void findSudokuAdvanced(Sudoku s, ListSudoku *solved, int *cost) {
                 }
             }
         }
+        findPairs(cube);
     }
+
+    for(int i = 0; i < cube.total; i++)
+        free(cube.sudokus[i].board);
+    free(cube.sudokus);
 
     findSudokuBruteForce(s.board, 0, 0, s.size, solved, cost);
 }
 
-void findPairs(ListSudoku cube, int row, int col) {
+void findPairs(ListSudoku cube) {
     int size = cube.sudokus[0].size, num = 0, count = 0;
 
-    int **lists = (int **) malloc(size * sizeof(int *));
-    for (int i = 0; i < size; ++i) {
-        *(lists + i) = (int *) calloc(size, sizeof(int));
-    }
+
 
 }
 
