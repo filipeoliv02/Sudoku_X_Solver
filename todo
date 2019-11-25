@@ -1,0 +1,8 @@
+Add Pair check in Advanced Algorithm
+Create clients in clients.c
+Add file name input when loading and saving
+Change menu functions to new file: menus.c
+Change main.c to parse argv and choose client or menu ui
+Change bruteforce to use struct Sudoku
+Create doxygen documentation
+Write more comments

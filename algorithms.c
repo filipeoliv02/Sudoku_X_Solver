@@ -3,7 +3,8 @@
 
 #include <math.h>
 
-
+#define UNASSIGNED 0
+#define ASSIGNED 1
 int existsInCol(int **sudoku, int num, int col, int side);
 
 int existsInRow(int **sudoku, int num, int row, int side);
@@ -168,41 +169,36 @@ void findSudokuAdvanced(Sudoku s, ListSudoku *solved, int *cost) {
         cube.sudokus[i].board = createBoard(s.size);
     }
 
-    int count = 0, count_aux = 0;
+    int count = 0, prev_count = 0;
     //percorrer tabuleiro original
     for (int i = 0; i < s.size; i++) {
         for (int j = 0; j < s.size; j++) {
             (*cost)++;
-            if (s.board[i][j] > 0) {
+            if (s.board[i][j] != UNASSIGNED) {
                 count++;
                 sudokuFillCell(cube, s.board[i][j], i, j);
             }
         }
     }
 
-    while (1) {
-        if (count_aux == count || count == s.size * s.size) {
-            break;
-        }
-        count_aux = count;
+    while (prev_count != count && count < s.size * s.size) {
+        prev_count = count;
 
-        for (int k = 0; k < s.size; k++) {
-            for (int i = 0; i < s.size; i++) {
-                for (int j = 0; j < s.size; j++) {
-                    (*cost)++;
-                    if (s.board[i][j] == 0) {
-                        findPairs(cube, i, j);
-                    }
-                    if (cube.sudokus[k].board[i][j] == 0 && checkSudokuCell(cube, k + 1, i, j)) {
-                        s.board[i][j] = k + 1;
-                        sudokuFillCell(cube, k + 1, i, j);
-                        count++;
+        for (int row = 0; row < s.size; row++) {
+            for (int col = 0; col < s.size; col++) {
+                if (s.board[row][col] == UNASSIGNED) {
+                    for (int number = 1; number <= s.size; number++, (*cost)++) {
+                        if (cube.sudokus[number - 1].board[row][col] == UNASSIGNED && checkSudokuCell(cube, number, row, col)) {
+                            s.board[row][col] = number;
+                            sudokuFillCell(cube, number, row, col);
+                            count++;
+                        }
                     }
                 }
             }
         }
     }
-    printf("Cost Otimizado: %d\n", *cost);
+
     findSudokuBruteForce(s.board, 0, 0, s.size, solved, cost);
 }
 
