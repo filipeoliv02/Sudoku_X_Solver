@@ -94,8 +94,6 @@ Sudoku gen_sudoku(int size, int n) {
 
     }
     return s;
-
-
 }
 
 int isEqual(Sudoku s1, Sudoku s2) {
@@ -152,7 +150,7 @@ int isConsistent(Sudoku sudoku) {
     return 1;
 }
 
-#ifdef WIN32
+/*#ifdef WIN32
 int gettimeuseconds(long long * time_usec) {
     union {
         long long ns100; //time since 1 Jan 1601 in 100ns units
@@ -163,7 +161,7 @@ int gettimeuseconds(long long * time_usec) {
     *time_usec=(long long) (now.ns100 / 10LL);
     return 0;
 }
-#else
+#else*/
 
 int gettimeuseconds(long long *time_usec) {
     struct timeval time;
@@ -173,5 +171,5 @@ int gettimeuseconds(long long *time_usec) {
     return 0;
 }
 
-#endif
+//#endif
 
