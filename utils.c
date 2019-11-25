@@ -14,7 +14,7 @@ void printSudoku(int **sudoku, int size) {
 
 void printAllStoredBoards(ListSudoku s) {
     for (int k = 0; k < s.total; k++) {
-        printf("\n %dº", k + 1);
+        printf("\n %d:", k + 1);
         for (int i = 0; i < s.sudokus[k].size; i++) {
             printf("\n");
             for (int j = 0; j < s.sudokus[k].size; j++) {
