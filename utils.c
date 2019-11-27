@@ -1,11 +1,15 @@
 #include <sys/time.h>
 #include "utils.h"
-
+#include <time.h>
 
 void printSudoku(int **sudoku, int size) {
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
-            printf("%d ", sudoku[i][j]);
+            if (sudoku[i][j] > 9) {
+                printf("%d ", sudoku[i][j]);
+            } else {
+                printf(" %d ", sudoku[i][j]);
+            }
         }
         printf("\n");
     }
@@ -76,6 +80,7 @@ int **createBoard(int size) {
 }
 
 Sudoku gen_sudoku(int size, int n) {
+    srand(time(NULL));
     int row, col, num;
     Sudoku s;
     s.board = NULL;
@@ -116,7 +121,7 @@ ListSudoku merge_sudokus(ListSudoku target, ListSudoku source) {
     for (int i = 0; i < source.total; i++) {
         alreadyExists = 0;
         for (int j = 0; j < target.total; j++) {
-            if (isEqual(target.sudokus[j], source.sudokus[i])) {             //Target->Source[j]
+            if (isEqual(target.sudokus[j], source.sudokus[i])) {
                 alreadyExists = 1;
             }
         }

@@ -2,4 +2,10 @@
 #define SUDOKU_CLIENTS_H
 void client_bruteforce();
 void client_advanced();
+void client_read();
+void client_write();
+void client_show_stored();
+void client_check_consistency();
+void client_random_generation();
+void client_solve_variable_size();
 #endif //SUDOKU_CLIENTS_H
