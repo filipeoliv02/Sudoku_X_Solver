@@ -9,9 +9,9 @@ int main(int argc, char const *argv[]) {
     //client_write();
     //client_check_consistency();
     //client_random_generation();
-    client_solve_variable_size();
-
-
-    //main_menu();
+    //client_solve_variable_size();
+    //client_search_solutions();
+    //client_compare_algorithms();
+    main_menu();
     return 0;
 }

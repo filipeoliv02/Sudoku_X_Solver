@@ -6,12 +6,6 @@
 #define UNASSIGNED 0
 #define ASSIGNED 1
 
-int existsInCol(int **sudoku, int num, int col, int side);
-
-int existsInRow(int **sudoku, int num, int row, int side);
-
-int existsInRegion(int **sudoku, int num, int row, int col, int side);
-
 int existsInPrincipalDiagonal(int **sudoku, int num, int row, int col, int side);
 
 int existsInSecundaryDiagonal(int **sudoku, int num, int row, int col, int side);
@@ -21,7 +15,6 @@ int checkSudokuCell(ListSudoku list, int k, int row, int col);
 void sudokuFillCell(ListSudoku list, int k, int row, int col);
 
 void findPairs(ListSudoku cube);
-
 
 int isValidPlacement(int **sudoku, int num, int row, int col, int side) {
     int s = (int) sqrt(side);
@@ -95,7 +88,7 @@ void findSudokuBruteForce(int **sudoku, int row, int col, int side, ListSudoku *
         findSudokuBruteForce(sudoku, newRow, newCol, side, solved, cost);
     } else {
         for (int num = 1; num <= side; num++) {
-            *cost += 5 * side;
+            (*cost)++;
             if (isValidPlacement(sudoku, num, row, col, side)) {
                 sudoku[row][col] = num;
                 findSudokuBruteForce(sudoku, newRow, newCol, side, solved, cost);
@@ -172,7 +165,6 @@ void findSudokuAdvanced(Sudoku s, ListSudoku *solved, long long *cost) {
     //percorrer tabuleiro original
     for (int i = 0; i < s.size; i++) {
         for (int j = 0; j < s.size; j++) {
-            (*cost)++;
             if (s.board[i][j] != UNASSIGNED) {
                 count++;
                 sudokuFillCell(cube, s.board[i][j], i, j);
@@ -187,8 +179,7 @@ void findSudokuAdvanced(Sudoku s, ListSudoku *solved, long long *cost) {
             for (int col = 0; col < s.size; col++) {
                 if (s.board[row][col] == UNASSIGNED) {
                     for (int number = 1; number <= s.size; number++, (*cost)++) {
-                        if (cube.sudokus[number - 1].board[row][col] == UNASSIGNED &&
-                            checkSudokuCell(cube, number, row, col)) {
+                        if (cube.sudokus[number - 1].board[row][col] == UNASSIGNED && checkSudokuCell(cube, number, row, col)) {
                             s.board[row][col] = number;
                             sudokuFillCell(cube, number, row, col);
                             count++;

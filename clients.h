@@ -8,4 +8,6 @@ void client_show_stored();
 void client_check_consistency();
 void client_random_generation();
 void client_solve_variable_size();
+void client_search_solutions();
+void client_compare_algorithms();
 #endif //SUDOKU_CLIENTS_H

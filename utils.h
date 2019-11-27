@@ -27,5 +27,5 @@ ListSudoku merge_sudokus(ListSudoku target, ListSudoku source);
 int isConsistent(Sudoku sudoku);
 
 int gettimeuseconds(long long *time_usec);
-
+void free_list_sudoku(ListSudoku l);
 #endif
