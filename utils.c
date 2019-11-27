@@ -135,7 +135,15 @@ ListSudoku merge_sudokus(ListSudoku target, ListSudoku source) {
     return target;
 }
 
-
+void free_list_sudoku(ListSudoku l) {
+    for (int i = 0; i < l.total; i++) {
+        for(int row = 0; row < l.sudokus[i].size; row++) {
+            free(l.sudokus[i].board[row]);
+        }
+        free(l.sudokus[i].board);
+    }
+    free(l.sudokus);
+}
 
 int isConsistent(Sudoku sudoku) {
     int auxCell;

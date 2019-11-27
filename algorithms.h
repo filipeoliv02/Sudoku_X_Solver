@@ -13,4 +13,10 @@ int searchSudokus(ListSudoku searchList, Sudoku sudoku);
 
 int isPattern(Sudoku pattern, Sudoku unsolved);
 
+int existsInCol(int **sudoku, int num, int col, int side);
+
+int existsInRow(int **sudoku, int num, int row, int side);
+
+int existsInRegion(int **sudoku, int num, int row, int col, int side);
+
 #endif
