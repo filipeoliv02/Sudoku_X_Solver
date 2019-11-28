@@ -12,6 +12,6 @@ int main(int argc, char const *argv[]) {
     //client_solve_variable_size();
     //client_search_solutions();
     //client_compare_algorithms();
-    main_menu();
+    //main_menu();
     return 0;
 }

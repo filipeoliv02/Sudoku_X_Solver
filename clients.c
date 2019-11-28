@@ -2,7 +2,6 @@
 #include "fileio.h"
 #include "utils.h"
 #include "algorithms.h"
-#include "algorithms_without_diagonals.h"
 #include <stdio.h>
 #include <math.h>
 
@@ -37,11 +36,7 @@ void client_advanced() {
         cost = 0;
         solved.sudokus = NULL;
         solved.total = 0;
-        if(unsolved.sudokus[i].size <= 16)
-            findSudokuAdvanced(unsolved.sudokus[i], &solved, &cost);
-        else
-            findSudokuOptimizedNoDiags(unsolved.sudokus[i], &solved, &cost);
-
+        findSudokuAdvanced(unsolved.sudokus[i], &solved, &cost);
         if (solved.total == 0) {
             printf("ID: %d / Size: %d / Cost %lld Nao se encontrou solucoes\n", i, unsolved.sudokus[i].size, cost);
         } else {
@@ -158,7 +153,7 @@ void client_solve_variable_size() {
         solved.total = 0;
         solved.sudokus = NULL;
         printf("Id[%d] - ", i);
-        findSudokuOptimizedNoDiags(sudoku25.sudokus[i], &solved, &cost);
+        findSudokuAdvanced(sudoku25.sudokus[i], &solved, &cost);
         if (solved.total == 0) {
             printf("Nao se encontrou solucoes\n\n");
         } else {
@@ -174,7 +169,7 @@ void client_solve_variable_size() {
         solved.total = 0;
         solved.sudokus = NULL;
         printf("Id[%d] - ", i);
-        findSudokuOptimizedNoDiags(sudoku36.sudokus[i], &solved, &cost);
+        findSudokuAdvanced(sudoku36.sudokus[i], &solved, &cost);
         if (solved.total == 0) {
             printf("Nao se encontrou solucoes\n\n");
         } else {
@@ -211,19 +206,14 @@ void client_compare_algorithms() {
     long long average_cost4 = 0, average_cost9 = 0, average_cost16 = 0, average_cost25 = 0;
     long average_time4 = 0, average_time9 = 0, average_time16 = 0, average_time25 = 0;
     long long count4 = 0, count9 = 0, count16 = 0, count25 = 0;
-    ListSudoku unsolved = load_sudokus("unsolved_client.txt");
+    ListSudoku unsolved = load_sudokus("client_test_files/unsolved_client.txt");
     ListSudoku solved;
     solved.total = 0;
     solved.sudokus = NULL;
     for(int i = 0; i < unsolved.total; i++) {
         cost = 0;
         gettimeuseconds(&time_usec_init); // init time
-
-        if(unsolved.sudokus[i].size <= 16)
-            findSudokuAdvanced(unsolved.sudokus[i], &solved, &cost);
-        else
-            findSudokuOptimizedNoDiags(unsolved.sudokus[i], &solved, &cost);
-
+        findSudokuAdvanced(unsolved.sudokus[i], &solved, &cost);
         gettimeuseconds(&time_usec_end); // end time
         elapsed_time = (long) (time_usec_end - time_usec_init);
 
@@ -273,15 +263,12 @@ void client_compare_algorithms() {
     average_time4 = 0, average_time9 = 0, average_time16 = 0;
     count4 = 0, count9 = 0, count16 = 0;
     free_list_sudoku(unsolved);
-    unsolved = load_sudokus("unsolved_client.txt");
+    unsolved = load_sudokus("client_test_files/unsolved_client.txt");
 
     for(int i = 0; i < unsolved.total; i++) {
         cost = 0;
         gettimeuseconds(&time_usec_init); // init time
-        if(unsolved.sudokus[i].size <= 16)
-            findSudokuBruteForce(unsolved.sudokus[i].board, 0, 0, unsolved.sudokus[i].size, &solved, &cost);
-        else
-            findSudokuBruteForceNoDiags(unsolved.sudokus[i].board, 0, 0, unsolved.sudokus[i].size, &solved, &cost);
+        findSudokuBruteForce(unsolved.sudokus[i].board, 0, 0, unsolved.sudokus[i].size, &solved, &cost);
         gettimeuseconds(&time_usec_end); // end time
         elapsed_time = (long) (time_usec_end - time_usec_init);
 

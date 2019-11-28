@@ -52,6 +52,8 @@ Mkfile.old
 dkms.conf
 
 # Clion
+*.ods#
+*.ods
 .idea/
 doxygen/
 cmake-build-debug/
