@@ -33,7 +33,7 @@ void main_menu() {
                 break;
             case 2:
                 unsolved = load_sudokus("unsolved.txt");
-                solved = load_sudokus("solved.txt");
+                //solved = load_sudokus("solved.txt");
                 break;
             case 3:
                 save_sudokus(solved, "solved.txt");

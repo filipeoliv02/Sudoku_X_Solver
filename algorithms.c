@@ -18,11 +18,17 @@ void findPairs(ListSudoku cube);
 
 int isValidPlacement(int **sudoku, int num, int row, int col, int side) {
     int s = (int) sqrt(side);
-    return !(existsInCol(sudoku, num, col, side) ||
-             existsInRow(sudoku, num, row, side) ||
-             existsInRegion(sudoku, num, (row / s) * s, (col / s) * s, s) ||
-             existsInPrincipalDiagonal(sudoku, num, row, col, side) ||
-             existsInSecundaryDiagonal(sudoku, num, row, col, side));
+    if (side <= 16) {
+        return !(existsInCol(sudoku, num, col, side) ||
+                 existsInRow(sudoku, num, row, side) ||
+                 existsInRegion(sudoku, num, (row / s) * s, (col / s) * s, s) ||
+                 existsInPrincipalDiagonal(sudoku, num, row, col, side) ||
+                 existsInSecundaryDiagonal(sudoku, num, row, col, side));
+    } else {
+        return !(existsInCol(sudoku, num, col, side) ||
+                 existsInRow(sudoku, num, row, side) ||
+                 existsInRegion(sudoku, num, (row / s) * s, (col / s) * s, s));
+    }
 }
 
 int existsInCol(int **sudoku, int num, int col, int side) {
@@ -104,11 +110,13 @@ void sudokuFillCell(ListSudoku list, int k, int row, int col) {
         list.sudokus[k - 1].board[row][i] = 1;
         list.sudokus[k - 1].board[i][col] = 1;
         list.sudokus[i].board[row][col] = 1;
-        if (row == col) {
-            list.sudokus[k - 1].board[i][i] = 1;
-        }
-        if (row == list.total - col - 1) {
-            list.sudokus[k - 1].board[i][list.total - i - 1] = 1;
+        if (list.sudokus->size <= 16) {
+            if (row == col) {
+                list.sudokus[k - 1].board[i][i] = 1;
+            }
+            if (row == list.total - col - 1) {
+                list.sudokus[k - 1].board[i][list.total - i - 1] = 1;
+            }
         }
     }
     int rowStart = (row / region_size) * region_size;
@@ -131,15 +139,18 @@ int checkSudokuCell(ListSudoku list, int k, int row, int col) {
         if (list.sudokus[k - 1].board[i][col] == 0) {
             count[1]++;
         }
-        if (row == col && list.sudokus[k - 1].board[i][i] == 0) {
-            count[2]++;
-        }
-        if (row == list.total - col - 1 && list.sudokus[k - 1].board[i][list.total - i - 1] == 0) {
-            count[3]++;
+        if (list.sudokus->size <= 16) {
+            if (row == col && list.sudokus[k - 1].board[i][i] == 0) {
+                count[2]++;
+            }
+            if (row == list.total - col - 1 && list.sudokus[k - 1].board[i][list.total - i - 1] == 0) {
+                count[3]++;
+            }
         }
         if (list.sudokus[i].board[row][col] == 0) {
             count[4]++;
         }
+
     }
     for (int i = rowStart; i < rowStart + region_size; i++) {
         for (int j = colStart; j < colStart + region_size; j++) {
@@ -179,7 +190,8 @@ void findSudokuAdvanced(Sudoku s, ListSudoku *solved, long long *cost) {
             for (int col = 0; col < s.size; col++) {
                 if (s.board[row][col] == UNASSIGNED) {
                     for (int number = 1; number <= s.size; number++, (*cost)++) {
-                        if (cube.sudokus[number - 1].board[row][col] == UNASSIGNED && checkSudokuCell(cube, number, row, col)) {
+                        if (cube.sudokus[number - 1].board[row][col] == UNASSIGNED &&
+                            checkSudokuCell(cube, number, row, col)) {
                             s.board[row][col] = number;
                             sudokuFillCell(cube, number, row, col);
                             count++;
@@ -222,12 +234,12 @@ void findPairs(ListSudoku cube) {
                         }
                         if (found) {
                             printf("s[%d][%d] - ", row_pair, col);
-                            for(int i = 0; i < size; i++) {
+                            for (int i = 0; i < size; i++) {
                                 printf("%d ", cube.sudokus[i].board[row_pair][col]);
                             }
                             printf("\n");
-                            for(int i = 0; i < size; i++) {
-                                printf("%d-\n", i+1);
+                            for (int i = 0; i < size; i++) {
+                                printf("%d-\n", i + 1);
                                 printSudoku(cube.sudokus[i].board, size);
                             }
 
@@ -240,8 +252,8 @@ void findPairs(ListSudoku cube) {
                                     }
                                 }
                             }
-                            for(int i = 0; i < size; i++) {
-                                printf("%d-\n", i+1);
+                            for (int i = 0; i < size; i++) {
+                                printf("%d-\n", i + 1);
                                 printSudoku(cube.sudokus[i].board, size);
                             }
                             break;
@@ -260,7 +272,7 @@ void findPairs(ListSudoku cube) {
                         }
                         if (found) {
                             printf("s[%d][%d] - ", row, col_pair);
-                            for(int i = 0; i < size; i++) {
+                            for (int i = 0; i < size; i++) {
                                 printf("%d ", cube.sudokus[i].board[row][col_pair]);
                             }
                             printf("\n");
