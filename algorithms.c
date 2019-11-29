@@ -16,6 +16,16 @@ void sudokuFillCell(ListSudoku list, int k, int row, int col);
 
 void findPairs(ListSudoku cube);
 
+/**
+ * @brief Testar se é possível colocar um valor numa certa posição
+ * @details Função usada para testar se a posição no tabuleiro passada nos argumentos é válida
+ * @param sudoku
+ * @param num
+ * @param row
+ * @param col
+ * @param side
+ * @return
+ */
 int isValidPlacement(int **sudoku, int num, int row, int col, int side) {
     int s = (int) sqrt(side);
     if (side <= 16) {
@@ -31,6 +41,15 @@ int isValidPlacement(int **sudoku, int num, int row, int col, int side) {
     }
 }
 
+/**
+ * @brief   Verifica a coluna
+ * @details Vê se existe na coluna o número passado
+ * @param sudoku
+ * @param num
+ * @param col
+ * @param side
+ * @return 1 - Verdadeiro / 0 - Falso
+ */
 int existsInCol(int **sudoku, int num, int col, int side) {
     for (int i = 0; i < side; i++) {
         if (sudoku[i][col] == num)
@@ -39,6 +58,15 @@ int existsInCol(int **sudoku, int num, int col, int side) {
     return 0;
 }
 
+/**
+ * @brief   Verifica a Linha
+ * @details Vê se existe na linha o número passado
+ * @param sudoku
+ * @param num
+ * @param row
+ * @param side
+ * @return 1 - Verdadeiro / 0 - Falso
+ */
 int existsInRow(int **sudoku, int num, int row, int side) {
     for (int i = 0; i < side; i++) {
         if (sudoku[row][i] == num)
@@ -47,6 +75,16 @@ int existsInRow(int **sudoku, int num, int row, int side) {
     return 0;
 }
 
+/**
+ * @brief   Verifica a Região
+ * @details Verifica-se o número passsado existe na região testada
+ * @param sudoku
+ * @param num
+ * @param rowStart
+ * @param colStart
+ * @param regionSide
+ * @return 1 - Verdadeiro / 0 - Falso
+ */
 int existsInRegion(int **sudoku, int num, int rowStart, int colStart, int regionSide) {
     for (int i = rowStart; i < rowStart + regionSide; i++) {
         for (int j = colStart; j < colStart + regionSide; j++) {
@@ -58,6 +96,17 @@ int existsInRegion(int **sudoku, int num, int rowStart, int colStart, int region
     return 0;
 }
 
+/**
+ * @brief Verifica a diagonal principal
+ * @details Verifica-se a célula passada pertence à diagonal principal, e se sim se o seu número já se encontra na diagonal
+ * @param sudoku
+ * @param num
+ * @param row
+ * @param col
+ * @param side
+ * @return 1 - Verdadeiro / 0 - Falso
+ *
+ */
 int existsInPrincipalDiagonal(int **sudoku, int num, int row, int col, int side) {
     if (row == col) {
         for (int i = 0; i < side; i++) {
@@ -68,6 +117,16 @@ int existsInPrincipalDiagonal(int **sudoku, int num, int row, int col, int side)
     return 0;
 }
 
+/**
+ * @brief Verifica a diagonal secundária
+ * @details Verifica-se a célula passada pertence à diagonal secundária, e se sim se o seu número já se encontra na diagonal
+ * @param sudoku
+ * @param num
+ * @param row
+ * @param col
+ * @param side
+ * @return 1 - Verdadeiro / 0 - Falso
+ */
 int existsInSecundaryDiagonal(int **sudoku, int num, int row, int col, int side) {
     if (row == side - col - 1) {
         for (int i = 0; i < side; i++) {
@@ -78,6 +137,16 @@ int existsInSecundaryDiagonal(int **sudoku, int num, int row, int col, int side)
     return 0;
 }
 
+/**
+ * @brief Algoritmo BruteForce
+ * @details Algoritmo do tipo Backtracking Search usado na resolução de tabuleiros através de bruteforce(Recursivo)
+ * @param sudoku
+ * @param row
+ * @param col
+ * @param side
+ * @param solved
+ * @param cost
+ */
 void findSudokuBruteForce(int **sudoku, int row, int col, int side, ListSudoku *solved, long long *cost) {
     int newRow = row + ((col + 1) / side), newCol = (col + 1) % side;
     if (row == side) {
@@ -104,6 +173,14 @@ void findSudokuBruteForce(int **sudoku, int row, int col, int side, ListSudoku *
     }
 }
 
+/**
+ * @brief Coloca as posições a proibir
+ * @details Coloca a coluna, a linha, a região, as possibilidades e as diagonais (se pertencer) da célula passada a proibido
+ * @param list
+ * @param k
+ * @param row
+ * @param col
+ */
 void sudokuFillCell(ListSudoku list, int k, int row, int col) {
     int region_size = sqrt(list.sudokus->size);
     for (int i = 0; i < list.total; i++) {
@@ -129,6 +206,15 @@ void sudokuFillCell(ListSudoku list, int k, int row, int col) {
     }
 }
 
+/**
+ * @brief Verificar se a posição é válida
+ * @details Testa a linha , a coluna, a região, possibilidades e diagonais (se pertencer)
+ * @param list
+ * @param k
+ * @param row
+ * @param col
+ * @return
+ */
 int checkSudokuCell(ListSudoku list, int k, int row, int col) {
     int region_size = sqrt(list.sudokus->size);
     int count[6] = {0}, rowStart = (row / region_size) * region_size, colStart = (col / region_size) * region_size;
@@ -162,6 +248,13 @@ int checkSudokuCell(ListSudoku list, int k, int row, int col) {
     return count[0] == 1 || count[1] == 1 || count[2] == 1 || count[3] == 1 || count[4] == 1 || count[5] == 1;
 }
 
+/**
+ * @brief Algoritmo Otimizado
+ * @details Algoritmo Otimizado usado na resolução de tabuleiros. Se o algoritmo não conseguir cumprir por si próprio, este chama o algoritmo Bruteforce
+ * @param s
+ * @param solved
+ * @param cost
+ */
 void findSudokuAdvanced(Sudoku s, ListSudoku *solved, long long *cost) {
     ListSudoku cube;
     cube.sudokus = NULL;
@@ -212,6 +305,10 @@ void findSudokuAdvanced(Sudoku s, ListSudoku *solved, long long *cost) {
     findSudokuBruteForce(s.board, 0, 0, s.size, solved, cost);
 }
 
+/**
+ * @brief
+ * @param cube
+ */
 void findPairs(ListSudoku cube) {
     int size = cube.sudokus[0].size, count = 0, found;
     for (int row = 0; row < size; row++) {
@@ -375,6 +472,13 @@ void findPairs(ListSudoku cube) {
     }
 }
 
+/**
+ * @brief Compara 2 tabuleiros sudoku
+ * @details
+ * @param pattern
+ * @param unsolved
+ * @return 1 - Verdadeiro / 0 - Falso
+ */
 int isPattern(Sudoku pattern, Sudoku unsolved) {
     if (pattern.size != unsolved.size) {
         return 0;
@@ -389,7 +493,13 @@ int isPattern(Sudoku pattern, Sudoku unsolved) {
     return 1;
 }
 
-
+/**
+ * @brief Procura um Sudoku numa lista de soluções
+ * @details
+ * @param searchList
+ * @param sudoku
+ * @return
+ */
 int searchSudokus(ListSudoku searchList, Sudoku sudoku) {
     for (int i = 0; i < searchList.total; i++) {
         if (isPattern(searchList.sudokus[i], sudoku)) {
@@ -399,7 +509,11 @@ int searchSudokus(ListSudoku searchList, Sudoku sudoku) {
     return -1;
 }
 
-
+/**
+ * @brief Ordena os tabuleiros por tamanho
+ * @details Cria um índice de forma a ordenar eficazmente os tabuleiros
+ * @param a
+ */
 void orderedbySize(ListSudoku *a) {
     int i, r, c;
     int R = 100;

@@ -1,6 +1,13 @@
 #include "menus.h"
 #include "clients.h"
 
+/**
+ * @brief Início do Programa usado para alternar entre menus e clientes
+ * @details Função Inicial para chamar clientes ou o menu principal
+ * @param argc
+ * @param argv
+ * @return
+ */
 int main(int argc, char const *argv[]) {
     //client_bruteforce();
     //client_advanced();

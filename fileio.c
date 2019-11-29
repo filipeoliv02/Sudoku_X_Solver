@@ -1,6 +1,12 @@
 #include "fileio.h"
 #include "utils.h"
 
+/**
+ * @brief Carregar Tabuleiros
+ * @details Carregar tabuleiros para a memória
+ * @param file
+ * @return
+ */
 ListSudoku load_sudokus(char *file) {
     int size;
     ListSudoku s;
@@ -31,6 +37,12 @@ ListSudoku load_sudokus(char *file) {
     return s;
 }
 
+/**
+ * @brief Guardar Tabuleiros
+ * @details Guardar tabuleiros Resolvidos no ficheiro passado
+ * @param newlist
+ * @param file
+ */
 void save_sudokus(ListSudoku newlist, char *file) {
     ListSudoku list;
     list = load_sudokus(file);
@@ -52,6 +64,12 @@ void save_sudokus(ListSudoku newlist, char *file) {
 
 }
 
+/**
+ * @brief Guardar Tabuleiros
+ * @details Guardar tabuleiros Resolvidos no ficheiro binário
+ * @param newlist
+ * @param file
+ */
 void save2binary(ListSudoku solved, char *file) {
     FILE *fp = fopen(file, "wb");
     int aux;
