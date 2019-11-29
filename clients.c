@@ -51,7 +51,7 @@ void client_advanced() {
 
 void client_read() {
     ListSudoku sudokus = load_sudokus("client_test_files/client_read.txt");
-    printAllStoredBoards(sudokus);
+    printAllStoredBoards(sudokus,0);
 }
 
 
@@ -62,7 +62,7 @@ void client_write(){
 
 void client_show_stored(){
     ListSudoku sudokus = load_sudokus("client_test_files/client_read.txt");
-    printAllStoredBoards(sudokus);
+    printAllStoredBoards(sudokus,0);
 }
 
 void client_check_consistency() {

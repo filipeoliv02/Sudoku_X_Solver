@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "algorithms.h"
 
-void menu_choose_sudoku(ListSudoku list, ListSudoku *solved);
+void menu_choose_sudoku(ListSudoku list, ListSudoku *solved,int flagOrdered);
 
 void menu_sudoku(Sudoku s, ListSudoku *solved);
 
@@ -19,30 +19,34 @@ void main_menu() {
     int selection, exit = 0;
     while (!exit) {
         printf("Menu Principal\n");
-        printf("1- Ver tabuleiros em memoria\n"
-               "2- Carregar tabuleiros do ficheiro\n"
-               "3- Guardar tabuleiros no ficheiro\n"
-               "4- Criar Ficheiro Binario com os Tabuleiros Resolvidos \n"
-               "5- Gerar novos tabuleiros\n"
+        printf("1- Ver tabuleiros Ordenados por Insercao\n"
+               "2- Ver tabuleiros Ordenados por Tamanho\n"
+               "3- Carregar tabuleiros do ficheiro\n"
+               "4- Guardar tabuleiros no ficheiro\n"
+               "5- Criar Ficheiro Binario com os Tabuleiros Resolvidos \n"
+               "6- Gerar novos tabuleiros\n"
 
                "0- Sair\n");
         scanf("%d", &selection);
         switch (selection) {
             case 1:
-                menu_choose_sudoku(unsolved, &solved);
+                menu_choose_sudoku(unsolved, &solved,0);
                 break;
             case 2:
+                menu_choose_sudoku(unsolved, &solved,1);
+                break;
+            case 3:
                 unsolved = load_sudokus("unsolved.txt");
                 //solved = load_sudokus("solved.txt");
                 break;
-            case 3:
+            case 4:
                 save_sudokus(solved, "solved.txt");
                 break;
-            case 4:
+            case 5:
                 save2binary(solved,"binary_solved.bin");
 
                 break;
-            case 5:
+            case 6:
                 menu_gen_sudoku(unsolved, &solved);
 
 
@@ -58,7 +62,7 @@ void main_menu() {
 }
 
 
-void menu_choose_sudoku(ListSudoku list, ListSudoku *solved) {
+void menu_choose_sudoku(ListSudoku list, ListSudoku *solved,int flagOrdered) {
     int selection, exit = 0;
     while (!exit) {
         if (list.total == 0) {
@@ -66,7 +70,7 @@ void menu_choose_sudoku(ListSudoku list, ListSudoku *solved) {
             break;
         }
 
-        printAllStoredBoards(list);
+        printAllStoredBoards(list,flagOrdered);
         printf("------------------------------------------------\n"
                "Escolha o tabuleiro [1 - %d] ou 0 para sair:\n", list.total);
         scanf("%d", &selection);
