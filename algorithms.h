@@ -19,4 +19,6 @@ int existsInRow(int **sudoku, int num, int row, int side);
 
 int existsInRegion(int **sudoku, int num, int row, int col, int side);
 
+void orderedbySize(ListSudoku *a);
+
 #endif

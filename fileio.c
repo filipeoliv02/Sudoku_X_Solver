@@ -12,7 +12,9 @@ ListSudoku load_sudokus(char *file) {
         while (fscanf(fp, "%d", &size) != EOF) {
 
             s.sudokus = resizeSudokus(s.sudokus, s.total, s.total + 1);
+            s.orderedList = resizeList(s.orderedList, s.total, s.total + 1);
             s.sudokus[s.total].size = size;
+            s.orderedList[s.total] = 0;
             s.sudokus[s.total].board = createBoard(size);
 
             for (int i = 0; i < size; i++) {
@@ -23,6 +25,8 @@ ListSudoku load_sudokus(char *file) {
             s.total++;
         }
         fclose(fp);
+        orderedbySize(&s);
+
     }
     return s;
 }
@@ -57,7 +61,7 @@ void save2binary(ListSudoku solved, char *file) {
             fwrite(&aux, 1, 1, fp);
             for (int j = 0; j < solved.sudokus[i].size; j++) {
                 for (int k = 0; k < solved.sudokus[i].size; k++) {
-                    aux= solved.sudokus[i].board[j][k];
+                    aux = solved.sudokus[i].board[j][k];
                     fwrite(&aux, 1, 1, fp);
                 }
             }

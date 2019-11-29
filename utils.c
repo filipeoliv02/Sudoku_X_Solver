@@ -16,17 +16,23 @@ void printSudoku(int **sudoku, int size) {
     printf("\n");
 }
 
-void printAllStoredBoards(ListSudoku s) {
+void printAllStoredBoards(ListSudoku s, int flagOrdered) {
+    int z;
     for (int k = 0; k < s.total; k++) {
+        if (flagOrdered) {
+            z = s.orderedList[k];
+        } else {
+            z = k;
+        }
         printf("\n %d:", k + 1);
-        for (int i = 0; i < s.sudokus[k].size; i++) {
+        for (int i = 0; i < s.sudokus[z].size; i++) {
             printf("\n");
-            for (int j = 0; j < s.sudokus[k].size; j++) {
-                if (s.sudokus[k].board[i][j] > 9) {
-                    printf("%d ", s.sudokus[k].board[i][j]);
+            for (int j = 0; j < s.sudokus[z].size; j++) {
+                if (s.sudokus[z].board[i][j] > 9) {
+                    printf("%d ", s.sudokus[z].board[i][j]);
 
                 } else {
-                    printf(" %d ", s.sudokus[k].board[i][j]);
+                    printf(" %d ", s.sudokus[z].board[i][j]);
 
                 }
             }
@@ -55,6 +61,18 @@ Sudoku *resizeSudokus(Sudoku *ptr, int size, int newSize) {
         *(pAux + i) = *(ptr + i);
     }
     free(ptr);
+
+    return pAux;
+}
+
+int *resizeList(int *pList, int size, int newSize) {
+
+    int *pAux = (int *) malloc(newSize * sizeof(int));
+
+    for (int i = 0; i < size; i++) {
+        *(pAux + i) = *(pList + i);
+    }
+    free(pList);
 
     return pAux;
 }
@@ -137,7 +155,7 @@ ListSudoku merge_sudokus(ListSudoku target, ListSudoku source) {
 
 void free_list_sudoku(ListSudoku l) {
     for (int i = 0; i < l.total; i++) {
-        for(int row = 0; row < l.sudokus[i].size; row++) {
+        for (int row = 0; row < l.sudokus[i].size; row++) {
             free(l.sudokus[i].board[row]);
         }
         free(l.sudokus[i].board);

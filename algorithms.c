@@ -400,3 +400,29 @@ int searchSudokus(ListSudoku searchList, Sudoku sudoku) {
 }
 
 
+void orderedbySize(ListSudoku *a) {
+    int i, r, c;
+    int R = 100;
+    int count[100] = {0};
+
+    // compute frequency counts
+    //Frequência absoluta.
+    for (i = 0; i < a->total; i++)
+        count[a->sudokus[i].size]++;
+
+    // transform counts to indicies
+    // Frequências acumuladas.
+    for (r = 0; r < R; r++)
+        count[r + 1] += count[r];
+
+    // distribute
+    for (i = 0; i < a->total; i++) {
+        c = a->sudokus[i].size - 1;
+        a->orderedList[count[c]] = i;
+        count[c]++;
+    }
+
+    for (i = 0; i < a->total; i++) {
+        printf("%d ", a->orderedList[i]);
+    }
+}
