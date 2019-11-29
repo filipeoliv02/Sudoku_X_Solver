@@ -2,6 +2,11 @@
 #include "utils.h"
 #include <time.h>
 
+/**
+ * @brief Imprime o tabuleiro passado
+ * @param sudoku
+ * @param size
+ */
 void printSudoku(int **sudoku, int size) {
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
@@ -16,6 +21,11 @@ void printSudoku(int **sudoku, int size) {
     printf("\n");
 }
 
+/**
+ * @brief Imprime a lista de sudokus passada, de forma ordenada ou não
+ * @param s
+ * @param flagOrdered
+ */
 void printAllStoredBoards(ListSudoku s, int flagOrdered) {
     int z;
     for (int k = 0; k < s.total; k++) {
@@ -41,19 +51,13 @@ void printAllStoredBoards(ListSudoku s, int flagOrdered) {
     }
 };
 
-
-int *resizeArray(int *ptr, int size, int newSize) {
-    int *pAux = (int *) calloc(newSize, sizeof(int));
-
-    for (int i = 0; i < size; i++) {
-        *(pAux + i) = *(ptr + i);
-
-    }
-    free(ptr);
-
-    return pAux;
-}
-
+/**
+ * @brief Aumenta uma Lista de sudokus
+ * @param ptr
+ * @param size
+ * @param newSize
+ * @return
+ */
 Sudoku *resizeSudokus(Sudoku *ptr, int size, int newSize) {
     Sudoku *pAux = (Sudoku *) malloc(newSize * sizeof(Sudoku));
 
@@ -65,6 +69,13 @@ Sudoku *resizeSudokus(Sudoku *ptr, int size, int newSize) {
     return pAux;
 }
 
+/**
+ * @brief Aumenta uma lista de inteiros
+ * @param pList
+ * @param size
+ * @param newSize
+ * @return
+ */
 int *resizeList(int *pList, int size, int newSize) {
 
     int *pAux = (int *) malloc(newSize * sizeof(int));
@@ -77,17 +88,12 @@ int *resizeList(int *pList, int size, int newSize) {
     return pAux;
 }
 
-int ***resizeBoards(int ***ptr, int size, int newSize) {
-    int ***pAux = (int ***) calloc(newSize, sizeof(int **));
 
-    for (int i = 0; i < size; i++) {
-        *(pAux + i) = *(ptr + i);
-    }
-    free(ptr);
-
-    return pAux;
-}
-
+/**
+ * @brief Cria uma matriz para guardar o novo tabuleiro
+ * @param size
+ * @return
+ */
 int **createBoard(int size) {
     int **pAux = (int **) malloc(size * sizeof(int *));
 
@@ -97,6 +103,12 @@ int **createBoard(int size) {
     return pAux;
 }
 
+/**
+ * @brief Gera um sudoku
+ * @param size
+ * @param n
+ * @return
+ */
 Sudoku gen_sudoku(int size, int n) {
     srand(time(NULL));
     int row, col, num;
@@ -119,6 +131,12 @@ Sudoku gen_sudoku(int size, int n) {
     return s;
 }
 
+/**
+ * @brief Compara 2 tabuleiros
+ * @param s1
+ * @param s2
+ * @return 1 - Verdadeiro / 0 - Falso
+ */
 int isEqual(Sudoku s1, Sudoku s2) {
     if (s1.size != s2.size) {
         return 0;
@@ -133,7 +151,12 @@ int isEqual(Sudoku s1, Sudoku s2) {
     return 1;
 }
 
-
+/**
+ * @brief Cria uma lista de sudokus distintos
+ * @param target
+ * @param source
+ * @return
+ */
 ListSudoku merge_sudokus(ListSudoku target, ListSudoku source) {
     int alreadyExists;
     for (int i = 0; i < source.total; i++) {
@@ -153,6 +176,10 @@ ListSudoku merge_sudokus(ListSudoku target, ListSudoku source) {
     return target;
 }
 
+/**
+ * Liberta a memória
+ * @param l
+ */
 void free_list_sudoku(ListSudoku l) {
     for (int i = 0; i < l.total; i++) {
         for (int row = 0; row < l.sudokus[i].size; row++) {
@@ -163,6 +190,11 @@ void free_list_sudoku(ListSudoku l) {
     free(l.sudokus);
 }
 
+/**
+ * Testa se o tabuleiro passado cumpre as regras do sudoku
+ * @param sudoku
+ * @return
+ */
 int isConsistent(Sudoku sudoku) {
     int auxCell;
     for (int i = 0; i < sudoku.size; i++) {
@@ -180,7 +212,11 @@ int isConsistent(Sudoku sudoku) {
     }
     return 1;
 }
-
+/**
+ * Obter o tempo atual do computador
+ * @param time_usec
+ * @return
+ */
 /*#ifdef WIN32
 int gettimeuseconds(long long * time_usec) {
     union {

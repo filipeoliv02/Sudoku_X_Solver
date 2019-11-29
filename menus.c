@@ -11,6 +11,9 @@ void menu_sudoku(Sudoku s, ListSudoku *solved);
 
 void menu_gen_sudoku(ListSudoku unsolved, ListSudoku *solved);
 
+/**
+ * @brief Menu Principal
+ */
 void main_menu() {
     ListSudoku unsolved, solved;
     unsolved.total = 0;
@@ -61,7 +64,12 @@ void main_menu() {
     }
 }
 
-
+/**
+ * @brief Menu de escolha do sudoku
+ * @param list
+ * @param solved
+ * @param flagOrdered
+ */
 void menu_choose_sudoku(ListSudoku list, ListSudoku *solved,int flagOrdered) {
     int selection, exit = 0;
     while (!exit) {
@@ -84,6 +92,11 @@ void menu_choose_sudoku(ListSudoku list, ListSudoku *solved,int flagOrdered) {
     }
 }
 
+/**
+ * @brief Menu de opções para um sudoku
+ * @param s
+ * @param solved
+ */
 void menu_sudoku(Sudoku s, ListSudoku *solved) {
     int selection, exit = 0, searchResult;
     long long time_usec_init, time_usec_end, cost = 0;
@@ -144,6 +157,11 @@ void menu_sudoku(Sudoku s, ListSudoku *solved) {
     }
 }
 
+/**
+ * @brief Menu para Gerar tabuleiros novos
+ * @param unsolved
+ * @param solved
+ */
 void menu_gen_sudoku(ListSudoku unsolved, ListSudoku *solved) {
 
     Sudoku s;
