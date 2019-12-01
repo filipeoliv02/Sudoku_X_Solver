@@ -47,7 +47,7 @@ int isValidPlacement(Sudoku sudoku, int num, int row, int col) {
  */
 int existsInCol(Sudoku sudoku, int num, int col) {
     for (int i = 0; i < sudoku.size; i++) {
-        if (sudoku.board[i][col] == num)
+        if ((*(*(sudoku.board + i) + col)) == num)
             return 1;
     }
     return 0;
@@ -64,7 +64,7 @@ int existsInCol(Sudoku sudoku, int num, int col) {
  */
 int existsInRow(Sudoku sudoku, int num, int row) {
     for (int i = 0; i < sudoku.size; i++) {
-        if (sudoku.board[row][i] == num)
+        if ((*(*(sudoku.board + row) + i)) == num)
             return 1;
     }
     return 0;
@@ -83,7 +83,7 @@ int existsInRow(Sudoku sudoku, int num, int row) {
 int existsInRegion(Sudoku sudoku, int num, int rowStart, int colStart, int regionSize) {
     for (int i = rowStart; i < rowStart + regionSize; i++) {
         for (int j = colStart; j < colStart + regionSize; j++) {
-            if (sudoku.board[i][j] == num) {
+            if ((*(*(sudoku.board + i) + j)) == num) {
                 return 1;
             }
         }
@@ -105,7 +105,7 @@ int existsInRegion(Sudoku sudoku, int num, int rowStart, int colStart, int regio
 int existsInPrincipalDiagonal(Sudoku sudoku, int num, int row, int col) {
     if (sudoku.size <= MAX_SUDOKUX_SIZE && row == col) {
         for (int i = 0; i < sudoku.size; i++) {
-            if (sudoku.board[i][i] == num)
+            if ((*(*(sudoku.board + i) + i)) == num)
                 return 1;
         }
     }
@@ -148,23 +148,23 @@ void solveSudokuBruteForce(ListSudoku *solved, Sudoku sudoku, int row, int col, 
         printf("Solucao:\n");
         printSudoku(sudoku.board, sudoku.size);
         update_solved(solved, sudoku);
-    } else if (sudoku.board[row][col] > 0) {
+    } else if ((*(*(sudoku.board + row) + col)) > 0) {
         solveSudokuBruteForce(solved, sudoku, newRow, newCol, cost);
     } else {
         for (int num = 1; num <= sudoku.size; num++) {
             (*cost)++;
             if (isValidPlacement(sudoku, num, row, col)) {
-                sudoku.board[row][col] = num;
+                (*(*(sudoku.board + row) + col)) = num;
                 solveSudokuBruteForce(solved, sudoku, newRow, newCol, cost);
             }
         }
-        sudoku.board[row][col] = 0;
+        (*(*(sudoku.board + row) + col)) = 0;
     }
 }
 
 void update_solved(ListSudoku *solved, Sudoku sudoku) {
     for (int j = 0; j < solved->total; j++) {
-        if (isEqual(solved->sudokus[j], sudoku)) {
+        if (isEqual(*(solved->sudokus + j), sudoku)) {
             return;
         }
     }
@@ -174,7 +174,7 @@ void update_solved(ListSudoku *solved, Sudoku sudoku) {
     solved->sudokus[solved->total].board = createBoard(sudoku.size);
     for (int i = 0; i < sudoku.size; i++) {
         for (int j = 0; j < sudoku.size; j++) {
-            solved->sudokus[solved->total].board[i][j] = sudoku.board[i][j];
+            solved->sudokus[solved->total].board[i][j] = (*(*(sudoku.board + i) + j));
         }
     }
     solved->total++;
@@ -275,9 +275,9 @@ void solveSudokuOptimized(Sudoku s, ListSudoku *solved, long long *cost) {
     //percorrer tabuleiro original
     for (int i = 0; i < s.size; i++) {
         for (int j = 0; j < s.size; j++) {
-            if (s.board[i][j] != UNASSIGNED) {
+            if (*(*(s.board + i) + j) != UNASSIGNED) {
                 count++;
-                sudokuFillCell(cube, s.board[i][j], i, j);
+                sudokuFillCell(cube, *(*(s.board + i) + j), i, j);
             }
         }
     }
@@ -286,12 +286,12 @@ void solveSudokuOptimized(Sudoku s, ListSudoku *solved, long long *cost) {
 
         for (int row = 0; row < s.size; row++) {
             for (int col = 0; col < s.size; col++) {
-                if (s.board[row][col] == UNASSIGNED) {
+                if (*(*(s.board + row) + col) == UNASSIGNED) {
                     for (int number = 1; number <= s.size; number++, (*cost)++) {
                         if (cube.sudokus[number - 1].board[row][col] == UNASSIGNED) {
                             (*cost)++;
                             if (checkSudokuCell(cube, number, row, col, s.size)) {
-                                s.board[row][col] = number;
+                                *(*(s.board + row) + col) = number;
                                 sudokuFillCell(cube, number, row, col);
                                 count++;
                                 try_pairs = 1;
@@ -317,8 +317,7 @@ void solveSudokuOptimized(Sudoku s, ListSudoku *solved, long long *cost) {
 
     if (count != s.size * s.size) {
         printf("Cost %lld - Otimizado nao encontrou solucoes, ir para o bruteforce\n", *cost);
-    }
-    else {
+    } else {
         printf("Solucao:\n");
         printSudoku(s.board, s.size);
     }
@@ -487,7 +486,7 @@ int isPattern(Sudoku pattern, Sudoku unsolved) {
     }
     for (int i = 0; i < pattern.size; i++) {
         for (int j = 0; j < unsolved.size; j++) {
-            if (pattern.board[i][j] != unsolved.board[i][j] && unsolved.board[i][j] > 0) {
+            if (*(*(pattern.board + i) + j) != *(*(unsolved.board + i) + j) && *(*(unsolved.board + i) + j) > 0) {
                 return 0;
             }
         }
@@ -504,7 +503,7 @@ int isPattern(Sudoku pattern, Sudoku unsolved) {
  */
 int searchSudokus(ListSudoku searchList, Sudoku sudoku) {
     for (int i = 0; i < searchList.total; i++) {
-        if (isPattern(searchList.sudokus[i], sudoku)) {
+        if (isPattern(*(searchList.sudokus + i), sudoku)) {
             return i;
         }
     }
