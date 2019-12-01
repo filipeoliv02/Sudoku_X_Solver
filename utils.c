@@ -10,10 +10,10 @@
 void printSudoku(int **sudoku, int size) {
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
-            if (sudoku[i][j] > 9) {
-                printf("%d ", sudoku[i][j]);
+            if (*(*(sudoku + i) + j) > 9) {
+                printf("%d ", *(*(sudoku + i) + j));
             } else {
-                printf(" %d ", sudoku[i][j]);
+                printf(" %d ", *(*(sudoku + i) + j));
             }
         }
         printf("\n");
@@ -30,19 +30,19 @@ void printAllStoredBoards(ListSudoku s, int flagOrdered) {
     int z;
     for (int k = 0; k < s.total; k++) {
         if (flagOrdered) {
-            z = s.orderedList[k];
+            z = *(s.orderedList + k);
         } else {
             z = k;
         }
         printf("\n %d:", k + 1);
-        for (int i = 0; i < s.sudokus[z].size; i++) {
+        for (int i = 0; i < (s.sudokus + z)->size; i++) {
             printf("\n");
-            for (int j = 0; j < s.sudokus[z].size; j++) {
-                if (s.sudokus[z].board[i][j] > 9) {
-                    printf("%d ", s.sudokus[z].board[i][j]);
+            for (int j = 0; j < (s.sudokus + z)->size; j++) {
+                if (*(*((s.sudokus + z)->board + i) + j) > 9) {
+                    printf("%d ", *(*((s.sudokus + z)->board + i) + j));
 
                 } else {
-                    printf(" %d ", s.sudokus[z].board[i][j]);
+                    printf(" %d ", *(*((s.sudokus + z)->board + i) + j));
 
                 }
             }
@@ -126,7 +126,6 @@ Sudoku gen_sudoku(int size, int n) {
         } else {
             i--;
         }
-
     }
     return s;
 }
@@ -143,7 +142,7 @@ int isEqual(Sudoku s1, Sudoku s2) {
     }
     for (int i = 0; i < s1.size; i++) {
         for (int j = 0; j < s2.size; j++) {
-            if (s1.board[i][j] != s2.board[i][j]) {
+            if (*(*(s1.board + i) + j) != *(*(s2.board + i) + j)) {
                 return 0;
             }
         }
@@ -162,20 +161,19 @@ ListSudoku merge_sudokus(ListSudoku target, ListSudoku source) {
     for (int i = 0; i < source.total; i++) {
         alreadyExists = 0;
         for (int j = 0; j < target.total; j++) {
-            if (isEqual(target.sudokus[j], source.sudokus[i])) {
+            if (isEqual(*(target.sudokus + j), *(source.sudokus + i))) {
                 alreadyExists = 1;
             }
         }
         if (alreadyExists == 0) {
             target.sudokus = resizeSudokus(target.sudokus, target.total, target.total + 1);
-            target.sudokus[target.total].size = source.sudokus[i].size;
-            target.sudokus[target.total].board = source.sudokus[i].board;
+            (target.sudokus + target.total)->size = (source.sudokus + i)->size;
+            (target.sudokus + target.total)->board = (source.sudokus + i)->board;
             target.total++;
         }
     }
     return target;
 }
-
 
 
 /**
@@ -184,10 +182,10 @@ ListSudoku merge_sudokus(ListSudoku target, ListSudoku source) {
  */
 void free_list_sudoku(ListSudoku l) {
     for (int i = 0; i < l.total; i++) {
-        for (int row = 0; row < l.sudokus[i].size; row++) {
-            free(l.sudokus[i].board[row]);
+        for (int row = 0; row < (l.sudokus + i)->size; row++) {
+            free(*((l.sudokus + i)->board + row));
         }
-        free(l.sudokus[i].board);
+        free((l.sudokus + i)->board);
     }
     free(l.sudokus);
     free(l.orderedList);
@@ -202,14 +200,14 @@ int isConsistent(Sudoku sudoku) {
     int auxCell;
     for (int i = 0; i < sudoku.size; i++) {
         for (int j = 0; j < sudoku.size; j++) {
-            if (sudoku.board[i][j] > 0) {
-                auxCell = sudoku.board[i][j];
-                sudoku.board[i][j] = 0;
+            if (*(*(sudoku.board + i) + j) > 0) {
+                auxCell = *(*(sudoku.board + i) + j);
+                *(*(sudoku.board + i) + j) = 0;
                 if (!isValidPlacement(sudoku, auxCell, i, j)) {
-                    sudoku.board[i][j] = auxCell;
+                    *(*(sudoku.board + i) + j) = auxCell;
                     return 0;
                 }
-                sudoku.board[i][j] = auxCell;
+                *(*(sudoku.board + i) + j) = auxCell;
             }
         }
     }
