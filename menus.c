@@ -64,7 +64,7 @@ void menu_choose_type(ListSudoku *unsolved, ListSudoku *solved) {
                "2 - Tabuleiros nao resolvidos\n"
                "0 - Voltar\n");
         scanf("%d", &selection);
-        if(selection == 1 || selection == 2) {
+        if (selection == 1 || selection == 2) {
             printf("\nTipo de ordenacao:\n"
                    "1 - Ordenar por tamanho\n"
                    "0 - Ordenar por insercao\n");
@@ -112,7 +112,7 @@ void menu_choose_sudoku(ListSudoku list, ListSudoku *solved, int flagOrdered) {
                "Escolha o tabuleiro [1 - %d] ou 0 para sair:\n", list.total);
         scanf("%d", &selection);
         if (selection > 0 && selection <= list.total) {
-            menu_sudoku(list.sudokus[selection - 1], solved);
+            menu_sudoku(*(list.sudokus + (selection - 1)), solved);
         } else if (selection == 0) {
             exit = 1;
         } else {
@@ -181,11 +181,11 @@ void menu_sudoku(Sudoku s, ListSudoku *solved) {
 
                     } else {
                         printf("Solucao encontrada com sucesso:\n");
-                        printSudoku(file_solved.sudokus[searchResult].board, s.size);
+                        printSudoku((file_solved.sudokus + searchResult)->board, s.size);
                     }
                 } else {
                     printf("Solucao encontrada com sucesso:\n");
-                    printSudoku(solved->sudokus[searchResult].board, s.size);
+                    printSudoku((solved->sudokus + searchResult)->board, s.size);
                 }
                 break;
             case 4:
