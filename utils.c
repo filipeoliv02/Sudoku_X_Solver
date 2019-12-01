@@ -120,7 +120,7 @@ Sudoku gen_sudoku(int size, int n) {
         row = rand() % size;
         col = rand() % size;
         num = (rand() % size) + 1;
-        if (isValidPlacement(s.board, num, row, col, size) && *(*(s.board + row) + col) == 0) {
+        if (isValidPlacement(s, num, row, col) && *(*(s.board + row) + col) == 0) {
             *(*(s.board + row) + col) = num;
 
         } else {
@@ -176,6 +176,8 @@ ListSudoku merge_sudokus(ListSudoku target, ListSudoku source) {
     return target;
 }
 
+
+
 /**
  * Liberta a memória
  * @param l
@@ -188,6 +190,7 @@ void free_list_sudoku(ListSudoku l) {
         free(l.sudokus[i].board);
     }
     free(l.sudokus);
+    free(l.orderedList);
 }
 
 /**
@@ -202,7 +205,7 @@ int isConsistent(Sudoku sudoku) {
             if (sudoku.board[i][j] > 0) {
                 auxCell = sudoku.board[i][j];
                 sudoku.board[i][j] = 0;
-                if (!isValidPlacement(sudoku.board, auxCell, i, j, sudoku.size)) {
+                if (!isValidPlacement(sudoku, auxCell, i, j)) {
                     sudoku.board[i][j] = auxCell;
                     return 0;
                 }
@@ -239,4 +242,3 @@ int gettimeuseconds(long long *time_usec) {
 }
 
 //#endif
-

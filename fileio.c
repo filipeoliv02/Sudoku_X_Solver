@@ -9,10 +9,7 @@
  */
 ListSudoku load_sudokus(char *file) {
     int size;
-    ListSudoku s;
-    s.sudokus = NULL;
-    s.total = 0;
-
+    ListSudoku s = {0, NULL, NULL};
     FILE *fp = fopen(file, "r");
     if (fp != NULL) {
         while (fscanf(fp, "%d", &size) != EOF) {
@@ -31,7 +28,7 @@ ListSudoku load_sudokus(char *file) {
             s.total++;
         }
         fclose(fp);
-        orderedbySize(&s);
+        computeOrderBySize(&s);
 
     }
     return s;
@@ -44,8 +41,7 @@ ListSudoku load_sudokus(char *file) {
  * @param file
  */
 void save_sudokus(ListSudoku newlist, char *file) {
-    ListSudoku list;
-    list = load_sudokus(file);
+    ListSudoku list = load_sudokus(file);
     list = merge_sudokus(list, newlist);
 
     FILE *fp = fopen(file, "w");

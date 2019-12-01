@@ -3,22 +3,16 @@
 
 #include "fileio.h"
 
-void findSudokuBruteForce(int **sudoku, int row, int col, int side, ListSudoku *solved, long long *cost);
+void solveSudokuBruteForce(ListSudoku *solved, Sudoku sudoku, int row, int col, long long *cost);
 
-void findSudokuAdvanced(Sudoku s, ListSudoku *solved, long long *cost);
+void solveSudokuOptimized(Sudoku s, ListSudoku *solved, long long *cost);
 
-int isValidPlacement(int **sudoku, int num, int row, int col, int side);
+int isValidPlacement(Sudoku sudoku, int num, int row, int col);
 
 int searchSudokus(ListSudoku searchList, Sudoku sudoku);
 
 int isPattern(Sudoku pattern, Sudoku unsolved);
 
-int existsInCol(int **sudoku, int num, int col, int side);
-
-int existsInRow(int **sudoku, int num, int row, int side);
-
-int existsInRegion(int **sudoku, int num, int row, int col, int side);
-
-void orderedbySize(ListSudoku *a);
+void computeOrderBySize(ListSudoku *a);
 
 #endif
