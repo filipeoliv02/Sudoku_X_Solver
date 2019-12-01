@@ -12,8 +12,8 @@ struct sudoku {
 
 struct listsudoku {
     int total;
-    Sudoku *sudokus;
     int *orderedList;
+    Sudoku *sudokus;
 } typedef ListSudoku;
 
 

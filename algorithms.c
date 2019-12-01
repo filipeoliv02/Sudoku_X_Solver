@@ -6,39 +6,34 @@
 #define UNASSIGNED 0
 #define ASSIGNED 1
 
-int existsInPrincipalDiagonal(int **sudoku, int num, int row, int col, int side);
+// Tamanho máximo para um tabuleiro de SudokuX, tabuleiros de tamanho superior são considerados como Sudoku normal
+#define MAX_SUDOKUX_SIZE 16
 
-int existsInSecundaryDiagonal(int **sudoku, int num, int row, int col, int side);
-
-int checkSudokuCell(ListSudoku list, int k, int row, int col);
+int checkSudokuCell(ListSudoku list, int k, int row, int col, int size);
 
 void sudokuFillCell(ListSudoku list, int k, int row, int col);
 
-void findPairs(ListSudoku cube);
+void update_solved(ListSudoku *solved, Sudoku sudoku);
 
-/**
- * @brief Testar se é possível colocar um valor numa certa posição
- * @details Função usada para testar se a posição no tabuleiro passada nos argumentos é válida
- * @param sudoku
- * @param num
- * @param row
- * @param col
- * @param side
- * @return
- */
-int isValidPlacement(int **sudoku, int num, int row, int col, int side) {
-    int s = (int) sqrt(side);
-    if (side <= 16) {
-        return !(existsInCol(sudoku, num, col, side) ||
-                 existsInRow(sudoku, num, row, side) ||
-                 existsInRegion(sudoku, num, (row / s) * s, (col / s) * s, s) ||
-                 existsInPrincipalDiagonal(sudoku, num, row, col, side) ||
-                 existsInSecundaryDiagonal(sudoku, num, row, col, side));
-    } else {
-        return !(existsInCol(sudoku, num, col, side) ||
-                 existsInRow(sudoku, num, row, side) ||
-                 existsInRegion(sudoku, num, (row / s) * s, (col / s) * s, s));
-    }
+int existsInPrincipalDiagonal(Sudoku sudoku, int num, int row, int col);
+
+int existsInSecundaryDiagonal(Sudoku sudoku, int num, int row, int col);
+
+int existsInCol(Sudoku sudoku, int num, int col);
+
+int existsInRow(Sudoku sudoku, int num, int row);
+
+int existsInRegion(Sudoku sudoku, int num, int row, int col, int regionSize);
+
+int findPairs(ListSudoku cube);
+
+int isValidPlacement(Sudoku sudoku, int num, int row, int col) {
+    int s = (int) sqrt(sudoku.size);
+    return !(existsInCol(sudoku, num, col) ||
+             existsInRow(sudoku, num, row) ||
+             existsInRegion(sudoku, num, (row / s) * s, (col / s) * s, s) ||
+             existsInPrincipalDiagonal(sudoku, num, row, col) ||
+             existsInSecundaryDiagonal(sudoku, num, row, col));
 }
 
 /**
@@ -50,9 +45,9 @@ int isValidPlacement(int **sudoku, int num, int row, int col, int side) {
  * @param side
  * @return 1 - Verdadeiro / 0 - Falso
  */
-int existsInCol(int **sudoku, int num, int col, int side) {
-    for (int i = 0; i < side; i++) {
-        if (sudoku[i][col] == num)
+int existsInCol(Sudoku sudoku, int num, int col) {
+    for (int i = 0; i < sudoku.size; i++) {
+        if (sudoku.board[i][col] == num)
             return 1;
     }
     return 0;
@@ -67,9 +62,9 @@ int existsInCol(int **sudoku, int num, int col, int side) {
  * @param side
  * @return 1 - Verdadeiro / 0 - Falso
  */
-int existsInRow(int **sudoku, int num, int row, int side) {
-    for (int i = 0; i < side; i++) {
-        if (sudoku[row][i] == num)
+int existsInRow(Sudoku sudoku, int num, int row) {
+    for (int i = 0; i < sudoku.size; i++) {
+        if (sudoku.board[row][i] == num)
             return 1;
     }
     return 0;
@@ -85,10 +80,10 @@ int existsInRow(int **sudoku, int num, int row, int side) {
  * @param regionSide
  * @return 1 - Verdadeiro / 0 - Falso
  */
-int existsInRegion(int **sudoku, int num, int rowStart, int colStart, int regionSide) {
-    for (int i = rowStart; i < rowStart + regionSide; i++) {
-        for (int j = colStart; j < colStart + regionSide; j++) {
-            if (sudoku[i][j] == num) {
+int existsInRegion(Sudoku sudoku, int num, int rowStart, int colStart, int regionSize) {
+    for (int i = rowStart; i < rowStart + regionSize; i++) {
+        for (int j = colStart; j < colStart + regionSize; j++) {
+            if (sudoku.board[i][j] == num) {
                 return 1;
             }
         }
@@ -107,10 +102,10 @@ int existsInRegion(int **sudoku, int num, int rowStart, int colStart, int region
  * @return 1 - Verdadeiro / 0 - Falso
  *
  */
-int existsInPrincipalDiagonal(int **sudoku, int num, int row, int col, int side) {
-    if (row == col) {
-        for (int i = 0; i < side; i++) {
-            if (sudoku[i][i] == num)
+int existsInPrincipalDiagonal(Sudoku sudoku, int num, int row, int col) {
+    if (sudoku.size <= MAX_SUDOKUX_SIZE && row == col) {
+        for (int i = 0; i < sudoku.size; i++) {
+            if (sudoku.board[i][i] == num)
                 return 1;
         }
     }
@@ -127,10 +122,10 @@ int existsInPrincipalDiagonal(int **sudoku, int num, int row, int col, int side)
  * @param side
  * @return 1 - Verdadeiro / 0 - Falso
  */
-int existsInSecundaryDiagonal(int **sudoku, int num, int row, int col, int side) {
-    if (row == side - col - 1) {
-        for (int i = 0; i < side; i++) {
-            if (sudoku[i][side - i - 1] == num)
+int existsInSecundaryDiagonal(Sudoku sudoku, int num, int row, int col) {
+    if (sudoku.size <= MAX_SUDOKUX_SIZE && row == sudoku.size - col - 1) {
+        for (int i = 0; i < sudoku.size; i++) {
+            if (sudoku.board[i][sudoku.size - i - 1] == num)
                 return 1;
         }
     }
@@ -147,30 +142,42 @@ int existsInSecundaryDiagonal(int **sudoku, int num, int row, int col, int side)
  * @param solved
  * @param cost
  */
-void findSudokuBruteForce(int **sudoku, int row, int col, int side, ListSudoku *solved, long long *cost) {
-    int newRow = row + ((col + 1) / side), newCol = (col + 1) % side;
-    if (row == side) {
-        solved->sudokus = resizeSudokus(solved->sudokus, solved->total, solved->total + 1);
-        solved->sudokus[solved->total].size = side;
-        solved->sudokus[solved->total].board = createBoard(side);
-        for (int i = 0; i < side; i++) {
-            for (int j = 0; j < side; j++) {
-                solved->sudokus[solved->total].board[i][j] = sudoku[i][j];
-            }
-        }
-        solved->total++;
-    } else if (sudoku[row][col] > 0) {
-        findSudokuBruteForce(sudoku, newRow, newCol, side, solved, cost);
+void solveSudokuBruteForce(ListSudoku *solved, Sudoku sudoku, int row, int col, long long *cost) {
+    int newRow = row + ((col + 1) / sudoku.size), newCol = (col + 1) % sudoku.size;
+    if (row == sudoku.size) {
+        printf("Solucao:\n");
+        printSudoku(sudoku.board, sudoku.size);
+        update_solved(solved, sudoku);
+    } else if (sudoku.board[row][col] > 0) {
+        solveSudokuBruteForce(solved, sudoku, newRow, newCol, cost);
     } else {
-        for (int num = 1; num <= side; num++) {
+        for (int num = 1; num <= sudoku.size; num++) {
             (*cost)++;
-            if (isValidPlacement(sudoku, num, row, col, side)) {
-                sudoku[row][col] = num;
-                findSudokuBruteForce(sudoku, newRow, newCol, side, solved, cost);
+            if (isValidPlacement(sudoku, num, row, col)) {
+                sudoku.board[row][col] = num;
+                solveSudokuBruteForce(solved, sudoku, newRow, newCol, cost);
             }
         }
-        sudoku[row][col] = 0;
+        sudoku.board[row][col] = 0;
     }
+}
+
+void update_solved(ListSudoku *solved, Sudoku sudoku) {
+    for (int j = 0; j < solved->total; j++) {
+        if (isEqual(solved->sudokus[j], sudoku)) {
+            return;
+        }
+    }
+    solved->sudokus = resizeSudokus(solved->sudokus, solved->total, solved->total + 1);
+    solved->orderedList = resizeList(solved->orderedList, solved->total, solved->total + 1);
+    solved->sudokus[solved->total].size = sudoku.size;
+    solved->sudokus[solved->total].board = createBoard(sudoku.size);
+    for (int i = 0; i < sudoku.size; i++) {
+        for (int j = 0; j < sudoku.size; j++) {
+            solved->sudokus[solved->total].board[i][j] = sudoku.board[i][j];
+        }
+    }
+    solved->total++;
 }
 
 /**
@@ -182,12 +189,12 @@ void findSudokuBruteForce(int **sudoku, int row, int col, int side, ListSudoku *
  * @param col
  */
 void sudokuFillCell(ListSudoku list, int k, int row, int col) {
-    int region_size = sqrt(list.sudokus->size);
+    int region_size = sqrt(list.total);
     for (int i = 0; i < list.total; i++) {
         list.sudokus[k - 1].board[row][i] = 1;
         list.sudokus[k - 1].board[i][col] = 1;
         list.sudokus[i].board[row][col] = 1;
-        if (list.sudokus->size <= 16) {
+        if (list.total <= MAX_SUDOKUX_SIZE) {
             if (row == col) {
                 list.sudokus[k - 1].board[i][i] = 1;
             }
@@ -215,28 +222,27 @@ void sudokuFillCell(ListSudoku list, int k, int row, int col) {
  * @param col
  * @return
  */
-int checkSudokuCell(ListSudoku list, int k, int row, int col) {
-    int region_size = sqrt(list.sudokus->size);
+int checkSudokuCell(ListSudoku list, int k, int row, int col, int size) {
+    int region_size = sqrt(size);
     int count[6] = {0}, rowStart = (row / region_size) * region_size, colStart = (col / region_size) * region_size;
-    for (int i = 0; i < list.total; i++) {
+    for (int i = 0; i < size; i++) {
         if (list.sudokus[k - 1].board[row][i] == 0) {
             count[0]++;
         }
         if (list.sudokus[k - 1].board[i][col] == 0) {
             count[1]++;
         }
-        if (list.sudokus->size <= 16) {
+        if (size <= MAX_SUDOKUX_SIZE) {
             if (row == col && list.sudokus[k - 1].board[i][i] == 0) {
                 count[2]++;
             }
-            if (row == list.total - col - 1 && list.sudokus[k - 1].board[i][list.total - i - 1] == 0) {
+            if (row == size - col - 1 && list.sudokus[k - 1].board[i][size - i - 1] == 0) {
                 count[3]++;
             }
         }
         if (list.sudokus[i].board[row][col] == 0) {
             count[4]++;
         }
-
     }
     for (int i = rowStart; i < rowStart + region_size; i++) {
         for (int j = colStart; j < colStart + region_size; j++) {
@@ -255,7 +261,7 @@ int checkSudokuCell(ListSudoku list, int k, int row, int col) {
  * @param solved
  * @param cost
  */
-void findSudokuAdvanced(Sudoku s, ListSudoku *solved, long long *cost) {
+void solveSudokuOptimized(Sudoku s, ListSudoku *solved, long long *cost) {
     ListSudoku cube;
     cube.sudokus = NULL;
     cube.sudokus = resizeSudokus(cube.sudokus, 0, s.size);
@@ -265,7 +271,7 @@ void findSudokuAdvanced(Sudoku s, ListSudoku *solved, long long *cost) {
         cube.sudokus[i].board = createBoard(s.size);
     }
 
-    int count = 0, prev_count = 0;
+    int count = 0, prev_count = 0, try_pairs = 1;
     //percorrer tabuleiro original
     for (int i = 0; i < s.size; i++) {
         for (int j = 0; j < s.size; j++) {
@@ -275,22 +281,31 @@ void findSudokuAdvanced(Sudoku s, ListSudoku *solved, long long *cost) {
             }
         }
     }
-
     while (prev_count != count && count < s.size * s.size) {
         prev_count = count;
-        //findPairs(cube);
+
         for (int row = 0; row < s.size; row++) {
             for (int col = 0; col < s.size; col++) {
                 if (s.board[row][col] == UNASSIGNED) {
                     for (int number = 1; number <= s.size; number++, (*cost)++) {
-                        if (cube.sudokus[number - 1].board[row][col] == UNASSIGNED &&
-                            checkSudokuCell(cube, number, row, col)) {
-                            s.board[row][col] = number;
-                            sudokuFillCell(cube, number, row, col);
-                            count++;
+                        if (cube.sudokus[number - 1].board[row][col] == UNASSIGNED) {
+                            (*cost)++;
+                            if (checkSudokuCell(cube, number, row, col, s.size)) {
+                                s.board[row][col] = number;
+                                sudokuFillCell(cube, number, row, col);
+                                count++;
+                                try_pairs = 1;
+                            }
                         }
                     }
                 }
+            }
+        }
+        if (prev_count == count) {
+            (*cost)++;
+            if (try_pairs && findPairs(cube)) {
+                try_pairs = 0;
+                prev_count--;
             }
         }
 
@@ -299,17 +314,22 @@ void findSudokuAdvanced(Sudoku s, ListSudoku *solved, long long *cost) {
     for (int i = 0; i < cube.total; i++)
         free(cube.sudokus[i].board);
     free(cube.sudokus);
+
     if (count != s.size * s.size) {
         printf("Cost %lld - Otimizado nao encontrou solucoes, ir para o bruteforce\n", *cost);
     }
-    findSudokuBruteForce(s.board, 0, 0, s.size, solved, cost);
+    else {
+        printf("Solucao:\n");
+        printSudoku(s.board, s.size);
+    }
+    solveSudokuBruteForce(solved, s, 0, 0, cost);
 }
 
 /**
- * @brief
+ * @brief Procurar pares de numeros no tabuleiro
  * @param cube
  */
-void findPairs(ListSudoku cube) {
+int findPairs(ListSudoku cube) {
     int size = cube.sudokus[0].size, count = 0, found;
     for (int row = 0; row < size; row++) {
         for (int col = 0; col < size; col++) {
@@ -330,16 +350,6 @@ void findPairs(ListSudoku cube) {
                             }
                         }
                         if (found) {
-                            printf("s[%d][%d] - ", row_pair, col);
-                            for (int i = 0; i < size; i++) {
-                                printf("%d ", cube.sudokus[i].board[row_pair][col]);
-                            }
-                            printf("\n");
-                            for (int i = 0; i < size; i++) {
-                                printf("%d-\n", i + 1);
-                                printSudoku(cube.sudokus[i].board, size);
-                            }
-
                             for (int row_remove = 0; row_remove < size; row_remove++) {
                                 if (row_remove != row && row_remove != row_pair) {
                                     for (int num_remove = 0; num_remove < size; num_remove++) {
@@ -349,15 +359,10 @@ void findPairs(ListSudoku cube) {
                                     }
                                 }
                             }
-                            for (int i = 0; i < size; i++) {
-                                printf("%d-\n", i + 1);
-                                printSudoku(cube.sudokus[i].board, size);
-                            }
-                            break;
+                            return 1;
                         }
                     }
                 }
-
                 for (int col_pair = 0; col_pair < size; col_pair++) {
                     if (col != col_pair) {
                         found = 1;
@@ -368,13 +373,7 @@ void findPairs(ListSudoku cube) {
                             }
                         }
                         if (found) {
-                            printf("s[%d][%d] - ", row, col_pair);
-                            for (int i = 0; i < size; i++) {
-                                printf("%d ", cube.sudokus[i].board[row][col_pair]);
-                            }
-                            printf("\n");
                             for (int col_remove = 0; col_remove < size; col_remove++) {
-
                                 if (col_remove != row && col_remove != col_pair) {
                                     for (int num_remove = 0; num_remove < size; num_remove++) {
                                         if (cube.sudokus[num_remove].board[row][col] == 0) {
@@ -383,11 +382,11 @@ void findPairs(ListSudoku cube) {
                                     }
                                 }
                             }
-                            break;
+                            return 1;
                         }
                     }
                 }
-                /*if (row == col) {
+                if (row == col && size <= MAX_SUDOKUX_SIZE) {
                     for (int diag_pair = 0; diag_pair < size; diag_pair++) {
                         if (row != diag_pair && col != diag_pair) {
                             found = 1;
@@ -407,13 +406,13 @@ void findPairs(ListSudoku cube) {
                                         }
                                     }
                                 }
-                                break;
+                                return 1;
                             }
                         }
                     }
                 }
 
-                if (row + col == size - 1) {
+                if (row + col == size - 1 && size <= MAX_SUDOKUX_SIZE) {
                     for (int diagsec_pair = 0; diagsec_pair < size; diagsec_pair++) {
                         if (row != diagsec_pair && col != size - diagsec_pair - 1) {
                             found = 1;
@@ -429,47 +428,50 @@ void findPairs(ListSudoku cube) {
                                     if (diagsec_remove != row && diagsec_remove != diagsec_pair) {
                                         for (int num_remove = 0; num_remove < size; num_remove++) {
                                             if (cube.sudokus[num_remove].board[row][col] == 0) {
-                                                cube.sudokus[num_remove].board[diagsec_remove][size - diagsec_pair - 1] = 1;
+                                                cube.sudokus[num_remove].board[diagsec_remove][size - diagsec_remove -
+                                                                                               1] = 1;
                                             }
                                         }
                                     }
                                 }
-                                break;
+                                return 1;
                             }
                         }
                     }
-                }*/
+                }
                 int region_size = sqrt(size);
                 int rowStart = (row / region_size) * region_size, colStart = (col / region_size) * region_size;
                 for (int i = rowStart; i < rowStart + region_size; i++) {
                     for (int j = colStart; j < colStart + region_size; j++) {
-                        found = 1;
-                        for (int num = 0; num < size; num++) {
-                            if (cube.sudokus[num].board[row][col] != cube.sudokus[num].board[i][j]) {
-                                found = 0;
-                                break;
+                        if (i != row && j != col) {
+                            found = 1;
+                            for (int num = 0; num < size; num++) {
+                                if (cube.sudokus[num].board[row][col] != cube.sudokus[num].board[i][j]) {
+                                    found = 0;
+                                    break;
+                                }
                             }
-                        }
-                        if (found) {
-                            for (int i_remove = rowStart; i_remove < rowStart + region_size; i_remove++) {
-                                for (int j_remove = colStart; j_remove < colStart + region_size; j_remove++) {
-                                    if (i_remove != row && j_remove != col) {
-                                        for (int num_remove = 0; num_remove < size; num_remove++) {
-                                            if (cube.sudokus[num_remove].board[row][col] == 0) {
-                                                cube.sudokus[num_remove].board[i_remove][j_remove] = 1;
+                            if (found) {
+                                for (int i_remove = rowStart; i_remove < rowStart + region_size; i_remove++) {
+                                    for (int j_remove = colStart; j_remove < colStart + region_size; j_remove++) {
+                                        if (i_remove != row && j_remove != col && i_remove != i && j_remove != j) {
+                                            for (int num_remove = 0; num_remove < size; num_remove++) {
+                                                if (cube.sudokus[num_remove].board[row][col] == 0) {
+                                                    cube.sudokus[num_remove].board[i_remove][j_remove] = 1;
+                                                }
                                             }
                                         }
                                     }
                                 }
-
+                                return 1;
                             }
-                            break;
                         }
                     }
                 }
             }
         }
     }
+    return 0;
 }
 
 /**
@@ -514,29 +516,23 @@ int searchSudokus(ListSudoku searchList, Sudoku sudoku) {
  * @details Cria um índice de forma a ordenar eficazmente os tabuleiros
  * @param a
  */
-void orderedbySize(ListSudoku *a) {
+void computeOrderBySize(ListSudoku *a) {
     int i, r, c;
     int R = 100;
     int count[100] = {0};
 
-    // compute frequency counts
     //Frequência absoluta.
     for (i = 0; i < a->total; i++)
         count[a->sudokus[i].size]++;
 
-    // transform counts to indicies
     // Frequências acumuladas.
     for (r = 0; r < R; r++)
         count[r + 1] += count[r];
 
-    // distribute
+    // Distribuir
     for (i = 0; i < a->total; i++) {
         c = a->sudokus[i].size - 1;
         a->orderedList[count[c]] = i;
         count[c]++;
-    }
-
-    for (i = 0; i < a->total; i++) {
-        printf("%d ", a->orderedList[i]);
     }
 }

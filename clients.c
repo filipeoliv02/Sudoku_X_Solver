@@ -11,14 +11,14 @@
  */
 void client_bruteforce() {
     ListSudoku unsolved = load_sudokus("client_test_files/unsolved_client.txt");
-    ListSudoku solved;
+    ListSudoku solved = {0, NULL, NULL};
 
     long long cost;
-    for (int i = 0; i < unsolved.total; i++) {
+    for (int i = 0; i < 1; i++) {
         cost = 0;
         solved.sudokus = NULL;
         solved.total = 0;
-        findSudokuBruteForce(unsolved.sudokus[i].board, 0, 0, unsolved.sudokus[i].size, &solved, &cost);
+        solveSudokuBruteForce(&solved, unsolved.sudokus[i], 0, 0, &cost);
         if (solved.total == 0) {
             printf("ID: %d / Size: %d / Cost %lld Nao se encontrou solucoes\n", i, unsolved.sudokus[i].size, cost);
         } else {
@@ -37,14 +37,14 @@ void client_bruteforce() {
  */
 void client_advanced() {
     ListSudoku unsolved = load_sudokus("client_test_files/unsolved_client.txt");
-    ListSudoku solved;
+    ListSudoku solved = {0, NULL, NULL};
 
     long long cost;
-    for (int i = 0; i < unsolved.total; i++) {
+    for (int i = 0; i < 1; i++) {
         cost = 0;
         solved.sudokus = NULL;
         solved.total = 0;
-        findSudokuAdvanced(unsolved.sudokus[i], &solved, &cost);
+        solveSudokuOptimized(unsolved.sudokus[i], &solved, &cost);
         if (solved.total == 0) {
             printf("ID: %d / Size: %d / Cost %lld Nao se encontrou solucoes\n", i, unsolved.sudokus[i].size, cost);
         } else {
@@ -123,7 +123,7 @@ void client_random_generation() {
  * @details Requisito 5
  */
 void client_solve_variable_size() {
-    ListSudoku solved;
+    ListSudoku solved = {0, NULL, NULL};
     long long cost = 0;
 
     printf("\nTestar tabuleiros 4x4:\n");
@@ -132,7 +132,7 @@ void client_solve_variable_size() {
         solved.total = 0;
         solved.sudokus = NULL;
         printf("Id[%d] - ", i);
-        findSudokuAdvanced(sudoku4.sudokus[i], &solved, &cost);
+        solveSudokuOptimized(sudoku4.sudokus[i], &solved, &cost);
         if (solved.total == 0) {
             printf("Nao se encontrou solucoes\n\n");
         } else {
@@ -149,7 +149,7 @@ void client_solve_variable_size() {
         solved.total = 0;
         solved.sudokus = NULL;
         printf("Id[%d] - ", i);
-        findSudokuAdvanced(sudoku9.sudokus[i], &solved, &cost);
+        solveSudokuOptimized(sudoku9.sudokus[i], &solved, &cost);
         if (solved.total == 0) {
             printf("Nao se encontrou solucoes\n\n");
         } else {
@@ -166,7 +166,7 @@ void client_solve_variable_size() {
         solved.total = 0;
         solved.sudokus = NULL;
         printf("Id[%d] - ", i);
-        findSudokuAdvanced(sudoku16.sudokus[i], &solved, &cost);
+        solveSudokuOptimized(sudoku16.sudokus[i], &solved, &cost);
         if (solved.total == 0) {
             printf("Nao se encontrou solucoes\n\n");
         } else {
@@ -183,7 +183,7 @@ void client_solve_variable_size() {
         solved.total = 0;
         solved.sudokus = NULL;
         printf("Id[%d] - ", i);
-        findSudokuAdvanced(sudoku25.sudokus[i], &solved, &cost);
+        solveSudokuOptimized(sudoku25.sudokus[i], &solved, &cost);
         if (solved.total == 0) {
             printf("Nao se encontrou solucoes\n\n");
         } else {
@@ -200,7 +200,7 @@ void client_solve_variable_size() {
         solved.total = 0;
         solved.sudokus = NULL;
         printf("Id[%d] - ", i);
-        findSudokuAdvanced(sudoku36.sudokus[i], &solved, &cost);
+        solveSudokuOptimized(sudoku36.sudokus[i], &solved, &cost);
         if (solved.total == 0) {
             printf("Nao se encontrou solucoes\n\n");
         } else {
@@ -246,13 +246,11 @@ void client_compare_algorithms() {
     long average_time4 = 0, average_time9 = 0, average_time16 = 0, average_time25 = 0;
     long long count4 = 0, count9 = 0, count16 = 0, count25 = 0;
     ListSudoku unsolved = load_sudokus("client_test_files/unsolved_client.txt");
-    ListSudoku solved;
-    solved.total = 0;
-    solved.sudokus = NULL;
+    ListSudoku solved = {0, NULL, NULL};
     for (int i = 0; i < unsolved.total; i++) {
         cost = 0;
         gettimeuseconds(&time_usec_init); // init time
-        findSudokuAdvanced(unsolved.sudokus[i], &solved, &cost);
+        solveSudokuOptimized(unsolved.sudokus[i], &solved, &cost);
         gettimeuseconds(&time_usec_end); // end time
         elapsed_time = (long) (time_usec_end - time_usec_init);
 
@@ -311,7 +309,7 @@ void client_compare_algorithms() {
     for (int i = 0; i < unsolved.total; i++) {
         cost = 0;
         gettimeuseconds(&time_usec_init); // init time
-        findSudokuBruteForce(unsolved.sudokus[i].board, 0, 0, unsolved.sudokus[i].size, &solved, &cost);
+        solveSudokuBruteForce(&solved, unsolved.sudokus[i], 0, 0, &cost);
         gettimeuseconds(&time_usec_end); // end time
         elapsed_time = (long) (time_usec_end - time_usec_init);
 

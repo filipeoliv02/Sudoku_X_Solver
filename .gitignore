@@ -52,6 +52,7 @@ Mkfile.old
 dkms.conf
 
 # Clion
+*.zip
 *.ods#
 *.ods
 .idea/
