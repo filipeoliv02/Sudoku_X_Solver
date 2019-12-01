@@ -14,7 +14,7 @@ void client_bruteforce() {
     ListSudoku solved = {0, NULL, NULL};
 
     long long cost;
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < unsolved.total; i++) {
         cost = 0;
         solved.sudokus = NULL;
         solved.total = 0;
@@ -40,7 +40,7 @@ void client_advanced() {
     ListSudoku solved = {0, NULL, NULL};
 
     long long cost;
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < unsolved.total; i++) {
         cost = 0;
         solved.sudokus = NULL;
         solved.total = 0;
@@ -280,26 +280,33 @@ void client_compare_algorithms() {
         }
     }
     printf("\n\nOtimizado\n");
-    cost = average_cost4 / count4;
-    elapsed_time = average_time4 / count4;
-    printf("Sudokus 4x4:\nAverage time: usec %ld - sec %lf\nAverage cost: %lld\n", elapsed_time,
-           (elapsed_time * pow(10, -6)), cost);
+    if (count4 != 0) {
+        cost = average_cost4 / count4;
+        elapsed_time = average_time4 / count4;
+        printf("Sudokus 4x4:\nAverage time: usec %ld - sec %lf\nAverage cost: %lld\n", elapsed_time,
+               (elapsed_time * pow(10, -6)), cost);
+    }
 
-    cost = average_cost9 / count9;
-    elapsed_time = average_time9 / count9;
-    printf("Sudokus 9x9:\nAverage time: usec %ld - sec %lf\nAverage cost: %lld\n", elapsed_time,
-           (elapsed_time * pow(10, -6)), cost);
+    if (count9 != 0) {
+        cost = average_cost9 / count9;
+        elapsed_time = average_time9 / count9;
+        printf("Sudokus 9x9:\nAverage time: usec %ld - sec %lf\nAverage cost: %lld\n", elapsed_time,
+               (elapsed_time * pow(10, -6)), cost);
+    }
 
-    cost = average_cost16 / count16;
-    elapsed_time = average_time16 / count16;
-    printf("Sudokus 16x16:\nAverage time: usec %ld - sec %lf\nAverage cost: %lld\n", elapsed_time,
-           (elapsed_time * pow(10, -6)), cost);
+    if (count16 != 0) {
+        cost = average_cost16 / count16;
+        elapsed_time = average_time16 / count16;
+        printf("Sudokus 16x16:\nAverage time: usec %ld - sec %lf\nAverage cost: %lld\n", elapsed_time,
+               (elapsed_time * pow(10, -6)), cost);
+    }
 
-    cost = average_cost25 / count25;
-    elapsed_time = average_time25 / count25;
-    printf("Sudokus 25x25:\nAverage time: usec %ld - sec %lf\nAverage cost: %lld\n", elapsed_time,
-           (elapsed_time * pow(10, -6)), cost);
-
+    if (count25 != 0) {
+        cost = average_cost25 / count25;
+        elapsed_time = average_time25 / count25;
+        printf("Sudokus 25x25:\nAverage time: usec %ld - sec %lf\nAverage cost: %lld\n", elapsed_time,
+               (elapsed_time * pow(10, -6)), cost);
+    }
     average_cost4 = 0, average_cost9 = 0, average_cost16 = 0;
     average_time4 = 0, average_time9 = 0, average_time16 = 0;
     count4 = 0, count9 = 0, count16 = 0;
@@ -339,25 +346,34 @@ void client_compare_algorithms() {
         }
     }
     printf("\n\nBruteforce\n");
-    cost = average_cost4 / count4;
-    elapsed_time = average_time4 / count4;
-    printf("Sudokus 4x4:\nAverage time: usec %ld - sec %lf\nAverage cost: %lld\n", elapsed_time,
-           (elapsed_time * pow(10, -6)), cost);
+    if (count4 != 0) {
+        cost = average_cost4 / count4;
+        elapsed_time = average_time4 / count4;
+        printf("Sudokus 4x4:\nAverage time: usec %ld - sec %lf\nAverage cost: %lld\n", elapsed_time,
+               (elapsed_time * pow(10, -6)), cost);
+    }
 
-    cost = average_cost9 / count9;
-    elapsed_time = average_time9 / count9;
-    printf("Sudokus 9x9:\nAverage time: usec %ld - sec %lf\nAverage cost: %lld\n", elapsed_time,
-           (elapsed_time * pow(10, -6)), cost);
+    if (count9 != 0) {
+        cost = average_cost9 / count9;
+        elapsed_time = average_time9 / count9;
+        printf("Sudokus 9x9:\nAverage time: usec %ld - sec %lf\nAverage cost: %lld\n", elapsed_time,
+               (elapsed_time * pow(10, -6)), cost);
+    }
 
-    cost = average_cost16 / count16;
-    elapsed_time = average_time16 / count16;
-    printf("Sudokus 16x16:\nAverage time: usec %ld - sec %lf\nAverage cost: %lld\n", elapsed_time,
-           (elapsed_time * pow(10, -6)), cost);
+    if (count16 != 0) {
+        cost = average_cost16 / count16;
+        elapsed_time = average_time16 / count16;
+        printf("Sudokus 16x16:\nAverage time: usec %ld - sec %lf\nAverage cost: %lld\n", elapsed_time,
+               (elapsed_time * pow(10, -6)), cost);
+    }
 
-    cost = average_cost25 / count25;
-    elapsed_time = average_time25 / count25;
-    printf("Sudokus 25x25:\nAverage time: usec %ld - sec %lf\nAverage cost: %lld\n", elapsed_time,
-           (elapsed_time * pow(10, -6)), cost);
+    if (count25 != 0) {
+        cost = average_cost25 / count25;
+        elapsed_time = average_time25 / count25;
+        printf("Sudokus 25x25:\nAverage time: usec %ld - sec %lf\nAverage cost: %lld\n", elapsed_time,
+               (elapsed_time * pow(10, -6)), cost);
+    }
+
     free_list_sudoku(unsolved);
     free_list_sudoku(solved);
 }
