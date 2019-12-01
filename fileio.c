@@ -1,5 +1,8 @@
 #include "fileio.h"
 #include "utils.h"
+#include "algorithms.h"
+#include <stdio.h>
+#include <string.h>
 
 /**
  * @brief Carregar Tabuleiros

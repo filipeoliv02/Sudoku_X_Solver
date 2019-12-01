@@ -20,11 +20,11 @@ void client_bruteforce() {
         solved.total = 0;
         solveSudokuBruteForce(&solved, *(unsolved.sudokus + i), 0, 0, &cost);
         if (solved.total == 0) {
-            printf("ID: %d / Size: %d / Cost %lld Nao se encontrou solucoes\n", i, unsolved.sudokus[i].size, cost);
+            printf("ID: %d / Size: %d / Cost %lld Nao se encontrou solucoes\n", i, (unsolved.sudokus + i)->size, cost);
         } else {
-            printf("ID: %d / Size: %d / Cost: %lld\n", i, unsolved.sudokus[i].size, cost);
+            printf("ID: %d / Size: %d / Cost: %lld\n", i, (unsolved.sudokus + i)->size, cost);
             for (int j = 0; j < solved.total; j++) {
-                printSudoku((solved.sudokus + j)->board, solved.sudokus[j].size);
+                printSudoku((solved.sudokus + j)->board, (solved.sudokus + j)->size);
             }
         }
         printf("\n");
@@ -46,7 +46,7 @@ void client_advanced() {
         solved.total = 0;
         solveSudokuOptimized(*(unsolved.sudokus + i), &solved, &cost);
         if (solved.total == 0) {
-            printf("ID: %d / Size: %d / Cost %lld Nao se encontrou solucoes\n", i, (solved.sudokus + i)->size, cost);
+            printf("ID: %d / Size: %d / Cost %lld Nao se encontrou solucoes\n", i, (unsolved.sudokus + i)->size, cost);
         } else {
             printf("ID: %d / Size: %d / Cost: %lld\n", i, (solved.sudokus + i)->size, cost);
             for (int j = 0; j < solved.total; j++) {
