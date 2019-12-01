@@ -56,6 +56,12 @@ void main_menu() {
     free_list_sudoku(unsolved);
 }
 
+
+/**
+ * Menu para escolher entre tabuleiro resolvido e não resolvido e também ordenação por tamanho ou por inserção
+ * @param unsolved
+ * @param solved
+ */
 void menu_choose_type(ListSudoku *unsolved, ListSudoku *solved) {
     int selection, selection_order = 0, exit = 0;
     while (!exit) {
@@ -112,7 +118,7 @@ void menu_choose_sudoku(ListSudoku list, ListSudoku *solved, int flagOrdered) {
                "Escolha o tabuleiro [1 - %d] ou 0 para sair:\n", list.total);
         scanf("%d", &selection);
         if (selection > 0 && selection <= list.total) {
-            menu_sudoku(*(list.sudokus + (selection - 1)), solved);
+            menu_sudoku(*(list.sudokus + selection - 1), solved);
         } else if (selection == 0) {
             exit = 1;
         } else {

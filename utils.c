@@ -1,6 +1,9 @@
-#include <sys/time.h>
 #include "utils.h"
+#include "algorithms.h"
 #include <time.h>
+#include <sys/time.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 /**
  * @brief Imprime o tabuleiro passado
@@ -230,7 +233,6 @@ int gettimeuseconds(long long * time_usec) {
     return 0;
 }
 #else*/
-
 int gettimeuseconds(long long *time_usec) {
     struct timeval time;
     gettimeofday(&time, NULL);
