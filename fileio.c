@@ -98,10 +98,13 @@ SUDOKU_QUEUE *load_sudokus_link(char *file) {
     if (fp != NULL) {
         while (fscanf(fp, "%d", &size) != EOF) {
             pqueue = (SUDOKU_QUEUE *) malloc(sizeof(SUDOKU_QUEUE));
+            pqueue->size = size;
+            pqueue->pnext = NULL;
+
             if (pqueue_pfirst == NULL) {
                 pqueue_pfirst = pqueue;
             }
-            if (pqueue_pprev != NULL)
+            if (pqueue_pprev != NULL) {
                 pqueue_pprev->pnext = pqueue;
             }
 
@@ -115,11 +118,9 @@ SUDOKU_QUEUE *load_sudokus_link(char *file) {
 
                 }
             }
-            s.total++;
+
         }
         fclose(fp);
-        computeOrderBySize(&s);
-
     }
     return pqueue_pfirst;
 }
