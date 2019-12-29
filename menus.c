@@ -3,7 +3,6 @@
 #include "utils.h"
 #include <math.h>
 #include <stdio.h>
-#include "algorithms.h"
 
 void menu_choose_sudoku(ListSudoku list, ListSudoku *solved, int flagOrdered);
 
@@ -12,13 +11,14 @@ void menu_sudoku(Sudoku s, ListSudoku *solved);
 void menu_gen_sudoku(ListSudoku unsolved, ListSudoku *solved);
 
 void menu_choose_type(ListSudoku *unsolved, ListSudoku *solved);
-
+void print_linked_board(SUDOKU_QUEUE board);
 /**
  * @brief Menu Principal
  */
 void main_menu() {
     ListSudoku unsolved = {0, NULL, NULL}, solved = {0, NULL, NULL};
     int selection, exit = 0;
+    SUDOKU_QUEUE *queue = NULL;
     while (!exit) {
         printf("Menu Principal\n");
         printf("1 - Ver tabuleiros\n"
@@ -26,6 +26,7 @@ void main_menu() {
                "3 - Guardar tabuleiros resolvidos no ficheiro\n"
                "4 - Criar Ficheiro Binario com os Tabuleiros Resolvidos \n"
                "5 - Gerar novos tabuleiros\n"
+               "6 - Teste Tabuleiros (Linked Lists)\n"
                "0 - Sair\n");
         scanf("%d", &selection);
         switch (selection) {
@@ -44,6 +45,10 @@ void main_menu() {
             case 5:
                 menu_gen_sudoku(unsolved, &solved);
                 break;
+            case 6:
+                queue = load_sudokus_link("unsolved.txt");
+                print_linked_board(*queue);
+                break;
             case 0:
                 exit = 1;
                 break;
@@ -56,6 +61,19 @@ void main_menu() {
     free_list_sudoku(unsolved);
 }
 
+void print_linked_board(SUDOKU_QUEUE board) {
+    NODE *node = board.pfirst, *node_line = board.pfirst;
+    while(node_line != NULL) {
+        while(node != NULL) {
+            printf(" %d ", node->info);
+            node = node->pe;
+        }
+        printf("\n");
+        node_line = node_line->ps;
+        node = node_line;
+    }
+    printf("\n\n");
+}
 
 /**
  * Menu para escolher entre tabuleiro resolvido e não resolvido e também ordenação por tamanho ou por inserção

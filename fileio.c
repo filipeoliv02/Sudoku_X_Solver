@@ -1,8 +1,8 @@
 #include "fileio.h"
 #include "utils.h"
-#include "algorithms.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 /**
  * @brief Carregar Tabuleiros
@@ -90,9 +90,8 @@ void save2binary(ListSudoku solved, char *file) {
 
 SUDOKU_QUEUE *load_sudokus_link(char *file) {
     int size;
-    SUDOKU_QUEUE *pqueue = NULL;
-    SUDOKU_QUEUE *pqueue_pfirst = NULL;
-    SUDOKU_QUEUE *pqueue_pprev = NULL;
+    SUDOKU_QUEUE *pqueue, *pqueue_pfirst = NULL, *pqueue_pprev = NULL;
+    NODE *node, *node_line = NULL, *node_prevline = NULL, *node_prev;
 
     FILE *fp = fopen(file, "r");
     if (fp != NULL) {
@@ -100,6 +99,7 @@ SUDOKU_QUEUE *load_sudokus_link(char *file) {
             pqueue = (SUDOKU_QUEUE *) malloc(sizeof(SUDOKU_QUEUE));
             pqueue->size = size;
             pqueue->pnext = NULL;
+            pqueue->pfirst = NULL;
 
             if (pqueue_pfirst == NULL) {
                 pqueue_pfirst = pqueue;
@@ -107,16 +107,53 @@ SUDOKU_QUEUE *load_sudokus_link(char *file) {
             if (pqueue_pprev != NULL) {
                 pqueue_pprev->pnext = pqueue;
             }
-
             pqueue_pprev = pqueue;
 
-            NODE *node = NULL;
-            for (int i = 0; i < size; i++) {
-                for (int j = 0; j < size; j++) {
-                    node = malloc(sizeof(NODE));
-                    fscanf(fp, "%d", node->info);
+            node_prev = NULL;
+            node = NULL;
+            node_prevline = NULL;
+            node_line = NULL;
 
+            for (int i = 0; i < size; i++) {
+                node_prev = NULL;
+                for (int j = 0; j < size; j++) {
+                    // Criar nó e colocar valor do tabuleiro
+                    node = (NODE *) malloc(sizeof(NODE));
+                    fscanf(fp, "%d", &node->info);
+
+                    // Se não existir um primeiro nó então é este
+                    if(pqueue->pfirst == NULL) {
+                        pqueue->pfirst = node;
+                    }
+
+                    // Se não existir um nó anterior cria-se
+                    if(node_prev == NULL) {
+                        node_prev = node;
+                    }
+                    else {
+                        // Existe nó anterior logo liga-se (Este <--> Oeste)
+                        node_prev->pe = node;
+                        node->po = node_prev;
+                        node_prev = node_prev->pe;
+                    }
+
+                    if(node_prevline != NULL) {
+                        // Existe nó da lina anterior logo liga-se (Norte <--> Sul)
+                        node_prevline->ps = node;
+                        node->pn = node_prevline;
+                        node_prevline = node_prevline->pe;
+                    }
                 }
+
+                // Se não existe linha associar
+                if(node_line == NULL) {
+                    node_line = pqueue->pfirst;
+                }
+                else {
+                    node_line = node_line->ps;
+                }
+                node_prevline = node_line;
+
             }
 
         }

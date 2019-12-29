@@ -1,7 +1,6 @@
 #ifndef SUDOKU_ALGORITHMS_H
 #define SUDOKU_ALGORITHMS_H
 
-#include "fileio.h"
 
 typedef struct node {
     int info;
@@ -14,6 +13,16 @@ typedef struct sudoku_queue {
     int size;
 } SUDOKU_QUEUE;
 
+struct sudoku {
+    int size;
+    int **board;
+} typedef Sudoku;
+
+struct listsudoku {
+    int total;
+    int *orderedList;
+    Sudoku *sudokus;
+} typedef ListSudoku;
 
 void solveSudokuBruteForce(ListSudoku *solved, Sudoku sudoku, int row, int col, long long *cost);
 
