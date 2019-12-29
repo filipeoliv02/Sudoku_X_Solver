@@ -85,7 +85,42 @@ void save2binary(ListSudoku solved, char *file) {
         }
         fclose(fp);
     }
-
 }
 
+
+SUDOKU_QUEUE *load_sudokus_link(char *file) {
+    int size;
+    SUDOKU_QUEUE *pqueue = NULL;
+    SUDOKU_QUEUE *pqueue_pfirst = NULL;
+    SUDOKU_QUEUE *pqueue_pprev = NULL;
+
+    FILE *fp = fopen(file, "r");
+    if (fp != NULL) {
+        while (fscanf(fp, "%d", &size) != EOF) {
+            pqueue = (SUDOKU_QUEUE *) malloc(sizeof(SUDOKU_QUEUE));
+            if (pqueue_pfirst == NULL) {
+                pqueue_pfirst = pqueue;
+            }
+            if (pqueue_pprev != NULL)
+                pqueue_pprev->pnext = pqueue;
+            }
+
+            pqueue_pprev = pqueue;
+
+            NODE *node = NULL;
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    node = malloc(sizeof(NODE));
+                    fscanf(fp, "%d", node->info);
+
+                }
+            }
+            s.total++;
+        }
+        fclose(fp);
+        computeOrderBySize(&s);
+
+    }
+    return pqueue_pfirst;
+}
 
