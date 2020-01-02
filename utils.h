@@ -9,7 +9,7 @@ Sudoku *resizeSudokus(Sudoku *ptr, int size, int newSize);
 
 int **createBoard(int size);
 
-void printAllStoredBoards(ListSudoku s,int flagOrdered);
+void printAllStoredBoards(ListSudoku s, int flagOrdered);
 
 Sudoku gen_sudoku(int size, int n);
 
@@ -24,5 +24,7 @@ int isConsistent(Sudoku sudoku);
 int gettimeuseconds(long long *time_usec);
 
 void free_list_sudoku(ListSudoku l);
+
+void print_linked_board(SUDOKU_QUEUE board);
 
 #endif

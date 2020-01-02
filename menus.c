@@ -11,7 +11,9 @@ void menu_sudoku(Sudoku s, ListSudoku *solved);
 void menu_gen_sudoku(ListSudoku unsolved, ListSudoku *solved);
 
 void menu_choose_type(ListSudoku *unsolved, ListSudoku *solved);
+
 void print_linked_board(SUDOKU_QUEUE board);
+
 /**
  * @brief Menu Principal
  */
@@ -48,11 +50,12 @@ void main_menu() {
             case 6:
                 queue = load_sudokus_link("unsolved.txt");
                 queue_aux = queue;
-                while(queue_aux->pnext != NULL) {
+                while (queue_aux->pnext != NULL) {
                     print_linked_board(*queue_aux);
                     queue_aux = queue_aux->pnext;
                 }
-
+                solveSudokuBruteForceLink(*queue, queue->pfirst);
+                //solveSudokuOptimizedLink(*queue);
                 break;
             case 0:
                 exit = 1;
