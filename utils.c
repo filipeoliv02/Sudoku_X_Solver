@@ -52,7 +52,25 @@ void printAllStoredBoards(ListSudoku s, int flagOrdered) {
         }
         printf("\n");
     }
-};
+}
+
+/**
+ * @brief Imprime o tabuleiro (usando linked lists) passado
+ * @param board
+ */
+void print_linked_board(SUDOKU_QUEUE board) {
+    NODE *node = board.pfirst, *node_line = board.pfirst;
+    while(node_line != NULL) {
+        while(node != NULL) {
+            printf(" %d ", node->info);
+            node = node->pe;
+        }
+        printf("\n");
+        node_line = node_line->ps;
+        node = node_line;
+    }
+    printf("\n\n");
+}
 
 /**
  * @brief Aumenta uma Lista de sudokus
