@@ -3,8 +3,9 @@
 
 
 typedef struct node {
-    int info;
+    int info, row, col;
     struct node *pn, *pne, *pe, *pse, *ps, *pso, *po, *pno;
+    int *poss;
 } NODE;
 
 typedef struct sudoku_queue {
@@ -35,5 +36,15 @@ int searchSudokus(ListSudoku searchList, Sudoku sudoku);
 int isPattern(Sudoku pattern, Sudoku unsolved);
 
 void computeOrderBySize(ListSudoku *a);
+
+void solveSudokuBruteForceLink(SUDOKU_QUEUE queue, NODE *node);
+
+int isValidPlacementLink(SUDOKU_QUEUE sudoku, NODE *node, int num);
+
+int checkNakedSingle(NODE *node, int size);
+
+void writePossibilities(SUDOKU_QUEUE sudoku);
+
+void solveSudokuOptimizedLink(SUDOKU_QUEUE sudoku);
 
 #endif

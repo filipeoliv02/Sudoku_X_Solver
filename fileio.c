@@ -118,19 +118,20 @@ SUDOKU_QUEUE *load_sudokus_link(char *file) {
                 node_prev = NULL;
                 for (int j = 0; j < size; j++) {
                     // Criar nó e colocar valor do tabuleiro
-                    node = (NODE *) malloc(sizeof(NODE));
-                    fscanf(fp, "%d", &node->info);
-
+                    node = (NODE *) calloc(1, sizeof(NODE));
+                    fscanf(fp, "%d ", &node->info);
+                    node->row = i;
+                    node->col = j;
+                    node->poss = (int *) calloc(1, sizeof(int));
                     // Se não existir um primeiro nó então é este
-                    if(pqueue->pfirst == NULL) {
+                    if (pqueue->pfirst == NULL) {
                         pqueue->pfirst = node;
                     }
 
                     // Se não existir um nó anterior cria-se
-                    if(node_prev == NULL) {
+                    if (node_prev == NULL) {
                         node_prev = node;
-                    }
-                    else {
+                    } else {
                         // Existe nó anterior logo liga-se (Este <--> Oeste)
                         node_prev->pe = node;
                         node->po = node_prev;
@@ -138,30 +139,29 @@ SUDOKU_QUEUE *load_sudokus_link(char *file) {
                     }
 
                     // Se existir nó da lina anterior liga-se (Norte <--> Sul)
-                    if(node_prevline != NULL) {
+                    if (node_prevline != NULL) {
                         node_prevline->ps = node;
                         node->pn = node_prevline;
                         node_prevline = node_prevline->pe;
                     }
 
                     // Ligar se estiver na diagonal principal e não na primeira linha
-                    if(i == j && i != 0) {
+                    if (i == j && i != 0) {
                         node->pno = node->po->pn;
                         node->pno->pse = node;
                     }
 
                     // Ligar se estiver na diagonal secundária e não na primeira linha
-                    if(i == size - j - 1 && i != 0) {
+                    if (i == size - j - 1 && i != 0) {
                         node->pne = node->pn->pe;
                         node->pne->pso = node;
                     }
                 }
 
                 // Se não existe linha associar
-                if(node_line == NULL) {
+                if (node_line == NULL) {
                     node_line = pqueue->pfirst;
-                }
-                else {
+                } else {
                     node_line = node_line->ps;
                 }
                 node_prevline = node_line;

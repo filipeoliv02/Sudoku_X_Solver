@@ -1,7 +1,6 @@
 #include "algorithms.h"
 #include "utils.h"
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 #include <math.h>
 
@@ -280,8 +279,8 @@ void solveSudokuOptimized(Sudoku unsolved, ListSudoku *solved, long long *cost) 
     Sudoku s;
     s.size = unsolved.size;
     s.board = createBoard(s.size);
-    for(int row = 0; row < s.size; row++) {
-        for(int col = 0; col < s.size; col++) {
+    for (int row = 0; row < s.size; row++) {
+        for (int col = 0; col < s.size; col++) {
             *(*(s.board + row) + col) = *(*(unsolved.board + row) + col);
         }
     }
@@ -366,7 +365,8 @@ int findPairs(ListSudoku cube) {
                     if (row != row_pair) {
                         found = 1;
                         for (int i = 0; i < size; i++) {
-                            if (*(*((cube.sudokus + i)->board + row) + col) != *(*((cube.sudokus + i)->board + row_pair) + col)) {
+                            if (*(*((cube.sudokus + i)->board + row) + col) !=
+                                *(*((cube.sudokus + i)->board + row_pair) + col)) {
                                 found = 0;
                                 break;
                             }
@@ -389,7 +389,8 @@ int findPairs(ListSudoku cube) {
                     if (col != col_pair) {
                         found = 1;
                         for (int i = 0; i < size; i++) {
-                            if (*(*((cube.sudokus + i)->board + row) + col) != *(*((cube.sudokus + i)->board + row) + col_pair)) {
+                            if (*(*((cube.sudokus + i)->board + row) + col) !=
+                                *(*((cube.sudokus + i)->board + row) + col_pair)) {
                                 found = 0;
                                 break;
                             }
@@ -413,7 +414,8 @@ int findPairs(ListSudoku cube) {
                         if (row != diag_pair && col != diag_pair) {
                             found = 1;
                             for (int i = 0; i < size; i++) {
-                                if (*(*((cube.sudokus + i)->board + row) + col) != *(*((cube.sudokus + i)->board + diag_pair) + diag_pair)) {
+                                if (*(*((cube.sudokus + i)->board + row) + col) !=
+                                    *(*((cube.sudokus + i)->board + diag_pair) + diag_pair)) {
                                     found = 0;
                                     break;
                                 }
@@ -423,7 +425,8 @@ int findPairs(ListSudoku cube) {
                                     if (diag_remove != row && diag_remove != diag_pair) {
                                         for (int num_remove = 0; num_remove < size; num_remove++) {
                                             if (*(*((cube.sudokus + num_remove)->board + row) + col) == 0) {
-                                                *(*((cube.sudokus + num_remove)->board + diag_remove) + diag_remove) = 1;
+                                                *(*((cube.sudokus + num_remove)->board + diag_remove) +
+                                                  diag_remove) = 1;
                                             }
                                         }
                                     }
@@ -450,7 +453,8 @@ int findPairs(ListSudoku cube) {
                                     if (diagsec_remove != row && diagsec_remove != diagsec_pair) {
                                         for (int num_remove = 0; num_remove < size; num_remove++) {
                                             if (*(*((cube.sudokus + num_remove)->board + row) + col) == 0) {
-                                                *(*((cube.sudokus + num_remove)->board + diagsec_remove) + size - diagsec_remove - 1) = 1;
+                                                *(*((cube.sudokus + num_remove)->board + diagsec_remove) + size -
+                                                  diagsec_remove - 1) = 1;
                                             }
                                         }
                                     }
@@ -467,7 +471,8 @@ int findPairs(ListSudoku cube) {
                         if (i != row && j != col) {
                             found = 1;
                             for (int num = 0; num < size; num++) {
-                                if (*(*((cube.sudokus + num)->board + row) + col) != *(*((cube.sudokus + num)->board + i) + j)) {
+                                if (*(*((cube.sudokus + num)->board + row) + col) !=
+                                    *(*((cube.sudokus + num)->board + i) + j)) {
                                     found = 0;
                                     break;
                                 }
@@ -555,5 +560,177 @@ void computeOrderBySize(ListSudoku *a) {
         c = (a->sudokus + i)->size - 1;
         *(a->orderedList + count[c]) = i;
         count[c]++;
+    }
+}
+
+void solveSudokuBruteForceLink(SUDOKU_QUEUE queue, NODE *node) {
+    NODE *newNode = node;
+    if (newNode->pe == NULL) {
+        while (newNode->po != NULL) {
+            newNode = newNode->po;
+        }
+        newNode = newNode->ps;
+    } else {
+        newNode = newNode->pe;
+    }
+    if (node->ps == NULL && node->pe == NULL) {
+        printf("Solucao:\n");
+        print_linked_board(queue);
+
+    } else if (node->info > 0) {
+
+        solveSudokuBruteForceLink(queue, newNode);
+    } else {
+        for (int num = 1; num <= queue.size; num++) {
+
+            if (isValidPlacementLink(queue, node, num)) {
+                node->info = num;
+                solveSudokuBruteForceLink(queue, newNode);
+            }
+        }
+        node->info = 0;
+    }
+}
+
+int isValidPlacementLink(SUDOKU_QUEUE sudoku, NODE *node, int num) {
+    NODE *nodeAux = NULL;
+    nodeAux = node;
+    while (nodeAux != NULL) {
+        if (nodeAux->info == num) {
+            return 0;
+        }
+        nodeAux = nodeAux->ps;
+    }
+    nodeAux = node;
+    while (nodeAux != NULL) {
+        if (nodeAux->info == num) {
+            return 0;
+        }
+        nodeAux = nodeAux->pn;
+    }
+    nodeAux = node;
+    while (nodeAux != NULL) {
+        if (nodeAux->info == num) {
+            return 0;
+        }
+        nodeAux = nodeAux->po;
+    }
+    nodeAux = node;
+    while (nodeAux != NULL) {
+        if (nodeAux->info == num) {
+            return 0;
+        }
+        nodeAux = nodeAux->pe;
+    }
+    //diagonais
+    nodeAux = node;
+    while (nodeAux != NULL) {
+        if (nodeAux->info == num) {
+            return 0;
+        }
+        nodeAux = nodeAux->pno;
+    }
+    nodeAux = node;
+    while (nodeAux != NULL) {
+        if (nodeAux->info == num) {
+            return 0;
+        }
+        nodeAux = nodeAux->pse;
+    }
+    nodeAux = node;
+    while (nodeAux != NULL) {
+        if (nodeAux->info == num) {
+            return 0;
+        }
+        nodeAux = nodeAux->pne;
+    }
+    nodeAux = node;
+    while (nodeAux != NULL) {
+        if (nodeAux->info == num) {
+            return 0;
+        }
+        nodeAux = nodeAux->pso;
+    }
+    //Regiões
+    nodeAux = node;
+    int root = (int) sqrt(sudoku.size);
+    int rrow, rcol;
+    NODE *line;
+    rrow = node->row % root;
+    rcol = node->col % root;
+    for (int i = 0; i < rrow; i++) {
+        nodeAux = nodeAux->pn;
+    }
+    for (int j = 0; j < rcol; j++) {
+        nodeAux = nodeAux->po;
+    }
+    line = nodeAux;
+    for (int i = 0; i < root; i++) {
+        for (int j = 0; j < root; j++) {
+            if (nodeAux->info == num) {
+                return 0;
+            }
+            nodeAux = nodeAux->pe;
+        }
+        line = line->ps;
+        nodeAux = line;
+    }
+    return 1;
+}
+
+
+void solveSudokuOptimizedLink(SUDOKU_QUEUE sudoku) {
+    NODE *node = sudoku.pfirst;
+    NODE *line = node;
+    writePossibilities(sudoku);
+    node = sudoku.pfirst;
+    line = node;
+    while (line != NULL) {
+        while (node != NULL) {
+            if (node->info == 0) {
+                if (checkNakedSingle(node, sudoku.size)) {
+                    writePossibilities(sudoku);
+                }
+            }
+            node = node->pe;
+        }
+        line = line->ps;
+        node = line;
+    }
+    print_linked_board(sudoku);
+}
+
+int checkNakedSingle(NODE *node, int size) {
+    int count = 0;
+    int number = 0;
+    for (int num = 0; num < size; num++) {
+        if (*(node->poss + num) != 0) {
+            number = num + 1;
+            count++;
+        }
+    }
+    if (count == 1) {
+        node->info = number;
+    }
+    return count == 1;
+}
+
+void writePossibilities(SUDOKU_QUEUE sudoku) {
+    NODE *node = sudoku.pfirst;
+    NODE *line = node;
+    while (line != NULL) {
+        while (node != NULL) {
+            if (node->info == 0) {
+                for (int num = 0; num < sudoku.size; num++) {
+                    if (isValidPlacementLink(sudoku, node, num + 1)) {
+                        *(node->poss + num) = num + 1;
+                    } else
+                        *(node->poss + num) = 0;
+                }
+            }
+            node = node->pe;
+        }
+        line = line->ps;
+        node = line;
     }
 }
