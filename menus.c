@@ -18,7 +18,7 @@ void print_linked_board(SUDOKU_QUEUE board);
 void main_menu() {
     ListSudoku unsolved = {0, NULL, NULL}, solved = {0, NULL, NULL};
     int selection, exit = 0;
-    SUDOKU_QUEUE *queue = NULL;
+    SUDOKU_QUEUE *queue = NULL, *queue_aux = NULL;
     while (!exit) {
         printf("Menu Principal\n");
         printf("1 - Ver tabuleiros\n"
@@ -47,7 +47,12 @@ void main_menu() {
                 break;
             case 6:
                 queue = load_sudokus_link("unsolved.txt");
-                print_linked_board(*queue);
+                queue_aux = queue;
+                while(queue_aux->pnext != NULL) {
+                    print_linked_board(*queue_aux);
+                    queue_aux = queue_aux->pnext;
+                }
+
                 break;
             case 0:
                 exit = 1;
@@ -59,20 +64,6 @@ void main_menu() {
     }
     free_list_sudoku(solved);
     free_list_sudoku(unsolved);
-}
-
-void print_linked_board(SUDOKU_QUEUE board) {
-    NODE *node = board.pfirst, *node_line = board.pfirst;
-    while(node_line != NULL) {
-        while(node != NULL) {
-            printf(" %d ", node->info);
-            node = node->pe;
-        }
-        printf("\n");
-        node_line = node_line->ps;
-        node = node_line;
-    }
-    printf("\n\n");
 }
 
 /**

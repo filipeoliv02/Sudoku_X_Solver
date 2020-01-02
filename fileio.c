@@ -137,11 +137,23 @@ SUDOKU_QUEUE *load_sudokus_link(char *file) {
                         node_prev = node_prev->pe;
                     }
 
+                    // Se existir nó da lina anterior liga-se (Norte <--> Sul)
                     if(node_prevline != NULL) {
-                        // Existe nó da lina anterior logo liga-se (Norte <--> Sul)
                         node_prevline->ps = node;
                         node->pn = node_prevline;
                         node_prevline = node_prevline->pe;
+                    }
+
+                    // Ligar se estiver na diagonal principal e não na primeira linha
+                    if(i == j && i != 0) {
+                        node->pno = node->po->pn;
+                        node->pno->pse = node;
+                    }
+
+                    // Ligar se estiver na diagonal secundária e não na primeira linha
+                    if(i == size - j - 1 && i != 0) {
+                        node->pne = node->pn->pe;
+                        node->pne->pso = node;
                     }
                 }
 
