@@ -54,8 +54,8 @@ void main_menu() {
                     print_linked_board(*queue_aux);
                     queue_aux = queue_aux->pnext;
                 }
-                solveSudokuBruteForceLink(*queue, queue->pfirst);
-                //solveSudokuOptimizedLink(*queue);
+                solveSudokuOptimizedLink(*queue->pnext);
+                solveSudokuBruteForceLink(*queue->pnext, queue->pnext->pfirst);
                 break;
             case 0:
                 exit = 1;

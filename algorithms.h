@@ -39,11 +39,7 @@ void computeOrderBySize(ListSudoku *a);
 
 void solveSudokuBruteForceLink(SUDOKU_QUEUE queue, NODE *node);
 
-int isValidPlacementLink(SUDOKU_QUEUE sudoku, NODE *node, int num);
 
-int checkNakedSingle(NODE *node, int size);
-
-void writePossibilities(SUDOKU_QUEUE sudoku);
 
 void solveSudokuOptimizedLink(SUDOKU_QUEUE sudoku);
 
