@@ -69,7 +69,7 @@ void print_linked_board(SUDOKU_QUEUE board) {
         node_line = node_line->ps;
         node = node_line;
     }
-    printf("\n\n");
+    printf("\n");
 }
 
 /**

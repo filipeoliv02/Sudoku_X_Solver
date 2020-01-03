@@ -122,7 +122,7 @@ SUDOKU_QUEUE *load_sudokus_link(char *file) {
                     fscanf(fp, "%d ", &node->info);
                     node->row = i;
                     node->col = j;
-                    node->poss = (int *) calloc(1, sizeof(int));
+                    node->poss = (int *) calloc(size, sizeof(int));
                     // Se não existir um primeiro nó então é este
                     if (pqueue->pfirst == NULL) {
                         pqueue->pfirst = node;
