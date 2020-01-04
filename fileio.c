@@ -10,9 +10,9 @@
  * @param file
  * @return
  */
-ListSudoku load_sudokus(char *file) {
+SudokuList load_sudokus(char *file) {
     int size;
-    ListSudoku s = {0, NULL, NULL};
+    SudokuList s = {0, NULL, NULL};
     FILE *fp = fopen(file, "r");
     if (fp != NULL) {
         while (fscanf(fp, "%d", &size) != EOF) {
@@ -43,8 +43,8 @@ ListSudoku load_sudokus(char *file) {
  * @param newlist
  * @param file
  */
-void save_sudokus(ListSudoku newlist, char *file) {
-    ListSudoku list = load_sudokus(file);
+void save_sudokus(SudokuList newlist, char *file) {
+    SudokuList list = load_sudokus(file);
     list = merge_sudokus(list, newlist);
 
     FILE *fp = fopen(file, "w");
@@ -69,10 +69,11 @@ void save_sudokus(ListSudoku newlist, char *file) {
  * @param newlist
  * @param file
  */
-void save2binary(ListSudoku solved, char *file) {
+void save_binary(SudokuList solved, char *file) {
     FILE *fp = fopen(file, "wb");
     int aux;
     if (fp != NULL) {
+        fwrite(&solved.total, 1, 1, fp);
         for (int i = 0; i < solved.total; i++) {
             aux = (solved.sudokus + i)->size;
             fwrite(&aux, 1, 1, fp);
@@ -88,24 +89,24 @@ void save2binary(ListSudoku solved, char *file) {
 }
 
 
-SUDOKU_QUEUE *load_sudokus_link(char *file) {
+SudokuLinkedNode *load_sudokus_link(char *file) {
     int size;
-    SUDOKU_QUEUE *pqueue, *pqueue_pfirst = NULL, *pqueue_pprev = NULL;
-    NODE *node, *node_line = NULL, *node_prevline = NULL, *node_prev;
+    SudokuLinkedNode *pqueue, *pqueue_pfirst = NULL, *pqueue_pprev = NULL;
+    Node *node, *node_line = NULL, *node_prevline = NULL, *node_prev;
 
     FILE *fp = fopen(file, "r");
     if (fp != NULL) {
         while (fscanf(fp, "%d", &size) != EOF) {
-            pqueue = (SUDOKU_QUEUE *) malloc(sizeof(SUDOKU_QUEUE));
+            pqueue = (SudokuLinkedNode *) malloc(sizeof(SudokuLinkedNode));
             pqueue->size = size;
-            pqueue->pnext = NULL;
-            pqueue->pfirst = NULL;
+            pqueue->next = NULL;
+            pqueue->first = NULL;
 
             if (pqueue_pfirst == NULL) {
                 pqueue_pfirst = pqueue;
             }
             if (pqueue_pprev != NULL) {
-                pqueue_pprev->pnext = pqueue;
+                pqueue_pprev->next = pqueue;
             }
             pqueue_pprev = pqueue;
 
@@ -118,14 +119,14 @@ SUDOKU_QUEUE *load_sudokus_link(char *file) {
                 node_prev = NULL;
                 for (int j = 0; j < size; j++) {
                     // Criar nó e colocar valor do tabuleiro
-                    node = (NODE *) calloc(1, sizeof(NODE));
-                    fscanf(fp, "%d ", &node->info);
+                    node = (Node *) calloc(1, sizeof(Node));
+                    fscanf(fp, "%d ", &node->num);
                     node->row = i;
                     node->col = j;
                     node->poss = (int *) calloc(size, sizeof(int));
                     // Se não existir um primeiro nó então é este
-                    if (pqueue->pfirst == NULL) {
-                        pqueue->pfirst = node;
+                    if (pqueue->first == NULL) {
+                        pqueue->first = node;
                     }
 
                     // Se não existir um nó anterior cria-se
@@ -133,36 +134,36 @@ SUDOKU_QUEUE *load_sudokus_link(char *file) {
                         node_prev = node;
                     } else {
                         // Existe nó anterior logo liga-se (Este <--> Oeste)
-                        node_prev->pe = node;
-                        node->po = node_prev;
-                        node_prev = node_prev->pe;
+                        node_prev->e = node;
+                        node->w = node_prev;
+                        node_prev = node_prev->e;
                     }
 
                     // Se existir nó da lina anterior liga-se (Norte <--> Sul)
                     if (node_prevline != NULL) {
-                        node_prevline->ps = node;
-                        node->pn = node_prevline;
-                        node_prevline = node_prevline->pe;
+                        node_prevline->s = node;
+                        node->n = node_prevline;
+                        node_prevline = node_prevline->e;
                     }
 
                     // Ligar se estiver na diagonal principal e não na primeira linha
                     if (i == j && i != 0) {
-                        node->pno = node->po->pn;
-                        node->pno->pse = node;
+                        node->nw = node->w->n;
+                        node->nw->se = node;
                     }
 
                     // Ligar se estiver na diagonal secundária e não na primeira linha
                     if (i == size - j - 1 && i != 0) {
-                        node->pne = node->pn->pe;
-                        node->pne->pso = node;
+                        node->ne = node->n->e;
+                        node->ne->sw = node;
                     }
                 }
 
                 // Se não existe linha associar
                 if (node_line == NULL) {
-                    node_line = pqueue->pfirst;
+                    node_line = pqueue->first;
                 } else {
-                    node_line = node_line->ps;
+                    node_line = node_line->s;
                 }
                 node_prevline = node_line;
 
@@ -172,5 +173,56 @@ SUDOKU_QUEUE *load_sudokus_link(char *file) {
         fclose(fp);
     }
     return pqueue_pfirst;
+}
+
+void save_sudokus_linked(SudokuLinked sudokuLinked, char *file) {
+    SudokuList list = load_sudokus(file);
+    //list = merge_sudokus(list, newlist);
+
+    /*FILE *fp = fopen(file, "w");
+    if (fp != NULL) {
+        for (int i = 0; i < list.total; i++) {
+            fprintf(fp, "%d\n", (list.sudokus + i)->size);
+            for (int j = 0; j < (list.sudokus + i)->size; j++) {
+                for (int k = 0; k < (list.sudokus + i)->size; k++) {
+                    fprintf(fp, "%d ", *(*((list.sudokus + i)->board + j) + k));
+                }
+                fprintf(fp, "\n");
+            }
+        }
+        fclose(fp);
+    }*/
+
+}
+
+void save_binary_linked(SudokuLinked sudokuLinked, char *file) {
+    FILE *fp = fopen(file, "wb");
+    if (fp == NULL) {
+        printf("Erro ao guardar o ficheiro binário do sudoku em listas ligadas!\n");
+        return;
+    }
+
+    fwrite(&sudokuLinked.total, 1, 1, fp);
+
+    SudokuLinkedNode *sudokuLinkedNode = sudokuLinked.first;
+    Node *node, *nodeLine;
+
+    while (sudokuLinkedNode != NULL) {
+        fwrite(&sudokuLinkedNode->size, 1, 1, fp);
+
+        node = sudokuLinkedNode->first;
+        nodeLine = node;
+        while (nodeLine != NULL) {
+            while (node != NULL) {
+                fwrite(&node->num, 1, 1, fp);
+                node = node->e;
+            }
+            nodeLine = nodeLine->s;
+            node = nodeLine;
+        }
+
+        sudokuLinkedNode = sudokuLinkedNode->next;
+    }
+    fclose(fp);
 }
 

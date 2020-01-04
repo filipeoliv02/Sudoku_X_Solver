@@ -4,23 +4,23 @@
 #include <math.h>
 #include <stdio.h>
 
-void menu_choose_sudoku(ListSudoku list, ListSudoku *solved, int flagOrdered);
+void menu_choose_sudoku(SudokuList list, SudokuList *solved, int flagOrdered);
 
-void menu_sudoku(Sudoku s, ListSudoku *solved);
+void menu_sudoku(Sudoku s, SudokuList *solved);
 
-void menu_gen_sudoku(ListSudoku unsolved, ListSudoku *solved);
+void menu_gen_sudoku(SudokuList unsolved, SudokuList *solved);
 
-void menu_choose_type(ListSudoku *unsolved, ListSudoku *solved);
+void menu_choose_type(SudokuList *unsolved, SudokuList *solved);
 
-void print_linked_board(SUDOKU_QUEUE board);
+void print_linked_board(SudokuLinkedNode board);
 
 /**
  * @brief Menu Principal
  */
 void main_menu() {
-    ListSudoku unsolved = {0, NULL, NULL}, solved = {0, NULL, NULL};
+    SudokuList unsolved = {0, NULL, NULL}, solved = {0, NULL, NULL};
     int selection, exit = 0;
-    SUDOKU_QUEUE *queue = NULL, *queue_aux = NULL;
+    SudokuLinkedNode *queue = NULL, *queue_aux = NULL;
     while (!exit) {
         printf("Menu Principal\n");
         printf("1 - Ver tabuleiros\n"
@@ -42,7 +42,7 @@ void main_menu() {
                 save_sudokus(solved, "solved.txt");
                 break;
             case 4:
-                save2binary(solved, "binary_solved.bin");
+                save_binary(solved, "binary_solved.bin");
                 break;
             case 5:
                 menu_gen_sudoku(unsolved, &solved);
@@ -50,12 +50,12 @@ void main_menu() {
             case 6:
                 queue = load_sudokus_link("unsolved.txt");
                 queue_aux = queue;
-                while (queue_aux->pnext != NULL) {
+                while (queue_aux->next != NULL) {
                     print_linked_board(*queue_aux);
-                    queue_aux = queue_aux->pnext;
+                    queue_aux = queue_aux->next;
                 }
-                solveSudokuOptimizedLink(*queue->pnext);
-                solveSudokuBruteForceLink(*queue->pnext, queue->pnext->pfirst);
+                solveSudokuOptimizedLink(*queue->next);
+                solveSudokuBruteForceLink(*queue->next, queue->next->first);
                 break;
             case 0:
                 exit = 1;
@@ -74,7 +74,7 @@ void main_menu() {
  * @param unsolved
  * @param solved
  */
-void menu_choose_type(ListSudoku *unsolved, ListSudoku *solved) {
+void menu_choose_type(SudokuList *unsolved, SudokuList *solved) {
     int selection, selection_order = 0, exit = 0;
     while (!exit) {
         printf("\nTipo de tabuleiro:\n");
@@ -117,7 +117,7 @@ void menu_choose_type(ListSudoku *unsolved, ListSudoku *solved) {
  * @param solved
  * @param flagOrdered
  */
-void menu_choose_sudoku(ListSudoku list, ListSudoku *solved, int flagOrdered) {
+void menu_choose_sudoku(SudokuList list, SudokuList *solved, int flagOrdered) {
     int selection, exit = 0;
     while (!exit) {
 
@@ -144,7 +144,7 @@ void menu_choose_sudoku(ListSudoku list, ListSudoku *solved, int flagOrdered) {
  * @param s
  * @param solved
  */
-void menu_sudoku(Sudoku s, ListSudoku *solved) {
+void menu_sudoku(Sudoku s, SudokuList *solved) {
     int selection, exit = 0, searchResult;
     long long time_usec_init, time_usec_end, cost = 0;
     long elapsed_time;
@@ -190,7 +190,7 @@ void menu_sudoku(Sudoku s, ListSudoku *solved) {
                 // Procurar em memória primeiro
                 searchResult = searchSudokus(*solved, s);
                 if (searchResult == -1) {
-                    ListSudoku file_solved = load_sudokus("solved.txt");
+                    SudokuList file_solved = load_sudokus("solved.txt");
 
                     // Procurar no ficheiro em segundo
                     searchResult = searchSudokus(file_solved, s);
@@ -229,7 +229,7 @@ void menu_sudoku(Sudoku s, ListSudoku *solved) {
  * @param unsolved
  * @param solved
  */
-void menu_gen_sudoku(ListSudoku unsolved, ListSudoku *solved) {
+void menu_gen_sudoku(SudokuList unsolved, SudokuList *solved) {
 
     Sudoku s;
     int selection, exit = 0, size = 0, input;

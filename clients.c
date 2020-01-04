@@ -10,8 +10,8 @@
  * @details Requisito 4-A
  */
 void client_bruteforce() {
-    ListSudoku unsolved = load_sudokus("client_test_files/unsolved_client.txt");
-    ListSudoku solved = {0, NULL, NULL};
+    SudokuList unsolved = load_sudokus("client_test_files/unsolved_client.txt");
+    SudokuList solved = {0, NULL, NULL};
 
     long long cost;
     for (int i = 0; i < unsolved.total; i++) {
@@ -36,8 +36,8 @@ void client_bruteforce() {
  * @details Requisito 4-B
  */
 void client_advanced() {
-    ListSudoku unsolved = load_sudokus("client_test_files/unsolved_client.txt");
-    ListSudoku solved = {0, NULL, NULL};
+    SudokuList unsolved = load_sudokus("client_test_files/unsolved_client.txt");
+    SudokuList solved = {0, NULL, NULL};
 
     long long cost;
     for (int i = 0; i < unsolved.total; i++) {
@@ -62,7 +62,7 @@ void client_advanced() {
  * @details Requisito 1-B
  */
 void client_read() {
-    ListSudoku sudokus = load_sudokus("client_test_files/client_read.txt");
+    SudokuList sudokus = load_sudokus("client_test_files/client_read.txt");
     printAllStoredBoards(sudokus, 0);
 }
 
@@ -71,7 +71,7 @@ void client_read() {
  * @details Requisito 8
  */
 void client_write() {
-    ListSudoku sudokus = load_sudokus("client_test_files/client_read.txt");
+    SudokuList sudokus = load_sudokus("client_test_files/client_read.txt");
     save_sudokus(sudokus, "client_test_files/client_write.txt");
 }
 
@@ -80,7 +80,7 @@ void client_write() {
  * @details Requisito 2
  */
 void client_show_stored() {
-    ListSudoku sudokus = load_sudokus("client_test_files/client_read.txt");
+    SudokuList sudokus = load_sudokus("client_test_files/client_read.txt");
     printAllStoredBoards(sudokus, 0);
 }
 
@@ -89,7 +89,7 @@ void client_show_stored() {
  * @details Requisito 3
  */
 void client_check_consistency() {
-    ListSudoku sudokus = load_sudokus("client_test_files/client_read.txt");
+    SudokuList sudokus = load_sudokus("client_test_files/client_read.txt");
     for (int i = 0; i < sudokus.total; i++) {
         if (isConsistent(*(sudokus.sudokus + i))) {
             printf("%d: Consistente\n", i + 1);
@@ -124,11 +124,11 @@ void client_random_generation() {
  * @details Requisito 5
  */
 void client_solve_variable_size() {
-    ListSudoku solved = {0, NULL, NULL};
+    SudokuList solved = {0, NULL, NULL};
     long long cost = 0;
 
     printf("\nTestar tabuleiros 4x4:\n");
-    ListSudoku sudoku4 = load_sudokus("client_test_files/client_4x4.txt");
+    SudokuList sudoku4 = load_sudokus("client_test_files/client_4x4.txt");
     for (int i = 0; i < sudoku4.total; i++) {
         solved.total = 0;
         solved.sudokus = NULL;
@@ -145,7 +145,7 @@ void client_solve_variable_size() {
     }
 
     printf("\nTestar tabuleiros 9x9:\n");
-    ListSudoku sudoku9 = load_sudokus("client_test_files/client_9x9.txt");
+    SudokuList sudoku9 = load_sudokus("client_test_files/client_9x9.txt");
     for (int i = 0; i < sudoku9.total; i++) {
         solved.total = 0;
         solved.sudokus = NULL;
@@ -162,7 +162,7 @@ void client_solve_variable_size() {
     }
 
     printf("\nTestar tabuleiros 16x16:\n");
-    ListSudoku sudoku16 = load_sudokus("client_test_files/client_16x16.txt");
+    SudokuList sudoku16 = load_sudokus("client_test_files/client_16x16.txt");
     for (int i = 0; i < sudoku16.total; i++) {
         solved.total = 0;
         solved.sudokus = NULL;
@@ -179,7 +179,7 @@ void client_solve_variable_size() {
     }
 
     printf("\nTestar tabuleiros 25x25:\n");
-    ListSudoku sudoku25 = load_sudokus("client_test_files/client_25x25.txt");
+    SudokuList sudoku25 = load_sudokus("client_test_files/client_25x25.txt");
     for (int i = 0; i < sudoku25.total; i++) {
         solved.total = 0;
         solved.sudokus = NULL;
@@ -196,7 +196,7 @@ void client_solve_variable_size() {
     }
 
     printf("\nTestar tabuleiros 36x36:\n");
-    ListSudoku sudoku36 = load_sudokus("client_test_files/client_36x36.txt");
+    SudokuList sudoku36 = load_sudokus("client_test_files/client_36x36.txt");
     for (int i = 0; i < sudoku36.total; i++) {
         solved.total = 0;
         solved.sudokus = NULL;
@@ -218,8 +218,8 @@ void client_solve_variable_size() {
  * @details Requisito 6
  */
 void client_search_solutions() {
-    ListSudoku solved = load_sudokus("client_test_files/client_search_solutions.txt");
-    ListSudoku unsolved = load_sudokus("client_test_files/client_9x9.txt");
+    SudokuList solved = load_sudokus("client_test_files/client_search_solutions.txt");
+    SudokuList unsolved = load_sudokus("client_test_files/client_9x9.txt");
     int searchResult;
     for (int i = 0; i < unsolved.total; i++) {
         searchResult = searchSudokus(solved, *(unsolved.sudokus + i));
@@ -246,8 +246,8 @@ void client_compare_algorithms() {
     long long average_cost4 = 0, average_cost9 = 0, average_cost16 = 0, average_cost25 = 0;
     long average_time4 = 0, average_time9 = 0, average_time16 = 0, average_time25 = 0;
     long long count4 = 0, count9 = 0, count16 = 0, count25 = 0;
-    ListSudoku unsolved = load_sudokus("client_test_files/unsolved_client.txt");
-    ListSudoku solved = {0, NULL, NULL};
+    SudokuList unsolved = load_sudokus("client_test_files/unsolved_client.txt");
+    SudokuList solved = {0, NULL, NULL};
     for (int i = 0; i < unsolved.total; i++) {
         cost = 0;
         gettimeuseconds(&time_usec_init); // init time
