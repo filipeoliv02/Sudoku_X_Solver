@@ -1,5 +1,6 @@
 #include "fileio.h"
 #include "utils.h"
+#include "math.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -137,9 +138,11 @@ SudokuLinkedNode *load_sudokus_link(char *file) {
                         node_prev->e = node;
                         node->w = node_prev;
                         node_prev = node_prev->e;
+
+
                     }
 
-                    // Se existir nó da lina anterior liga-se (Norte <--> Sul)
+                    // Se existir nó da linha anterior liga-se (Norte <--> Sul)
                     if (node_prevline != NULL) {
                         node_prevline->s = node;
                         node->n = node_prevline;
@@ -157,9 +160,29 @@ SudokuLinkedNode *load_sudokus_link(char *file) {
                         node->ne = node->n->e;
                         node->ne->sw = node;
                     }
+                    //Ligar Regiões
+                    int root = sqrt(size);
+                    int rcol, rrow;
+                    rcol = j % root;
+                    rrow = i % root;
+                    Node *rnode = node;
+                    if (!(rcol == 0 && rrow == 0)) {
+                        if (rcol == 0) {
+                            rnode = rnode->n;
+                            while (rnode->col % root != (root - 1)) {
+                                rnode = rnode->e;
+                            }
+                            node->bbox = rnode;
+                            rnode->fbox = node;
+                        } else {
+                            node->bbox = node->w;
+                            node->w->fbox = node;
+                        }
+
+                    }
                 }
 
-                // Se não existe linha associar
+                //Se não existe linha associar
                 if (node_line == NULL) {
                     node_line = pqueue->first;
                 } else {
