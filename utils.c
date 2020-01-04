@@ -29,7 +29,7 @@ void printSudoku(int **sudoku, int size) {
  * @param s
  * @param flagOrdered
  */
-void printAllStoredBoards(ListSudoku s, int flagOrdered) {
+void printAllStoredBoards(SudokuList s, int flagOrdered) {
     int z;
     for (int k = 0; k < s.total; k++) {
         if (flagOrdered) {
@@ -58,15 +58,15 @@ void printAllStoredBoards(ListSudoku s, int flagOrdered) {
  * @brief Imprime o tabuleiro (usando linked lists) passado
  * @param board
  */
-void print_linked_board(SUDOKU_QUEUE board) {
-    NODE *node = board.pfirst, *node_line = board.pfirst;
+void print_linked_board(SudokuLinkedNode board) {
+    Node *node = board.first, *node_line = board.first;
     while(node_line != NULL) {
         while(node != NULL) {
-            printf(" %d ", node->info);
-            node = node->pe;
+            printf(" %d ", node->num);
+            node = node->e;
         }
         printf("\n");
-        node_line = node_line->ps;
+        node_line = node_line->s;
         node = node_line;
     }
     printf("\n");
@@ -177,7 +177,7 @@ int isEqual(Sudoku s1, Sudoku s2) {
  * @param source
  * @return
  */
-ListSudoku merge_sudokus(ListSudoku target, ListSudoku source) {
+SudokuList merge_sudokus(SudokuList target, SudokuList source) {
     int alreadyExists;
     for (int i = 0; i < source.total; i++) {
         alreadyExists = 0;
@@ -201,7 +201,7 @@ ListSudoku merge_sudokus(ListSudoku target, ListSudoku source) {
  * Liberta a memória
  * @param l
  */
-void free_list_sudoku(ListSudoku l) {
+void free_list_sudoku(SudokuList l) {
     for (int i = 0; i < l.total; i++) {
         for (int row = 0; row < (l.sudokus + i)->size; row++) {
             free(*((l.sudokus + i)->board + row));

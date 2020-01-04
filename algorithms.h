@@ -1,46 +1,50 @@
 #ifndef SUDOKU_ALGORITHMS_H
 #define SUDOKU_ALGORITHMS_H
 
-
 typedef struct node {
-    int info, row, col;
-    struct node *pn, *pne, *pe, *pse, *ps, *pso, *po, *pno;
+    int num, row, col;
+    struct node *n, *ne, *e, *se, *s, *sw, *w, *nw, *up, *down, *fbox, *bbox;
     int *poss;
-} NODE;
+} Node;
 
-typedef struct sudoku_queue {
-    NODE *pfirst;
-    struct sudoku_queue *pnext;
+typedef struct sudoku_linked_node {
     int size;
-} SUDOKU_QUEUE;
+    Node *first;
+    struct sudoku_linked_node *next;
+} SudokuLinkedNode;
 
-struct sudoku {
+typedef struct sudoku_linked {
+    int total;
+    SudokuLinkedNode *first, *last;
+} SudokuLinked;
+
+typedef struct sudoku {
     int size;
     int **board;
-} typedef Sudoku;
+} Sudoku;
 
-struct listsudoku {
+typedef struct sudoku_list {
     int total;
     int *orderedList;
     Sudoku *sudokus;
-} typedef ListSudoku;
+}  SudokuList;
 
-void solveSudokuBruteForce(ListSudoku *solved, Sudoku sudoku, int row, int col, long long *cost);
+void solveSudokuBruteForce(SudokuList *solved, Sudoku sudoku, int row, int col, long long *cost);
 
-void solveSudokuOptimized(Sudoku unsolved, ListSudoku *solved, long long *cost);
+void solveSudokuOptimized(Sudoku unsolved, SudokuList *solved, long long *cost);
 
 int isValidPlacement(Sudoku sudoku, int num, int row, int col);
 
-int searchSudokus(ListSudoku searchList, Sudoku sudoku);
+int searchSudokus(SudokuList searchList, Sudoku sudoku);
 
 int isPattern(Sudoku pattern, Sudoku unsolved);
 
-void computeOrderBySize(ListSudoku *a);
+void computeOrderBySize(SudokuList *a);
 
-void solveSudokuBruteForceLink(SUDOKU_QUEUE queue, NODE *node);
+void solveSudokuBruteForceLink(SudokuLinkedNode queue, Node *node);
 
 
 
-void solveSudokuOptimizedLink(SUDOKU_QUEUE sudoku);
+void solveSudokuOptimizedLink(SudokuLinkedNode sudoku);
 
 #endif
