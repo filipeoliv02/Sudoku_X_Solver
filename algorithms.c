@@ -662,28 +662,20 @@ int isValidPlacementLink(SudokuLinkedNode sudoku, Node *node, int num) {
         nodeAux = nodeAux->sw;
     }
     //Regiões
+
     nodeAux = node;
-    int root = (int) sqrt(sudoku.size);
-    int rrow, rcol;
-    Node *line;
-    rrow = node->row % root;
-    rcol = node->col % root;
-    for (int i = 0; i < rrow; i++) {
-        nodeAux = nodeAux->n;
-    }
-    for (int j = 0; j < rcol; j++) {
-        nodeAux = nodeAux->w;
-    }
-    line = nodeAux;
-    for (int i = 0; i < root; i++) {
-        for (int j = 0; j < root; j++) {
-            if (nodeAux->num == num) {
-                return 0;
-            }
-            nodeAux = nodeAux->e;
+    while (nodeAux != NULL) {
+        if (nodeAux->num == num) {
+            return 0;
         }
-        line = line->s;
-        nodeAux = line;
+        nodeAux = nodeAux->fbox;
+    }
+    nodeAux = node;
+    while (nodeAux != NULL) {
+        if (nodeAux->num == num) {
+            return 0;
+        }
+        nodeAux = nodeAux->bbox;
     }
     return 1;
 }
@@ -704,7 +696,7 @@ void solveSudokuOptimizedLink(SudokuLinkedNode sudoku) {
                 if (node->num == 0) {
                     if (checkNakedSingle(node, sudoku.size) || checkHiddenSingle(node, sudoku.size)) {
                         found = 1;
-                        print_linked_board(sudoku);
+
                         writePossibilities(sudoku);
                     }
                 }
@@ -836,32 +828,23 @@ int checkHiddenSingle(Node *node, int size) {
             }
 
             found = 1;
-            //Regiões
-            nodeAux = node;
-            int root = (int) sqrt(size);
-            int rrow, rcol;
-            Node *line;
-            rrow = node->row % root;
-            rcol = node->col % root;
-            for (int i = 0; i < rrow; i++) {
-                nodeAux = nodeAux->n;
-            }
-            for (int j = 0; j < rcol; j++) {
-                nodeAux = nodeAux->w;
-            }
-            line = nodeAux;
-            for (int i = 0; i < root; i++) {
-                for (int j = 0; j < root; j++) {
-                    if (*(nodeAux->poss + num) != 0 && !(i == rrow && j == rcol)) {
-                        found = 0;
-                        break;
-                    }
-                    nodeAux = nodeAux->e;
+            nodeAux = node->fbox;
+            while (nodeAux != NULL) {
+                if (*(nodeAux->poss + num) != 0) {
+                    found = 0;
+                    break;
                 }
-                line = line->s;
-                nodeAux = line;
+                nodeAux = nodeAux->fbox;
             }
-            
+
+            nodeAux = node->bbox;
+            while (nodeAux != NULL) {
+                if (*(nodeAux->poss + num) != 0) {
+                    found = 0;
+                    break;
+                }
+                nodeAux = nodeAux->bbox;
+            }
             if (found) {
                 break;
             }
@@ -881,8 +864,7 @@ void writePossibilities(SudokuLinkedNode sudoku) {
             for (int num = 0; num < sudoku.size; num++) {
                 if (node->num == 0 && isValidPlacementLink(sudoku, node, num + 1)) {
                     *(node->poss + num) = num + 1;
-                }
-                else {
+                } else {
                     *(node->poss + num) = 0;
                 }
             }
@@ -892,3 +874,92 @@ void writePossibilities(SudokuLinkedNode sudoku) {
         node = line;
     }
 }
+
+Node *createPossibilities(int size) {
+    Node *first = NULL;
+    Node *node, *node_line = NULL, *node_prevline = NULL, *node_prev;
+    node_prev = NULL;
+    node = NULL;
+    node_prevline = NULL;
+    node_line = NULL;
+    for (int num = 1; num <= size; num++) {
+        for (int i = 0; i < size; i++) {
+            node_prev = NULL;
+            for (int j = 0; j < size; j++) {
+                // Criar nó e colocar valor do tabuleiro
+                node = (Node *) calloc(1, sizeof(Node));
+                node->num = num;
+                node->row = i;
+                node->col = j;
+                node->poss = (int *) calloc(size, sizeof(int));
+                // Se não existir um primeiro nó então é este
+                if (first == NULL) {
+                    first = node;
+                }
+
+                // Se não existir um nó anterior cria-se
+                if (node_prev == NULL) {
+                    node_prev = node;
+                } else {
+                    // Existe nó anterior logo liga-se (Este <--> Oeste)
+                    node_prev->e = node;
+                    node->w = node_prev;
+                    node_prev = node_prev->e;
+
+
+                }
+
+                // Se existir nó da linha anterior liga-se (Norte <--> Sul)
+                if (node_prevline != NULL) {
+                    node_prevline->s = node;
+                    node->n = node_prevline;
+                    node_prevline = node_prevline->e;
+                }
+
+                // Ligar se estiver na diagonal principal e não na primeira linha
+                if (i == j && i != 0) {
+                    node->nw = node->w->n;
+                    node->nw->se = node;
+                }
+
+                // Ligar se estiver na diagonal secundária e não na primeira linha
+                if (i == size - j - 1 && i != 0) {
+                    node->ne = node->n->e;
+                    node->ne->sw = node;
+                }
+                //Ligar Regiões
+                int root = sqrt(size);
+                int rcol, rrow;
+                rcol = j % root;
+                rrow = i % root;
+                Node *rnode = node;
+                if (!(rcol == 0 && rrow == 0)) {
+                    if (rcol == 0) {
+                        rnode = rnode->n;
+                        while (rnode->col % root != (root - 1)) {
+                            rnode = rnode->e;
+                        }
+                        node->bbox = rnode;
+                        rnode->fbox = node;
+                    } else {
+                        node->bbox = node->w;
+                        node->w->fbox = node;
+                    }
+
+                }
+            }
+
+            //Se não existe linha associar
+            if (node_line == NULL) {
+                node_line = first;
+            } else {
+                node_line = node_line->s;
+            }
+            node_prevline = node_line;
+
+        }
+    }
+    return first;
+}
+
+

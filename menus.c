@@ -54,6 +54,13 @@ void main_menu() {
                     print_linked_board(*queue_aux);
                     queue_aux = queue_aux->next;
                 }
+                Node *test;
+                test = queue->next->first;
+                while (test != NULL) {
+                    printf("%d ", test->num);
+                    test = test->fbox;
+                }
+                printf("\n");
                 solveSudokuOptimizedLink(*queue->next);
                 solveSudokuBruteForceLink(*queue->next, queue->next->first);
                 break;
