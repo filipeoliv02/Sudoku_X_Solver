@@ -35,6 +35,8 @@ int checkNakedSingle(Node *node, int size);
 
 int checkHiddenSingle(Node *node, int size);
 
+Node *createPossibilities(SudokuLinkedNode sudoku);
+
 /**
  * @brief Verifica o número passado pode ser colocado na (linha, coluna) do tabuleiro
  * @param sudoku
@@ -338,7 +340,6 @@ void solveSudokuOptimized(Sudoku unsolved, SudokuList *solved, long long *cost) 
                 prev_count--;
             }
         }
-
     }
 
     for (int i = 0; i < cube.total; i++)
@@ -682,284 +683,501 @@ int isValidPlacementLink(SudokuLinkedNode sudoku, Node *node, int num) {
 
 
 void solveSudokuOptimizedLink(SudokuLinkedNode sudoku) {
-    Node *node, *line;
-    int found = 1;
-    writePossibilities(sudoku);
+    Node *origin = createPossibilities(sudoku);
+    print_linked_boards(origin, sudoku.size);
+    int count = 0, found = 1;
 
     while (found) {
         found = 0;
 
-        node = sudoku.first;
-        line = node;
-        while (line != NULL) {
-            while (node != NULL) {
-                if (node->num == 0) {
-                    if (checkNakedSingle(node, sudoku.size) || checkHiddenSingle(node, sudoku.size)) {
-                        found = 1;
-
-                        writePossibilities(sudoku);
-                    }
-                }
-                node = node->e;
-            }
-            line = line->s;
-            node = line;
+        if (stratSingles(origin, sudoku.first)) {
+            count++;
+            found = 1;
+        } else if (stratIntersectionRemoval(origin) || stratNakedGroups(origin)) {
+            found = 1;
         }
+
+        print_linked_boards(origin, sudoku.size);
     }
-    printf("Solucao (avancado linked):\n");
+
+    //solveSudokuBruteForceLink(sudoku, sudoku.first);
+
+    print_linked_boards(origin, sudoku.size);
+
+    printf("Solucao - avancado linked (%d):\n", count);
     print_linked_board(sudoku);
 }
 
-int checkNakedSingle(Node *node, int size) {
+
+int stratSingles(Node *origin, Node *first) {
+    return checkSingles(origin, first, nodeE)       // Hidden Single na linha
+           || checkSingles(origin, first, nodeS)    // Hidden Single na coluna
+           || checkSingles(origin, first, nodeFBOX) // Hidden Single na região
+           || checkSingles(origin, first, nodeSE)   // Hidden Single na diagonal principal
+           || checkSingles(origin, first, nodeSW)   // Hidden Single na diagonal secundária
+           || checkSingles(origin, first, nodeUP);  // Naked Single
+}
+
+int stratIntersectionRemoval(Node *origin) {
+    return checkIntersectionRemoval(origin, nodeS, nodeFBOX, nodeBBOX, isSameBox)     // Box/Line reduct. na coluna
+           || checkIntersectionRemoval(origin, nodeE, nodeFBOX, nodeBBOX, isSameBox)  // Box/Line reduct. na linha
+           || checkIntersectionRemoval(origin, nodeSE, nodeFBOX, nodeBBOX, isSameBox) // Box/Line reduct. na diag. p.
+           || checkIntersectionRemoval(origin, nodeSW, nodeFBOX, nodeBBOX, isSameBox) // Box/Line reduct. na diag. s.
+           || checkIntersectionRemoval(origin, nodeFBOX, nodeS, nodeN, isSameCol)     // Pointing pairs na coluna
+           || checkIntersectionRemoval(origin, nodeFBOX, nodeE, nodeW, isSameRow)     // Pointing pairs na linha
+           || checkIntersectionRemoval(origin, nodeFBOX, nodeSE, nodeNW, isSamePDiag) // Pointing pairs na diag. p.
+           || checkIntersectionRemoval(origin, nodeFBOX, nodeSW, nodeNE, isSameSDiag);// Pointing pairs na diag. s.
+}
+
+int stratNakedGroups(Node *origin) {
+    return checkNakedGroups(origin, nodeE, nodeW);
+}
+
+int checkSingles(Node *origin, Node *first, Node *(*nextNode)(Node *)) {
+    Node *rule = nextNode(origin)->fRule, *node;
+    while (rule != NULL) {
+        node = nextNode(rule);
+        if (node != NULL && nextNode(node) == NULL) {
+            //printf("Single: %d (%d, %d)\n", node->num, node->row, node->col);
+            addNumber(first, node);
+            removeConnectedNodes(node);
+            free(node);
+            return 1;
+        }
+        rule = rule->fRule;
+    }
+    return 0;
+}
+
+int checkIntersectionRemoval(Node *origin, Node *(*nextNode)(Node *), Node *(*nextRemoveNode)(Node *),
+                             Node *(*prevRemoveNode)(Node *), int (*isSameUnit)(Node *, Node *, int)) {
+    Node *rule = nextNode(origin)->fRule, *node;
+    int found;
+    while (rule != NULL) {
+        found = 0;
+
+        // Procurar interseção
+        node = nextNode(rule);
+        while (nextNode(node) != NULL) {
+            found = 1;
+            if (!isSameUnit(node, nextNode(node), origin->num)) {
+                found = 0;
+                break;
+            }
+            node = nextNode(node);
+        }
+
+        // Se interseção encontrada, remover os outros nós
+        if (found && clearIntersection(rule, nextNode, nextRemoveNode, prevRemoveNode)) {
+            //printf("Intersect Rmv: %d (%d, %d)\n", nextNode(rule)->num, nextNode(rule)->row, nextNode(rule)->col);
+            return 1;
+        }
+
+        rule = rule->fRule;
+    }
+    return 0;
+}
+
+int checkNakedGroups(Node *origin, Node *(*nextNode)(Node *), Node *(*prevNode)(Node *)) {
+    Node *rule = origin->up->fRule, *node, *nodeAux;
+
+    return 0;
+}
+
+void addNumber(Node *first, Node *new) {
+    Node *node = first;
+    for (int row = 0; row < new->row; row++) {
+        node = node->s;
+    }
+    for (int col = 0; col < new->col; col++) {
+        node = node->e;
+    }
+
+    node->num = new->num;
+}
+
+int clearIntersection(Node *nodeRule, Node *(*nextNode)(Node *), Node *(*nextRemoveNode)(Node *),
+                      Node *(*prevRemoveNode)(Node *)) {
     int count = 0;
-    int number = 0;
-    for (int num = 0; num < size; num++) {
-        if (*(node->poss + num) != 0) {
-            number = num + 1;
-            count++;
+    Node *node, *nodeAux;
+
+    // Começar na unit onde se vai remover
+    node = nextNode(nodeRule);
+    while (prevRemoveNode(node) != NULL) node = prevRemoveNode(node);
+
+    // Remover todos os nós entre dois nós
+    nodeAux = nextNode(nodeRule);
+    while (node != NULL) {
+        count = removeNodesBetweenTwoNodes(node, nodeAux, nextRemoveNode) + count;
+        node = nodeAux;
+        if (nodeAux != NULL) {
+            nodeAux = nextNode(nodeAux);
         }
     }
-    if (count == 1) {
-        node->num = number;
-    }
-    return count == 1;
+
+    return count;
 }
 
-int checkHiddenSingle(Node *node, int size) {
-    int found = 1;
-    int number = 0;
-    Node *nodeAux = NULL;
-    for (int num = 0; num < size; num++) {
-        if (*(node->poss + num) != 0) {
-            number = num + 1;
-            found = 1;
+Node *createPossibilities(SudokuLinkedNode sudoku) {
+    Node *node, *node_line = NULL, *node_prevline = NULL, *node_prev = NULL, *node_layer = NULL, *nodeAux = NULL;
+    Node *node_sudoku, *node_sudoku_line;
+    int root = (int) sqrt(sudoku.size), rrow, rcol;
 
-            nodeAux = node->s;
-            while (nodeAux != NULL) {
-                if (*(nodeAux->poss + num) != 0) {
-                    found = 0;
-                    break;
-                }
-                nodeAux = nodeAux->s;
-            }
+    Node *origin = (Node *) calloc(1, sizeof(Node));
+    Node *row = (Node *) calloc(1, sizeof(Node)), *col = (Node *) calloc(1, sizeof(Node));
+    Node *box = (Node *) calloc(1, sizeof(Node)), *number = (Node *) calloc(1, sizeof(Node));
+    Node *pdiag = (Node *) calloc(1, sizeof(Node)), *sdiag = (Node *) calloc(1, sizeof(Node));
 
-            nodeAux = node->n;
-            while (nodeAux != NULL) {
-                if (*(nodeAux->poss + num) != 0) {
-                    found = 0;
-                    break;
-                }
-                nodeAux = nodeAux->n;
-            }
+    origin->num = sudoku.size;
+    origin->e = row;
+    origin->s = col;
+    origin->fbox = box;
+    origin->se = pdiag;
+    origin->sw = sdiag;
+    origin->up = number;
 
-            if (found) {
-                break;
-            }
-            found = 1;
-            nodeAux = node->e;
-            while (nodeAux != NULL) {
-                if (*(nodeAux->poss + num) != 0) {
-                    found = 0;
-                    break;
-                }
-                nodeAux = nodeAux->e;
-            }
+    for (int num = 0; num <= sudoku.size; num++) {
 
-            nodeAux = node->w;
-            while (nodeAux != NULL) {
-                if (*(nodeAux->poss + num) != 0) {
-                    found = 0;
-                    break;
-                }
-                nodeAux = nodeAux->w;
-            }
+        node_prevline = NULL;
+        node_line = NULL;
 
-            if (found) {
-                break;
-            }
-
-            if (node->se != NULL || node->nw != NULL) {
-                found = 1;
-                nodeAux = node->se;
-                while (nodeAux != NULL) {
-                    if (*(nodeAux->poss + num) != 0) {
-                        found = 0;
-                        break;
-                    }
-                    nodeAux = nodeAux->se;
-                }
-
-                nodeAux = node->nw;
-                while (nodeAux != NULL) {
-                    if (*(nodeAux->poss + num) != 0) {
-                        found = 0;
-                        break;
-                    }
-                    nodeAux = nodeAux->nw;
-                }
-                if (found) {
-                    break;
-                }
-            }
-
-            if (node->sw != NULL || node->ne != NULL) {
-                found = 1;
-                nodeAux = node->sw;
-                while (nodeAux != NULL) {
-                    if (*(nodeAux->poss + num) != 0) {
-                        found = 0;
-                        break;
-                    }
-                    nodeAux = nodeAux->sw;
-                }
-
-                nodeAux = node->ne;
-                while (nodeAux != NULL) {
-                    if (*(nodeAux->poss + num) != 0) {
-                        found = 0;
-                        break;
-                    }
-                    nodeAux = nodeAux->ne;
-                }
-
-                if (found) {
-                    break;
-                }
-            }
-
-            found = 1;
-            nodeAux = node->fbox;
-            while (nodeAux != NULL) {
-                if (*(nodeAux->poss + num) != 0) {
-                    found = 0;
-                    break;
-                }
-                nodeAux = nodeAux->fbox;
-            }
-
-            nodeAux = node->bbox;
-            while (nodeAux != NULL) {
-                if (*(nodeAux->poss + num) != 0) {
-                    found = 0;
-                    break;
-                }
-                nodeAux = nodeAux->bbox;
-            }
-            if (found) {
-                break;
-            }
-        }
-    }
-    if (found) {
-        node->num = number;
-    }
-    return found;
-}
-
-void writePossibilities(SudokuLinkedNode sudoku) {
-    Node *node = sudoku.first;
-    Node *line = node;
-    while (line != NULL) {
-        while (node != NULL) {
-            for (int num = 0; num < sudoku.size; num++) {
-                if (node->num == 0 && isValidPlacementLink(sudoku, node, num + 1)) {
-                    *(node->poss + num) = num + 1;
-                } else {
-                    *(node->poss + num) = 0;
-                }
-            }
-            node = node->e;
-        }
-        line = line->s;
-        node = line;
-    }
-}
-
-Node *createPossibilities(int size) {
-    Node *first = NULL;
-    Node *node, *node_line = NULL, *node_prevline = NULL, *node_prev;
-    node_prev = NULL;
-    node = NULL;
-    node_prevline = NULL;
-    node_line = NULL;
-    for (int num = 1; num <= size; num++) {
-        for (int i = 0; i < size; i++) {
-            node_prev = NULL;
-            for (int j = 0; j < size; j++) {
-                // Criar nó e colocar valor do tabuleiro
+        for (int i = 0; i < sudoku.size; i++) {
+            for (int j = 0; j < sudoku.size; j++) {
                 node = (Node *) calloc(1, sizeof(Node));
+
                 node->num = num;
                 node->row = i;
                 node->col = j;
-                node->poss = (int *) calloc(size, sizeof(int));
+
                 // Se não existir um primeiro nó então é este
-                if (first == NULL) {
-                    first = node;
+                if (i == 0 && j == 0 && num == 0) {
+                    node_layer = node;
                 }
 
-                // Se não existir um nó anterior cria-se
-                if (node_prev == NULL) {
-                    node_prev = node;
-                } else {
-                    // Existe nó anterior logo liga-se (Este <--> Oeste)
+                // Ligar linha
+                if (j != 0) {
+                    // Não está na primeira coluna, ligar ao nó anterior
                     node_prev->e = node;
                     node->w = node_prev;
                     node_prev = node_prev->e;
+                } else {
+                    // Está na primeira coluna, não existe um nó anterior, associa-se
+                    node_prev = node;
 
+                    // Ligar à unidade das linhas
+                    if (num > 0) {
+                        row->fRule = (Node *) calloc(1, sizeof(Node));
+                        row->fRule->bRule = row;
+                        row = row->fRule;
 
+                        row->e = node;
+                        node->w = row;
+                    }
                 }
 
-                // Se existir nó da linha anterior liga-se (Norte <--> Sul)
-                if (node_prevline != NULL) {
+                // Ligar coluna
+                if (i != 0) {
+                    // Não está na primeira linha, ligar ao nó anterior
                     node_prevline->s = node;
                     node->n = node_prevline;
                     node_prevline = node_prevline->e;
+                } else if (num > 0) {
+                    // Está na primeira linha, ligar à unidade das colunas
+                    col->fRule = (Node *) calloc(1, sizeof(Node));
+                    col->fRule->bRule = col;
+                    col = col->fRule;
+
+                    col->s = node;
+                    node->n = col;
                 }
 
-                // Ligar se estiver na diagonal principal e não na primeira linha
-                if (i == j && i != 0) {
-                    node->nw = node->w->n;
-                    node->nw->se = node;
+                // Ligar entre camadas, se estiver acima da primeira
+                if (num > 0) {
+                    if (i == 0 && j == 0) {
+                        node->down = node_layer;
+                        node_layer = node;
+                    } else if (j == 0) {
+                        node->down = node->n->down->s;
+                    } else {
+                        node->down = node->w->down->e;
+                    }
+                    node->down->up = node;
                 }
 
-                // Ligar se estiver na diagonal secundária e não na primeira linha
-                if (i == size - j - 1 && i != 0) {
-                    node->ne = node->n->e;
-                    node->ne->sw = node;
+                // Ligar a regra dos números únicos se estiver na primeira camada
+                if (num == 0) {
+                    number->fRule = node;
+                    number->fRule->bRule = number;
+                    number = number->fRule;
                 }
+
+                // Ligar diagonais se o tabuleiro for do tamanho do SudokuX
+                if (sudoku.size <= 16) {
+
+                    // Diagonal principal
+                    if (i == j) {
+                        if (i != 0) {
+                            // Não está na primeira linha, ligar ao nó anterior
+                            node->nw = node->w->n;
+                            node->nw->se = node;
+                        }
+                        else if (num > 0) {
+                            // Está na primeira linha, ligar à unidade das diagonais principais
+                            pdiag->fRule = (Node *) calloc(1, sizeof(Node));
+                            pdiag->fRule->bRule = pdiag;
+                            pdiag = pdiag->fRule;
+
+                            pdiag->se = node;
+                            node->nw = pdiag;
+                        }
+                    }
+
+                    // Diagonal secundária
+                    if (i == sudoku.size - j - 1) {
+                        if (i != 0) {
+                            // Não está na primeira linha, ligar ao nó anterior
+                            node->ne = node->n->e;
+                            node->ne->sw = node;
+                        }
+                        else if (num > 0) {
+                            // Está na primeira linha, ligar à unidade das diagonais secundárias
+                            sdiag->fRule = (Node *) calloc(1, sizeof(Node));
+                            sdiag->fRule->bRule = sdiag;
+                            sdiag = sdiag->fRule;
+
+                            sdiag->sw = node;
+                            node->ne = sdiag;
+                        }
+                    }
+                }
+
                 //Ligar Regiões
-                int root = sqrt(size);
-                int rcol, rrow;
                 rcol = j % root;
                 rrow = i % root;
-                Node *rnode = node;
-                if (!(rcol == 0 && rrow == 0)) {
+                nodeAux = node;
+                if (rcol == 0 && rrow == 0) {
+                    // Está no ínicio da região, ligar à unidade das regiões
+                    if (num > 0) {
+                        box->fRule = (Node *) calloc(1, sizeof(Node));
+                        box->fRule->bRule = box;
+                        box = box->fRule;
+
+                        box->fbox = node;
+                        node->bbox = box;
+                    }
+                } else {
+                    // Não está no ínicio da região, ligar ao nó anterior da região
                     if (rcol == 0) {
-                        rnode = rnode->n;
-                        while (rnode->col % root != (root - 1)) {
-                            rnode = rnode->e;
+                        nodeAux = nodeAux->n;
+                        while (nodeAux->col % root != (root - 1)) {
+                            nodeAux = nodeAux->e;
                         }
-                        node->bbox = rnode;
-                        rnode->fbox = node;
+                        node->bbox = nodeAux;
+                        nodeAux->fbox = node;
                     } else {
                         node->bbox = node->w;
                         node->w->fbox = node;
                     }
-
                 }
             }
 
             //Se não existe linha associar
-            if (node_line == NULL) {
-                node_line = first;
+            if (i == 0) {
+                node_line = node_layer;
             } else {
                 node_line = node_line->s;
             }
             node_prevline = node_line;
-
         }
     }
-    return first;
+
+    node_sudoku = sudoku.first;
+    node_sudoku_line = sudoku.first;
+    node = origin->up->fRule;
+    while (node_sudoku_line != NULL) {
+        while (node_sudoku != NULL) {
+            if (node_sudoku->num != 0) {
+                nodeAux = node;
+                node = node->bRule;
+                while (nodeAux->num != node_sudoku->num) {
+                    nodeAux = nodeAux->up;
+                }
+                removeConnectedNodes(nodeAux);
+                free(nodeAux);
+            }
+            node_sudoku = node_sudoku->e;
+            node = node->fRule;
+        }
+        node_sudoku_line = node_sudoku_line->s;
+        node_sudoku = node_sudoku_line;
+    }
+
+    return origin;
 }
 
+void removeConnectedNodes(Node *node) {
+    removeNodesBetweenTwoNodes(node, NULL, nodeN);
+    removeNodesBetweenTwoNodes(node, NULL, nodeS);
+    removeNodesBetweenTwoNodes(node, NULL, nodeW);
+    removeNodesBetweenTwoNodes(node, NULL, nodeE);
+    removeNodesBetweenTwoNodes(node, NULL, nodeNE);
+    removeNodesBetweenTwoNodes(node, NULL, nodeNW);
+    removeNodesBetweenTwoNodes(node, NULL, nodeSE);
+    removeNodesBetweenTwoNodes(node, NULL, nodeSW);
+    removeNodesBetweenTwoNodes(node, NULL, nodeUP);
+    removeNodesBetweenTwoNodes(node, NULL, nodeDOWN);
+    removeNodesBetweenTwoNodes(node, NULL, nodeFBOX);
+    removeNodesBetweenTwoNodes(node, NULL, nodeBBOX);
+}
+
+int removeNodesBetweenTwoNodes(Node *nodeStart, Node *nodeStop, Node *(*nextNode)(Node *)) {
+    Node *nodeCurr = nextNode(nodeStart), *nodeNext;
+    int count = 0;
+
+    while (nodeCurr != nodeStop) {
+        count++;
+        nodeNext = nextNode(nodeCurr);
+        disconnectNode(nodeCurr);
+        free(nodeCurr);
+        nodeCurr = nodeNext;
+    }
+
+    return count;
+}
+
+void disconnectNode(Node *node) {
+    if (node->n != NULL) {
+        node->n->s = node->s;
+    }
+
+    if (node->s != NULL) {
+        node->s->n = node->n;
+    }
+
+    if (node->w != NULL) {
+        node->w->e = node->e;
+    }
+
+    if (node->e != NULL) {
+        node->e->w = node->w;
+    }
+
+    if (node->nw != NULL) {
+        node->nw->se = node->se;
+    }
+
+    if (node->ne != NULL) {
+        node->ne->sw = node->sw;
+    }
+
+    if (node->se != NULL) {
+        node->se->nw = node->nw;
+    }
+
+    if (node->sw != NULL) {
+        node->sw->ne = node->ne;
+    }
+
+    if (node->bbox != NULL) {
+        node->bbox->fbox = node->fbox;
+    }
+
+    if (node->fbox != NULL) {
+        node->fbox->bbox = node->bbox;
+    }
+
+    if (node->down != NULL) {
+        node->down->up = node->up;
+    }
+
+    if (node->up != NULL) {
+        node->up->down = node->down;
+    }
+
+    if (node->bRule != NULL) {
+        node->bRule->fRule = node->fRule;
+    }
+
+    if (node->fRule != NULL) {
+        node->fRule->bRule = node->bRule;
+    }
+}
+
+int isSameRow(Node *node1, Node *node2, int size) {
+    return node1->row == node2->row;
+}
+
+int isSameCol(Node *node1, Node *node2, int size) {
+    return node1->col == node2->col;
+}
+
+int isSamePDiag(Node *node1, Node *node2, int size) {
+    return node1->col == node1->row && node2->col == node2->row;
+}
+
+int isSameSDiag(Node *node1, Node *node2, int size) {
+    return node1->row == size - node1->col - 1 && node2->row == size - node2->col - 1;
+}
+
+int isSameBox(Node *node1, Node *node2, int size) {
+    int root = sqrt(size);
+    return node1->row / root == node2->row / root && node1->col / root == node2->col / root;
+}
+
+
+Node *nodeN(Node *node) {
+    return node->n;
+}
+
+Node *nodeS(Node *node) {
+    return node->s;
+}
+
+Node *nodeW(Node *node) {
+    return node->w;
+}
+
+Node *nodeE(Node *node) {
+    return node->e;
+}
+
+Node *nodeNE(Node *node) {
+    return node->ne;
+}
+
+Node *nodeNW(Node *node) {
+    return node->nw;
+}
+
+Node *nodeSE(Node *node) {
+    return node->se;
+}
+
+Node *nodeSW(Node *node) {
+    return node->sw;
+}
+
+Node *nodeUP(Node *node) {
+    return node->up;
+}
+
+Node *nodeDOWN(Node *node) {
+    return node->down;
+}
+
+Node *nodeFBOX(Node *node) {
+    return node->fbox;
+}
+
+Node *nodeBBOX(Node *node) {
+    return node->bbox;
+}
+
+Node *nodeFRULE(Node *node) {
+    return node->fRule;
+}
+
+Node *nodeBRULE(Node *node) {
+    return node->bRule;
+}
 

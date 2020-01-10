@@ -20,7 +20,6 @@ void print_linked_board(SudokuLinkedNode board);
 void main_menu() {
     SudokuList unsolved = {0, NULL, NULL}, solved = {0, NULL, NULL};
     int selection, exit = 0;
-    SudokuLinkedNode *queue = NULL, *queue_aux = NULL;
     while (!exit) {
         printf("Menu Principal\n");
         printf("1 - Ver tabuleiros\n"
@@ -28,7 +27,6 @@ void main_menu() {
                "3 - Guardar tabuleiros resolvidos no ficheiro\n"
                "4 - Criar Ficheiro Binario com os Tabuleiros Resolvidos \n"
                "5 - Gerar novos tabuleiros\n"
-               "6 - Teste Tabuleiros (Linked Lists)\n"
                "0 - Sair\n");
         scanf("%d", &selection);
         switch (selection) {
@@ -46,23 +44,6 @@ void main_menu() {
                 break;
             case 5:
                 menu_gen_sudoku(unsolved, &solved);
-                break;
-            case 6:
-                queue = load_sudokus_link("unsolved.txt");
-                queue_aux = queue;
-                while (queue_aux->next != NULL) {
-                    print_linked_board(*queue_aux);
-                    queue_aux = queue_aux->next;
-                }
-                Node *test;
-                test = queue->next->first;
-                while (test != NULL) {
-                    printf("%d ", test->num);
-                    test = test->fbox;
-                }
-                printf("\n");
-                solveSudokuOptimizedLink(*queue->next);
-                solveSudokuBruteForceLink(*queue->next, queue->next->first);
                 break;
             case 0:
                 exit = 1;
