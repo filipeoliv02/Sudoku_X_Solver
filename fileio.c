@@ -124,7 +124,6 @@ SudokuLinkedNode *load_sudokus_link(char *file) {
                     fscanf(fp, "%d ", &node->num);
                     node->row = i;
                     node->col = j;
-                    node->poss = (int *) calloc(size, sizeof(int));
                     // Se não existir um primeiro nó então é este
                     if (pqueue->first == NULL) {
                         pqueue->first = node;

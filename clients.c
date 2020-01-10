@@ -311,7 +311,7 @@ void client_compare_algorithms() {
     average_cost4 = 0, average_cost9 = 0, average_cost16 = 0;
     average_time4 = 0, average_time9 = 0, average_time16 = 0;
     count4 = 0, count9 = 0, count16 = 0;
-    free_list_sudoku(unsolved);
+    /*free_list_sudoku(unsolved);
     unsolved = load_sudokus("client_test_files/unsolved_client.txt");
 
     for (int i = 0; i < unsolved.total; i++) {
@@ -374,7 +374,67 @@ void client_compare_algorithms() {
         printf("Sudokus 25x25:\nAverage time: usec %ld - sec %lf\nAverage cost: %lld\n", elapsed_time,
                (elapsed_time * pow(10, -6)), cost);
     }
+*/
+    //free_list_sudoku(unsolved);
+    //free_list_sudoku(solved);
 
-    free_list_sudoku(unsolved);
-    free_list_sudoku(solved);
+    average_cost4 = 0, average_cost9 = 0, average_cost16 = 0;
+    average_time4 = 0, average_time9 = 0, average_time16 = 0;
+    count4 = 0, count9 = 0, count16 = 0;
+    SudokuLinkedNode *sudokus = load_sudokus_link("client_test_files/unsolved_client.txt");
+
+    while(sudokus != NULL) {
+        gettimeuseconds(&time_usec_init); // init time
+        solveSudokuOptimizedLink(*sudokus);
+        gettimeuseconds(&time_usec_end); // end time
+        elapsed_time = (long) (time_usec_end - time_usec_init);
+
+        switch (sudokus->size) {
+            case 4:
+                average_time4 += elapsed_time;
+                count4++;
+                break;
+            case 9:
+                average_time9 += elapsed_time;
+                count9++;
+                break;
+            case 16:
+                average_time16 += elapsed_time;
+                count16++;
+                break;
+            case 25:
+                average_time25 += elapsed_time;
+                count25++;
+                break;
+            default:
+                break;
+        }
+        sudokus = sudokus->next;
+    }
+    printf("\n\nOtimizado Listas Ligadas\n");
+    if (count4 != 0) {
+        elapsed_time = average_time4 / count4;
+        printf("Sudokus 4x4:\nAverage time: usec %ld - sec %lf\n", elapsed_time, (elapsed_time * pow(10, -6)));
+    }
+
+    if (count9 != 0) {
+        elapsed_time = average_time9 / count9;
+        printf("Sudokus 9x9:\nAverage time: usec %ld - sec %lf\n", elapsed_time, (elapsed_time * pow(10, -6)));
+    }
+
+    if (count16 != 0) {
+        elapsed_time = average_time16 / count16;
+        printf("Sudokus 16x16:\nAverage time: usec %ld - sec %lf\n", elapsed_time, (elapsed_time * pow(10, -6)));
+    }
+
+    if (count25 != 0) {
+        elapsed_time = average_time25 / count25;
+        printf("Sudokus 25x25:\nAverage time: usec %ld - sec %lf\n", elapsed_time, (elapsed_time * pow(10, -6)));
+    }
+}
+
+void client_linked_algorithms() {
+    SudokuLinkedNode *queue = load_sudokus_link("unsolved.txt");
+    solveSudokuBruteForceLink(*queue, queue->first);
+    solveSudokuOptimizedLink(*queue);
 }

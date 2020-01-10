@@ -60,8 +60,8 @@ void printAllStoredBoards(SudokuList s, int flagOrdered) {
  */
 void print_linked_board(SudokuLinkedNode board) {
     Node *node = board.first, *node_line = board.first;
-    while(node_line != NULL) {
-        while(node != NULL) {
+    while (node_line != NULL) {
+        while (node != NULL) {
             printf(" %d ", node->num);
             node = node->e;
         }
@@ -70,6 +70,36 @@ void print_linked_board(SudokuLinkedNode board) {
         node = node_line;
     }
     printf("\n");
+}
+
+void print_linked_boards(Node *first, int size) {
+    Node *node, *nodeAux;
+    for (int num = 1; num <= size; num++) {
+        node = first->up->fRule;
+        for (int row = 0; row < size; ++row) {
+            for (int col = 0; col < size; ++col) {
+                if (node != NULL && node->up->row == row && node->up->col == col) {
+                    nodeAux = node;
+                    while (nodeAux != NULL) {
+                        if (nodeAux->num == num) {
+                            printf("%d ", num);
+                            break;
+                        }
+                        nodeAux = nodeAux->up;
+                    }
+                    if (nodeAux == NULL) {
+                        printf("0 ");
+                    }
+                    node = node->fRule;
+                }
+                else {
+                    printf("0 ");
+                }
+            }
+            printf("\n");
+        }
+        printf("\n");
+    }
 }
 
 /**

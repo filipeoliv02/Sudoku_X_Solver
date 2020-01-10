@@ -27,4 +27,6 @@ void free_list_sudoku(SudokuList l);
 
 void print_linked_board(SudokuLinkedNode board);
 
+void print_linked_boards(Node *first, int size);
+
 #endif
