@@ -61,7 +61,11 @@ int checkIntersectionRemoval(Node *origin, Node *(*nextNode)(Node *), Node *(*ne
 int clearIntersection(Node *nodeRule, Node *(*nextNode)(Node *), Node *(*nextRemoveNode)(Node *),
                       Node *(*prevRemoveNode)(Node *));
 
-int checkNakedGroups(Node *origin, Node *(*nextNode)(Node *), Node *(*prevNode)(Node *));
+int checkNakedGroups(Node *origin, int groupSize, Node *(*nextNode)(Node *), Node *(*prevNode)(Node *));
+
+int findGroup(Node *rule, int *dict, int total, int num, int *count, Node *(*nextNode)(Node *));
+
+int removeGroupNodes(Node *ruleStart, Node *ruleStop, const int *dict, Node *(*nextNode)(Node *));
 
 void removeConnectedNodes(Node *node);
 
