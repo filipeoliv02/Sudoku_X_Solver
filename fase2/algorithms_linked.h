@@ -1,5 +1,5 @@
-#ifndef SUDOKU_ALGORITHMS_H
-#define SUDOKU_ALGORITHMS_H
+#ifndef SUDOKU_ALGORITHMS_LINKED_H
+#define SUDOKU_ALGORITHMS_LINKED_H
 
 typedef struct node {
     int num, row, col;
@@ -18,36 +18,13 @@ typedef struct sudoku_linked {
     SudokuLinkedNode *first, *last;
 } SudokuLinked;
 
-typedef struct sudoku {
-    int size;
-    int **board;
-} Sudoku;
-
-typedef struct sudoku_list {
-    int total;
-    int *orderedList;
-    Sudoku *sudokus;
-} SudokuList;
-
-void solveSudokuBruteForce(SudokuList *solved, Sudoku sudoku, int row, int col, long long *cost);
-
-void solveSudokuOptimized(Sudoku unsolved, SudokuList *solved, long long *cost);
-
-int isValidPlacement(Sudoku sudoku, int num, int row, int col);
-
-int searchSudokus(SudokuList searchList, Sudoku sudoku);
-
-int isPattern(Sudoku pattern, Sudoku unsolved);
-
-void computeOrderBySize(SudokuList *a);
-
 void solveSudokuBruteForceLink(SudokuLinkedNode queue, Node *node);
 
 void solveSudokuOptimizedLink(SudokuLinkedNode sudoku);
 
 void addNumber(Node *first, Node *new);
 
-int stratSingles(Node *origin, Node *first);
+int stratSingles(Node *origin, Node *first, int *count);
 
 int stratIntersectionRemoval(Node *origin);
 
@@ -70,7 +47,7 @@ int checkNakedGroups(Node *origin, int groupSize, Node *(*nextNode)(Node *), Nod
 
 
 int checkXWing(Node *origin, Node *(*nextNode)(Node *), Node *(*prevNode)(Node *), Node *(*nextRemoveNode)(Node *),
-               Node *(*prevRemoveNode)(Node *));
+               Node *(*prevRemoveNode)(Node *), int (*unitNode)(Node *));
 
 int findGroup(Node *rule, int *dict, int total, int num, int *count, Node *(*nextNode)(Node *));
 
@@ -91,6 +68,10 @@ int isSamePDiag(Node *node1, Node *node2, int size);
 int isSameSDiag(Node *node1, Node *node2, int size);
 
 int isSameBox(Node *node1, Node *node2, int size);
+
+int unitRow(Node *node);
+
+int unitCol(Node *node);
 
 Node *nodeN(Node *node);
 
@@ -120,4 +101,4 @@ Node *nodeFRULE(Node *node);
 
 Node *nodeBRULE(Node *node);
 
-#endif
+#endif //SUDOKU_ALGORITHMS_LINKED_H

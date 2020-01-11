@@ -1,5 +1,6 @@
-#include "menus.h"
-#include "clients.h"
+#include "fase1/menus.h"
+#include "fase1/clients.h"
+#include "fase2/clients_linked.h"
 
 /**
  * @brief Início do Programa usado para alternar entre menus e clientes

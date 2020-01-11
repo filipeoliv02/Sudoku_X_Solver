@@ -2,6 +2,7 @@
 #define SUDOKU_UTILS_H
 
 #include "fileio.h"
+#include "../fase2/algorithms_linked.h"
 
 void printSudoku(int **sudoku, int size);
 

@@ -10,5 +10,4 @@ void client_random_generation();
 void client_solve_variable_size();
 void client_search_solutions();
 void client_compare_algorithms();
-void client_linked_algorithms();
 #endif //SUDOKU_CLIENTS_H
