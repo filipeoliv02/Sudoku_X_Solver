@@ -1,5 +1,6 @@
 #include "clients.h"
 #include "fileio.h"
+#include "../fase2/fileio_linked.h"
 #include "utils.h"
 #include "algorithms.h"
 #include <stdio.h>
@@ -433,8 +434,3 @@ void client_compare_algorithms() {
     }
 }
 
-void client_linked_algorithms() {
-    SudokuLinkedNode *queue = load_sudokus_link("unsolved.txt");
-    solveSudokuBruteForceLink(*queue, queue->first);
-    solveSudokuOptimizedLink(*queue);
-}
