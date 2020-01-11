@@ -53,6 +53,8 @@ int stratIntersectionRemoval(Node *origin);
 
 int stratNakedGroups(Node *origin);
 
+int stratXWing(Node *origin);
+
 int checkSingles(Node *origin, Node *first, Node *(*nextNode)(Node *));
 
 int checkIntersectionRemoval(Node *origin, Node *(*nextNode)(Node *), Node *(*nextRemoveNode)(Node *),
@@ -62,6 +64,8 @@ int clearIntersection(Node *nodeRule, Node *(*nextNode)(Node *), Node *(*nextRem
                       Node *(*prevRemoveNode)(Node *));
 
 int checkNakedGroups(Node *origin, int groupSize, Node *(*nextNode)(Node *), Node *(*prevNode)(Node *));
+
+int checkXWing(Node *origin);
 
 int findGroup(Node *rule, int *dict, int total, int num, int *count, Node *(*nextNode)(Node *));
 
