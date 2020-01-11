@@ -743,7 +743,7 @@ int stratNakedGroups(Node *origin) {
 }
 
 int stratXWing(Node *origin) {
-    return checkXWing(origin);
+    return checkXWing(origin, nodeE, nodeW, nodeS, nodeN) || checkXWing(origin, nodeS, nodeN, nodeE, nodeW);
 }
 
 int checkSingles(Node *origin, Node *first, Node *(*nextNode)(Node *)) {
@@ -809,51 +809,8 @@ int checkNakedGroups(Node *origin, int groupSize, Node *(*nextNode)(Node *), Nod
         if (findGroup(rule, dict, groupSize, groupSize - 1, &count, nextNode)) {
             // Remover
             count = removeGroupNodes(rule, NULL, dict, prevNode) + count;
-            /*node = prevNode(rule);
-            while (node != NULL) {
-                count++;
-                nodeRemove = node->up;
-                while (nodeRemove != NULL) {
-                    nodeAux = nodeRemove->up;
-                    if (*(dict + nodeRemove->num - 1) != 0) {
-                        disconnectNode(nodeRemove);
-                        free(nodeRemove);
-                    }
-                    nodeRemove = nodeAux;
-                }
-                node = prevNode(node);
-            }
 
-            node = nextNode(rule);
-            while (node != ruleAux) {
-                count++;
-                nodeRemove = node->up;
-                while (nodeRemove != NULL) {
-                    nodeAux = nodeRemove->up;
-                    if (*(dict + nodeRemove->num - 1) != 0) {
-                        disconnectNode(nodeRemove);
-                        free(nodeRemove);
-                    }
-                    nodeRemove = nodeAux;
-                }
-                node = nextNode(node);
-            }
-
-            node = nextNode(ruleAux);
-            while (node != NULL) {
-                count++;
-                nodeRemove = node->up;
-                while (nodeRemove != NULL) {
-                    nodeAux = nodeRemove->up;
-                    if (*(dict + nodeRemove->num - 1) != 0) {
-                        disconnectNode(nodeRemove);
-                        free(nodeRemove);
-                    }
-                    nodeRemove = nodeAux;
-                }
-                node = nextNode(node);
-            }*/
-            if(count > 0) {
+            if (count > 0) {
                 //printf("<-------------------> Group %d, %d: (%d,%d)\n", rule->up->num, rule->up->up->num, rule->up->row, rule->up->col);
                 return 1;
             }
@@ -864,23 +821,77 @@ int checkNakedGroups(Node *origin, int groupSize, Node *(*nextNode)(Node *), Nod
     return 0;
 }
 
-int checkXWing(Node *origin) {
-    Node *rule;
+int checkXWing(Node *origin, Node *(*nextNode)(Node *), Node *(*prevNode)(Node *), Node *(*nextRemoveNode)(Node *),
+               Node *(*prevRemoveNode)(Node *)) {
+    Node *rule = nextNode(origin)->fRule;
+    Node *node = NULL;
+    int count = 0;
+    while (rule != NULL) {
+        node = nextNode(rule);
+        while (node != NULL) {
+            count++;
+            node = nextNode(node);
+        }
+        if (count == 2) {
 
+            node = prevRemoveNode(nextNode(rule));
+            while (node->num != 0) {
+                if (prevNode(node)->num == 0 && nextNode(node)->col == nextNode(nextNode(rule))->col &&
+                    nextNode(nextNode(node)) == NULL) {
+                    if (removeXWing(nextNode(rule), node, nextNode, nextRemoveNode, prevRemoveNode)) {
+                        return 1;
+                    }
+                }
+                node = prevRemoveNode(node);
+            }
+            node = nextRemoveNode(nextNode(rule));
+            while (node != NULL) {
+                if (prevNode(node)->num == 0 && nextNode(node)->col == nextNode(nextNode(rule))->col &&
+                    nextNode(nextNode(node)) == NULL) {
+                    if (removeXWing(node, nextNode(rule), nextNode, nextRemoveNode, prevRemoveNode)) {
+                        return 1;
+                    }
+                }
+                node = nextRemoveNode(node);
 
+            }
 
-
-
+        }
+        rule = rule->fRule;
+    }
     return 0;
 }
 
+int removeXWing(Node *node1, Node *node2, Node *(*nextNode)(Node *), Node *(*nextRemoveNode)(Node *),
+                Node *(*prevRemoveNode)(Node *)) {
+    Node *remove = NULL;
+    int count = 0;
+
+    while (node2 != NULL) {
+
+        remove = prevRemoveNode(node2);
+        while (remove->num != 0) {
+            remove = prevRemoveNode(remove);
+        }
+
+        count = removeNodesBetweenTwoNodes(remove, node2, nextRemoveNode) + count;
+        count = removeNodesBetweenTwoNodes(node2, node1, nextRemoveNode) + count;
+        count = removeNodesBetweenTwoNodes(node1, NULL, nextRemoveNode) + count;
+
+        node1 = nextNode(node1);
+        node2 = nextNode(node2);
+
+    }
+    return count;
+}
+
+
 int findGroup(Node *rule, int *dict, int total, int num, int *count, Node *(*nextNode)(Node *)) {
     if (*dict > total || num == 0) {
-        if(*dict == total && num == 0) {
+        if (*dict == total && num == 0) {
             *count = removeGroupNodes(rule, NULL, dict, nextNode) + (*count);
             return 1;
-        }
-        else {
+        } else {
             return 0;
         }
     }
