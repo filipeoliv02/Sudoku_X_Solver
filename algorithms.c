@@ -581,9 +581,7 @@ void solveSudokuBruteForceLink(SudokuLinkedNode queue, Node *node) {
 
     Node *newNode = node;
     if (newNode->e == NULL) {
-        while (newNode->w != NULL) {
-            newNode = newNode->w;
-        }
+        while (newNode->w != NULL) newNode = newNode->w;
         newNode = newNode->s;
     } else {
         newNode = newNode->e;
@@ -593,7 +591,6 @@ void solveSudokuBruteForceLink(SudokuLinkedNode queue, Node *node) {
         solveSudokuBruteForceLink(queue, newNode);
     } else {
         for (int num = 1; num <= queue.size; num++) {
-
             if (isValidPlacementLink(queue, node, num)) {
                 node->num = num;
                 solveSudokuBruteForceLink(queue, newNode);
@@ -729,8 +726,20 @@ int stratIntersectionRemoval(Node *origin) {
            || checkIntersectionRemoval(origin, nodeFBOX, nodeSW, nodeNE, isSameSDiag);// Pointing pairs na diag. s.
 }
 
+#define FLAG_DYNAMIC_GROUPS 0
+
 int stratNakedGroups(Node *origin) {
-    return checkNakedGroups(origin, nodeE, nodeW);
+    int maxGroups = FLAG_DYNAMIC_GROUPS ? origin->num / 2 : 4;
+    for (int groupSize = 2; groupSize <= maxGroups; groupSize++) {
+        if (checkNakedGroups(origin, groupSize, nodeE, nodeW)
+            || checkNakedGroups(origin, groupSize, nodeS, nodeN)
+            || checkNakedGroups(origin, groupSize, nodeSE, nodeNW)
+            || checkNakedGroups(origin, groupSize, nodeSW, nodeNE)
+            || checkNakedGroups(origin, groupSize, nodeFBOX, nodeBBOX)) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 int checkSingles(Node *origin, Node *first, Node *(*nextNode)(Node *)) {
@@ -778,10 +787,142 @@ int checkIntersectionRemoval(Node *origin, Node *(*nextNode)(Node *), Node *(*ne
     return 0;
 }
 
-int checkNakedGroups(Node *origin, Node *(*nextNode)(Node *), Node *(*prevNode)(Node *)) {
-    Node *rule = origin->up->fRule, *node, *nodeAux;
+int checkNakedGroups(Node *origin, int groupSize, Node *(*nextNode)(Node *), Node *(*prevNode)(Node *)) {
+    Node *rule = origin->up->fRule, *node;
+    int *dict = (int *) calloc(origin->num + 1, sizeof(int)), count = 0;
+
+    while (rule != NULL) {
+        for (int i = 0; i <= origin->num; i++) {
+            *(dict + i) = 0;
+        }
+        node = rule->up;
+        while (node != NULL) {
+            (*(dict + node->num))++;
+            (*dict)++;
+            node = node->up;
+        }
+
+        if (findGroup(rule, dict, groupSize, groupSize - 1, &count, nextNode)) {
+            // Remover
+            count = removeGroupNodes(rule, NULL, dict, prevNode) + count;
+            /*node = prevNode(rule);
+            while (node != NULL) {
+                count++;
+                nodeRemove = node->up;
+                while (nodeRemove != NULL) {
+                    nodeAux = nodeRemove->up;
+                    if (*(dict + nodeRemove->num - 1) != 0) {
+                        disconnectNode(nodeRemove);
+                        free(nodeRemove);
+                    }
+                    nodeRemove = nodeAux;
+                }
+                node = prevNode(node);
+            }
+
+            node = nextNode(rule);
+            while (node != ruleAux) {
+                count++;
+                nodeRemove = node->up;
+                while (nodeRemove != NULL) {
+                    nodeAux = nodeRemove->up;
+                    if (*(dict + nodeRemove->num - 1) != 0) {
+                        disconnectNode(nodeRemove);
+                        free(nodeRemove);
+                    }
+                    nodeRemove = nodeAux;
+                }
+                node = nextNode(node);
+            }
+
+            node = nextNode(ruleAux);
+            while (node != NULL) {
+                count++;
+                nodeRemove = node->up;
+                while (nodeRemove != NULL) {
+                    nodeAux = nodeRemove->up;
+                    if (*(dict + nodeRemove->num - 1) != 0) {
+                        disconnectNode(nodeRemove);
+                        free(nodeRemove);
+                    }
+                    nodeRemove = nodeAux;
+                }
+                node = nextNode(node);
+            }*/
+            if(count > 0) {
+                //printf("<-------------------> Group %d, %d: (%d,%d)\n", rule->up->num, rule->up->up->num, rule->up->row, rule->up->col);
+                return 1;
+            }
+
+        }
+        rule = rule->fRule;
+    }
+    return 0;
+}
+
+int findGroup(Node *rule, int *dict, int total, int num, int *count, Node *(*nextNode)(Node *)) {
+    if (*dict > total || num == 0) {
+        if(*dict == total && num == 0) {
+            *count = removeGroupNodes(rule, NULL, dict, nextNode) + (*count);
+            return 1;
+        }
+        else {
+            return 0;
+        }
+    }
+
+    Node *node, *nextRule = nextNode(rule);
+
+    while (nextRule != NULL) {
+        node = nextRule->up;
+        while (node != NULL) {
+            if (*(dict + node->num) == 0) {
+                (*dict)++;
+            }
+            (*(dict + node->num))++;
+            node = node->up;
+        }
+
+        if (findGroup(nextRule, dict, total, num - 1, count, nextNode)) {
+            *count = removeGroupNodes(rule, nextRule, dict, nextNode) + (*count);
+            return 1;
+        }
+
+        node = nextRule->up;
+        while (node != NULL) {
+            (*(dict + node->num))--;
+            if (*(dict + node->num) == 0) {
+                (*dict)--;
+            }
+            node = node->up;
+        }
+
+        nextRule = nextNode(nextRule);
+    }
 
     return 0;
+}
+
+int removeGroupNodes(Node *ruleStart, Node *ruleStop, const int *dict, Node *(*nextNode)(Node *)) {
+    Node *rule = nextNode(ruleStart), *node, *nodeNext;
+    int count = 0;
+
+    while (rule != ruleStop) {
+        node = rule->up;
+        while (node != NULL) {
+            nodeNext = node->up;
+            if (*(dict + node->num) != 0) {
+                count++;
+                disconnectNode(node);
+                free(node);
+            }
+            node = nodeNext;
+        }
+
+        rule = nextNode(rule);
+    }
+
+    return count;
 }
 
 void addNumber(Node *first, Node *new) {
@@ -920,8 +1061,7 @@ Node *createPossibilities(SudokuLinkedNode sudoku) {
                             // Não está na primeira linha, ligar ao nó anterior
                             node->nw = node->w->n;
                             node->nw->se = node;
-                        }
-                        else if (num > 0) {
+                        } else if (num > 0) {
                             // Está na primeira linha, ligar à unidade das diagonais principais
                             pdiag->fRule = (Node *) calloc(1, sizeof(Node));
                             pdiag->fRule->bRule = pdiag;
@@ -938,8 +1078,7 @@ Node *createPossibilities(SudokuLinkedNode sudoku) {
                             // Não está na primeira linha, ligar ao nó anterior
                             node->ne = node->n->e;
                             node->ne->sw = node;
-                        }
-                        else if (num > 0) {
+                        } else if (num > 0) {
                             // Está na primeira linha, ligar à unidade das diagonais secundárias
                             sdiag->fRule = (Node *) calloc(1, sizeof(Node));
                             sdiag->fRule->bRule = sdiag;
