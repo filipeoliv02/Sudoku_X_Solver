@@ -690,7 +690,7 @@ void solveSudokuOptimizedLink(SudokuLinkedNode sudoku) {
         if (stratSingles(origin, sudoku.first)) {
             count++;
             found = 1;
-        } else if (stratIntersectionRemoval(origin) || stratNakedGroups(origin)) {
+        } else if (stratIntersectionRemoval(origin) || stratNakedGroups(origin) || stratXWing(origin)) {
             found = 1;
         }
 
@@ -740,6 +740,10 @@ int stratNakedGroups(Node *origin) {
         }
     }
     return 0;
+}
+
+int stratXWing(Node *origin) {
+    return checkXWing(origin);
 }
 
 int checkSingles(Node *origin, Node *first, Node *(*nextNode)(Node *)) {
@@ -857,6 +861,16 @@ int checkNakedGroups(Node *origin, int groupSize, Node *(*nextNode)(Node *), Nod
         }
         rule = rule->fRule;
     }
+    return 0;
+}
+
+int checkXWing(Node *origin) {
+    Node *rule;
+
+
+
+
+
     return 0;
 }
 
