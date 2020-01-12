@@ -125,6 +125,14 @@ int isValidPlacementLinked(Node *node, int num) {
            && isValidPlacementInDirection(node, num, nodeBBOX);
 }
 
+/**
+ * @brief verifica se é valido numa direção
+ * @param node
+ * @param num
+ * @param nextNode
+ * @return
+ */
+
 int isValidPlacementInDirection(Node *node, int num, Node *(*nextNode)(Node *)) {
     node = nextNode(node);
     while (node != NULL) {
@@ -196,6 +204,12 @@ void solveLinkedSudokuOptimized(SudokuQueue *sudokuSolvedQueue, SudokuQueueNode 
         solveLinkedSudokuBruteForce(sudokuSolvedQueue, sudoku, sudoku->first);
     }
 }
+
+/**
+ * @brief cria os candidatos no nó
+ * @param size
+ * @return
+ */
 
 Node *createCandidates(int size) {
     Node *nodeCurr, *nodeFirstCol = NULL, *nodeTop = NULL, *nodeLeftCurr = NULL, *nodeLayerTopLeft = NULL, *nodeAux = NULL;
@@ -365,6 +379,13 @@ Node *createCandidates(int size) {
     return origin;
 }
 
+/**
+ * @brief inicializa os candidatos
+ * @param origin
+ * @param sudoku_first
+ * @return
+ */
+
 int initCandidates(Node *origin, Node *sudoku_first) {
     int count = 0;
     Node *nodeSudoku = sudoku_first;
@@ -393,6 +414,12 @@ int initCandidates(Node *origin, Node *sudoku_first) {
     return count;
 }
 
+/**
+ * @brief verifica se o tabuleiro é possível de resolver
+ * @param origin
+ * @return
+ */
+
 int isPossible(Node *origin) {
     return isRuleConsistent(origin, nodeE)
            && isRuleConsistent(origin, nodeS)
@@ -400,6 +427,13 @@ int isPossible(Node *origin) {
            && isRuleConsistent(origin, nodeSW)
            && isRuleConsistent(origin, nodeASCEND);
 }
+
+/**
+ * @brief verifica se o tabuleiro respeita as regras do sudoku
+ * @param origin
+ * @param nextNode
+ * @return
+ */
 
 int isRuleConsistent(Node *origin, Node *(*nextNode)(Node *)) {
     Node *rule = nextNode(origin)->fRule;
@@ -795,6 +829,11 @@ int clearIntersection(Node *nodeRule, Node *(*nextNode)(Node *), Node *(*nextRem
 
     return count;
 }
+
+/**
+ * @brief remove todos os nós em todas as direções do nó passado
+ * @param node
+ */
 
 void removeConnectedNodes(Node *node) {
     removeNodesBetweenTwoNodes(node, NULL, nodeN);

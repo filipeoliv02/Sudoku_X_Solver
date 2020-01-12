@@ -3,6 +3,12 @@
 #include <math.h>
 #include <time.h>
 
+
+/**
+ * @brief Adiciona um tabuleiro à fila
+ * @param sudokuQueue
+ * @param sudoku
+ */
 void enqueueSudoku(SudokuQueue *sudokuQueue, SudokuQueueNode *sudoku) {
     if (sudokuQueue->total == 0) {
         sudokuQueue->first = sudoku;
@@ -13,6 +19,11 @@ void enqueueSudoku(SudokuQueue *sudokuQueue, SudokuQueueNode *sudoku) {
     sudokuQueue->total++;
 }
 
+/**
+ * @brief Remove um tabuleiro da fila
+ * @param sudokuQueue
+ * @return
+ */
 SudokuQueueNode *dequeueSudoku(SudokuQueue *sudokuQueue) {
     SudokuQueueNode *sudoku = sudokuQueue->first;
     if (sudokuQueue->total != 0) {
@@ -27,7 +38,11 @@ SudokuQueueNode *dequeueSudoku(SudokuQueue *sudokuQueue) {
     return sudoku;
 }
 
-
+/**
+ * @brief cria uma cópia de um tabuleiro
+ * @param sudoku
+ * @return
+ */
 SudokuQueueNode *cloneSudoku(SudokuQueueNode *sudoku) {
     SudokuQueueNode *sudokuClone = calloc(1, sizeof(SudokuQueueNode));
     sudokuClone->size = sudoku->size;
@@ -115,6 +130,11 @@ SudokuQueueNode *cloneSudoku(SudokuQueueNode *sudoku) {
     return sudokuClone;
 }
 
+/**
+ * @briefverifica se o tabuleiro é consistente
+ * @param sudoku
+ * @return
+ */
 int isConsistentLinked(SudokuQueueNode *sudoku) {
     Node *node = sudoku->first, *nodeFirstCol = sudoku->first;
 
@@ -132,6 +152,11 @@ int isConsistentLinked(SudokuQueueNode *sudoku) {
     return 1;
 }
 
+/**
+ * @brief cria um tabuleiro vazio sem células preenchidas
+ * @param size
+ * @return
+ */
 SudokuQueueNode *createEmptySudokuLinked(int size) {
     SudokuQueueNode *sudoku = (SudokuQueueNode *) malloc(sizeof(SudokuQueueNode));
     Node *node, *node_line = NULL, *node_prevline = NULL, *node_prev, *rnode;
@@ -216,6 +241,12 @@ SudokuQueueNode *createEmptySudokuLinked(int size) {
     return sudoku;
 }
 
+/**
+ * @brief gera um tabuleiro aleatório de sudoku
+ * @param size
+ * @param n
+ * @return
+ */
 SudokuQueueNode *generateRandomSudokuLinked(int size, int n) {
     srand(time(NULL));
 
@@ -247,11 +278,20 @@ SudokuQueueNode *generateRandomSudokuLinked(int size, int n) {
     return sudoku;
 }
 
+
+/**
+ * @brief liberta a memória ocupada pela fila de sudokus
+ * @param sudokuQueue
+ */
 void freeSudokuQueue(SudokuQueue *sudokuQueue) {
     while(sudokuQueue->total != 0) freeSudoku(dequeueSudoku(sudokuQueue));
     free(sudokuQueue);
 }
 
+/**
+ * @brief liberta a memória ocupada por um tabuleiro
+ * @param sudokuQueueNode
+ */
 void freeSudoku(SudokuQueueNode *sudokuQueueNode) {
     Node *nodeCurr = sudokuQueueNode->first, *nodeFirstCol = sudokuQueueNode->first, *nodeNext;
 
@@ -268,6 +308,10 @@ void freeSudoku(SudokuQueueNode *sudokuQueueNode) {
     free(sudokuQueueNode);
 }
 
+/**
+ * @brief liberta a memória ocupada pelos candidatos
+ * @param candidatesOrigin
+ */
 void freeCandidates(Node *candidatesOrigin) {
     freeCandidateUnit(candidatesOrigin, nodeE);
     freeCandidateUnit(candidatesOrigin, nodeS);
@@ -279,6 +323,12 @@ void freeCandidates(Node *candidatesOrigin) {
     free(candidatesOrigin);
 }
 
+
+/**
+ * @brief liberta unidade em unidade a memória ocupada
+ * @param candidatesOrigin
+ * @param nextNode
+ */
 void freeCandidateUnit(Node *candidatesOrigin, Node *(*nextNode)(Node *)) {
     Node *rule = nextNode(candidatesOrigin)->fRule, *ruleNext, *node, *nodeNext;
     while(rule != NULL) {
