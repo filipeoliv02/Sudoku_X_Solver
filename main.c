@@ -10,6 +10,7 @@
  * @return
  */
 int main(int argc, char const *argv[]) {
+    // Fase 1
     //client_bruteforce();
     //client_advanced();
     //client_read();
@@ -20,7 +21,14 @@ int main(int argc, char const *argv[]) {
     //client_solve_variable_size();
     //client_search_solutions();
     //client_compare_algorithms();
-    client_linked_algorithms();
+
+    // Fase 2
+    client_linked_bruteforce();
+    /*client_linked_optimized();
+    client_linked_read_txt();
+    client_linked_write_txt();
+    client_linked_read_bin();
+    client_linked_write_bin();*/
 
 
     //main_menu();

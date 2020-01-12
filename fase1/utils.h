@@ -26,7 +26,7 @@ int gettimeuseconds(long long *time_usec);
 
 void free_list_sudoku(SudokuList l);
 
-void print_linked_board(SudokuLinkedNode board);
+void print_linked_board(SudokuQueueNode *sudoku);
 
 void print_linked_boards(Node *first, int size);
 
