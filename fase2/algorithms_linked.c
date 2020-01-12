@@ -1,19 +1,69 @@
 #include "algorithms_linked.h"
+#include "utils_linked.h"
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 #include "../fase1/utils.h"
 
-void writePossibilities(SudokuLinkedNode sudoku);
+int isValidPlacementInDirection(Node *node, int num, Node *(*nextNode)(Node *));
 
-int isValidPlacementLink(SudokuLinkedNode sudoku, Node *node, int num);
+Node *createCandidates(int size);
 
-int checkNakedSingle(Node *node, int size);
+int initCandidates(Node *origin, Node *sudoku_first);
 
-int checkHiddenSingle(Node *node, int size);
+int isPossible(Node *origin);
 
-Node *createPossibilities(int size);
+int isRuleConsistent(Node *origin, Node *(*nextNode)(Node *));
 
-int initPossibilities(Node *origin, Node *sudoku_first);
+void addNumber(Node *first, Node *new);
+
+int stratSingles(Node *origin, Node *first, int *count);
+
+int stratIntersectionRemoval(Node *origin);
+
+int stratNakedGroups(Node *origin);
+
+int stratXWing(Node *origin);
+
+int removeXWing(Node *node1, Node *node2, Node *(*nextNode)(Node *), Node *(*nextRemoveNode)(Node *),
+                Node *(*prevRemoveNode)(Node *));
+
+int checkSingles(Node *origin, Node *first, Node *(*nextNode)(Node *));
+
+int checkIntersectionRemoval(Node *origin, Node *(*nextNode)(Node *), Node *(*nextRemoveNode)(Node *),
+                             Node *(*prevRemoveNode)(Node *), int (*isSameUnit)(Node *, Node *, int));
+
+int clearIntersection(Node *nodeRule, Node *(*nextNode)(Node *), Node *(*nextRemoveNode)(Node *),
+                      Node *(*prevRemoveNode)(Node *));
+
+int checkNakedGroups(Node *origin, int groupSize, Node *(*nextNode)(Node *), Node *(*prevNode)(Node *));
+
+int checkXWing(Node *origin, Node *(*nextNode)(Node *), Node *(*prevNode)(Node *), Node *(*nextRemoveNode)(Node *),
+               Node *(*prevRemoveNode)(Node *), int (*unitNode)(Node *));
+
+int findGroup(Node *rule, int *dict, int total, int num, int *count, Node *(*nextNode)(Node *));
+
+int removeGroupNodes(Node *ruleStart, Node *ruleStop, const int *dict, Node *(*nextNode)(Node *));
+
+void removeConnectedNodes(Node *node);
+
+int removeNodesBetweenTwoNodes(Node *nodeStart, Node *nodeStop, Node *(*nextNode)(Node *));
+
+void disconnectNode(Node *node);
+
+int isSameRow(Node *node1, Node *node2, int size);
+
+int isSameCol(Node *node1, Node *node2, int size);
+
+int isSamePDiag(Node *node1, Node *node2, int size);
+
+int isSameSDiag(Node *node1, Node *node2, int size);
+
+int isSameBox(Node *node1, Node *node2, int size);
+
+int unitRow(Node *node);
+
+int unitCol(Node *node);
 
 /**
  * @brief Resolve sudokus através do algoritmo bruteforce
@@ -21,10 +71,15 @@ int initPossibilities(Node *origin, Node *sudoku_first);
  * @param queue
  * @param node
  */
-void solveSudokuBruteForceLink(SudokuLinkedNode queue, Node *node) {
+void solveLinkedSudokuBruteForce(SudokuQueue *sudokuSolvedQueue, SudokuQueueNode *sudoku, Node *node) {
     if (node == NULL) {
-        printf("Solucao:\n");
-        print_linked_board(queue);
+        if(sudokuSolvedQueue != NULL) {
+            SudokuQueueNode *sudokuClone = cloneSudoku(sudoku);
+            enqueueSudoku(sudokuSolvedQueue, sudokuClone);
+        }
+
+        printf("Solucao usando Bruteforce:\n");
+        print_linked_board(sudoku);
         return;
     }
 
@@ -37,12 +92,12 @@ void solveSudokuBruteForceLink(SudokuLinkedNode queue, Node *node) {
     }
 
     if (node->num > 0) {
-        solveSudokuBruteForceLink(queue, newNode);
+        solveLinkedSudokuBruteForce(sudokuSolvedQueue, sudoku, newNode);
     } else {
-        for (int num = 1; num <= queue.size; num++) {
-            if (isValidPlacementLink(queue, node, num)) {
+        for (int num = 1; num <= sudoku->size; num++) {
+            if (isValidPlacementLinked(node, num)) {
                 node->num = num;
-                solveSudokuBruteForceLink(queue, newNode);
+                solveLinkedSudokuBruteForce(sudokuSolvedQueue, sudoku, newNode);
             }
         }
         node->num = 0;
@@ -57,81 +112,26 @@ void solveSudokuBruteForceLink(SudokuLinkedNode queue, Node *node) {
  * @param num
  * @return
  */
+int isValidPlacementLinked(Node *node, int num) {
+    return isValidPlacementInDirection(node, num, nodeE)
+           && isValidPlacementInDirection(node, num, nodeW)
+           && isValidPlacementInDirection(node, num, nodeS)
+           && isValidPlacementInDirection(node, num, nodeN)
+           && isValidPlacementInDirection(node, num, nodeSE)
+           && isValidPlacementInDirection(node, num, nodeNW)
+           && isValidPlacementInDirection(node, num, nodeSW)
+           && isValidPlacementInDirection(node, num, nodeNE)
+           && isValidPlacementInDirection(node, num, nodeFBOX)
+           && isValidPlacementInDirection(node, num, nodeBBOX);
+}
 
-int isValidPlacementLink(SudokuLinkedNode sudoku, Node *node, int num) {
-    Node *nodeAux = NULL;
-    nodeAux = node;
-    while (nodeAux != NULL) {
-        if (nodeAux->num == num) {
+int isValidPlacementInDirection(Node *node, int num, Node *(*nextNode)(Node *)) {
+    node = nextNode(node);
+    while (node != NULL) {
+        if (node->num == num) {
             return 0;
         }
-        nodeAux = nodeAux->s;
-    }
-    nodeAux = node;
-    while (nodeAux != NULL) {
-        if (nodeAux->num == num) {
-            return 0;
-        }
-        nodeAux = nodeAux->n;
-    }
-    nodeAux = node;
-    while (nodeAux != NULL) {
-        if (nodeAux->num == num) {
-            return 0;
-        }
-        nodeAux = nodeAux->w;
-    }
-    nodeAux = node;
-    while (nodeAux != NULL) {
-        if (nodeAux->num == num) {
-            return 0;
-        }
-        nodeAux = nodeAux->e;
-    }
-    //diagonais
-    nodeAux = node;
-    while (nodeAux != NULL) {
-        if (nodeAux->num == num) {
-            return 0;
-        }
-        nodeAux = nodeAux->nw;
-    }
-    nodeAux = node;
-    while (nodeAux != NULL) {
-        if (nodeAux->num == num) {
-            return 0;
-        }
-        nodeAux = nodeAux->se;
-    }
-    nodeAux = node;
-    while (nodeAux != NULL) {
-        if (nodeAux->num == num) {
-            return 0;
-        }
-        nodeAux = nodeAux->ne;
-    }
-    nodeAux = node;
-    while (nodeAux != NULL) {
-        if (nodeAux->num == num) {
-            return 0;
-        }
-        nodeAux = nodeAux->sw;
-    }
-    //Regiões
-
-    nodeAux = node;
-    while (nodeAux != NULL) {
-        if (nodeAux->num == num) {
-            return 0;
-        }
-        nodeAux = nodeAux->fbox;
-    }
-    nodeAux = node;
-    while (nodeAux != NULL) {
-        if (nodeAux->num == num) {
-            return 0;
-        }
-        nodeAux = nodeAux->bbox;
+        node = nextNode(node);
     }
     return 1;
 }
@@ -141,27 +141,292 @@ int isValidPlacementLink(SudokuLinkedNode sudoku, Node *node, int num) {
  * @details Resolve sudokus através do algoritmo optimizado usando listas ligadas
  * @param sudoku
  */
-
-void solveSudokuOptimizedLink(SudokuLinkedNode sudoku) {
-    Node *origin = createPossibilities(sudoku.size);
-    int initialCount = initPossibilities(origin, sudoku.first);
+void solveLinkedSudokuOptimized(SudokuQueue *sudokuSolvedQueue, SudokuQueueNode *sudoku) {
+    Node *candidatesOrigin = createCandidates(sudoku->size);
+    int initialCount = initCandidates(candidatesOrigin, sudoku->first);
     int count = initialCount;
 
-    while (stratSingles(origin, sudoku.first, &count) || stratIntersectionRemoval(origin)
-           || stratNakedGroups(origin) || stratXWing(origin));
+/*
+    // Codigo para mostrar o X-Wing
+    Node *node = candidatesOrigin->ascend->fRule;
+
+    while(node->row != 3) {
+        node = node->s;
+    }
+
+    while(node->col != 7) {
+        node = node->e;
+    }
+
+    while(node->num != 4) {
+        node = node->ascend;
+    }
+
+    disconnectNode(node);
+    free(node);
+*/
+
+    while (stratSingles(candidatesOrigin, sudoku->first, &count)
+           || stratIntersectionRemoval(candidatesOrigin)
+           || stratNakedGroups(candidatesOrigin)
+           || stratXWing(candidatesOrigin)) {
+        if (!isPossible(candidatesOrigin)) {
+            count = -1;
+            break;
+        }
+    }
+
+    freeCandidates(candidatesOrigin);
+
+    if (count == -1) {
+        printf("\nSudoku impossivel de resolver!!!\n\n");
+        print_linked_board(sudoku);
+        return;
+    }
 
     printf("Tabuleiro com %d celulas iniciais\n", initialCount);
-    printf("Otimizado (linked) encontrou: %d\n", count-initialCount);
+    printf("Otimizado (linked) encontrou: %d\n", count - initialCount);
     printf("Total final: %d", count);
 
-    if(count == sudoku.size * sudoku.size) {
+    if (count == sudoku->size * sudoku->size) {
         printf("\n\nSolucao:\n");
         print_linked_board(sudoku);
-    }
-    else {
+    } else {
         printf(" (continuar com Bruteforce)\n");
-        solveSudokuBruteForceLink(sudoku, sudoku.first);
+        solveLinkedSudokuBruteForce(sudokuSolvedQueue, sudoku, sudoku->first);
     }
+}
+
+Node *createCandidates(int size) {
+    Node *nodeCurr, *nodeFirstCol = NULL, *nodeTop = NULL, *nodeLeftCurr = NULL, *nodeLayerTopLeft = NULL, *nodeAux = NULL;
+    int root = (int) sqrt(size), rrow, rcol;
+
+    Node *origin = (Node *) calloc(1, sizeof(Node));
+    Node *row = (Node *) calloc(1, sizeof(Node)), *col = (Node *) calloc(1, sizeof(Node));
+    Node *box = (Node *) calloc(1, sizeof(Node)), *number = (Node *) calloc(1, sizeof(Node));
+    Node *pdiag = (Node *) calloc(1, sizeof(Node)), *sdiag = (Node *) calloc(1, sizeof(Node));
+
+    origin->num = size;
+    origin->e = row;
+    origin->s = col;
+    origin->fbox = box;
+    origin->se = pdiag;
+    origin->sw = sdiag;
+    origin->ascend = number;
+
+    for (int num = 0; num <= size; num++) {
+
+        nodeTop = NULL;
+        nodeFirstCol = NULL;
+
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                nodeCurr = (Node *) calloc(1, sizeof(Node));
+                nodeCurr->num = num;
+                nodeCurr->row = i;
+                nodeCurr->col = j;
+
+                // Ligar a regra dos números únicos se estiver na primeira camada
+                if (num == 0) {
+                    number->fRule = nodeCurr;
+                    number->fRule->bRule = number;
+                    number = number->fRule;
+                }
+
+                // Ligar linha
+                if (j != 0) {
+                    // Não está na primeira coluna, ligar ao nó da esquerda
+                    nodeLeftCurr->e = nodeCurr;
+                    nodeCurr->w = nodeLeftCurr;
+                    nodeLeftCurr = nodeLeftCurr->e;
+                } else {
+                    // Está na primeira coluna, não existe um nó à esquerda, associa-se
+                    nodeLeftCurr = nodeCurr;
+
+                    // Ligar à unidade das linhas
+                    if (num > 0) {
+                        row->fRule = (Node *) calloc(1, sizeof(Node));
+                        row->fRule->bRule = row;
+                        row = row->fRule;
+
+                        row->e = nodeCurr;
+                        nodeCurr->w = row;
+                    }
+                }
+
+                // Ligar coluna
+                if (i != 0) {
+                    // Não está na primeira linha, ligar ao nó de cima
+                    nodeTop->s = nodeCurr;
+                    nodeCurr->n = nodeTop;
+                    nodeTop = nodeTop->e;
+                } else if (num > 0) {
+                    // Está na primeira linha, ligar à unidade das colunas
+                    col->fRule = (Node *) calloc(1, sizeof(Node));
+                    col->fRule->bRule = col;
+                    col = col->fRule;
+
+                    col->s = nodeCurr;
+                    nodeCurr->n = col;
+                }
+
+                // Se não existir um primeiro nó então é este
+                if (i == 0 && j == 0 && num == 0) {
+                    nodeLayerTopLeft = nodeCurr;
+                }
+
+                // Ligar entre camadas, se estiver acima da primeira
+                if (num > 0) {
+                    if (i == 0 && j == 0) {
+                        nodeCurr->descend = nodeLayerTopLeft;
+                        nodeLayerTopLeft = nodeCurr;
+                    } else if (j == 0) {
+                        nodeCurr->descend = nodeCurr->n->descend->s;
+                    } else {
+                        nodeCurr->descend = nodeCurr->w->descend->e;
+                    }
+                    nodeCurr->descend->ascend = nodeCurr;
+                }
+
+                // Ligar diagonais se o tabuleiro for do tamanho do SudokuX
+                if (size <= 16) {
+
+                    // Diagonal principal
+                    if (i == j) {
+                        if (i != 0) {
+                            // Não está na primeira linha, ligar ao nó anterior
+                            nodeCurr->nw = nodeCurr->w->n;
+                            nodeCurr->nw->se = nodeCurr;
+                        } else if (num > 0) {
+                            // Está na primeira linha, ligar à unidade das diagonais principais
+                            pdiag->fRule = (Node *) calloc(1, sizeof(Node));
+                            pdiag->fRule->bRule = pdiag;
+                            pdiag = pdiag->fRule;
+
+                            pdiag->se = nodeCurr;
+                            nodeCurr->nw = pdiag;
+                        }
+                    }
+
+                    // Diagonal secundária
+                    if (i == size - j - 1) {
+                        if (i != 0) {
+                            // Não está na primeira linha, ligar ao nó anterior
+                            nodeCurr->ne = nodeCurr->n->e;
+                            nodeCurr->ne->sw = nodeCurr;
+                        } else if (num > 0) {
+                            // Está na primeira linha, ligar à unidade das diagonais secundárias
+                            sdiag->fRule = (Node *) calloc(1, sizeof(Node));
+                            sdiag->fRule->bRule = sdiag;
+                            sdiag = sdiag->fRule;
+
+                            sdiag->sw = nodeCurr;
+                            nodeCurr->ne = sdiag;
+                        }
+                    }
+                }
+
+                //Ligar Regiões
+                rcol = j % root;
+                rrow = i % root;
+                nodeAux = nodeCurr;
+                if (rcol == 0 && rrow == 0) {
+                    // Está no ínicio da região, ligar à unidade das regiões
+                    if (num > 0) {
+                        box->fRule = (Node *) calloc(1, sizeof(Node));
+                        box->fRule->bRule = box;
+                        box = box->fRule;
+
+                        box->fbox = nodeCurr;
+                        nodeCurr->bbox = box;
+                    }
+                } else {
+                    // Não está no ínicio da região, ligar ao nó anterior da região
+                    if (rcol == 0) {
+                        nodeAux = nodeAux->n;
+                        while (nodeAux->col % root != (root - 1)) {
+                            nodeAux = nodeAux->e;
+                        }
+                        nodeCurr->bbox = nodeAux;
+                        nodeAux->fbox = nodeCurr;
+                    } else {
+                        nodeCurr->bbox = nodeCurr->w;
+                        nodeCurr->w->fbox = nodeCurr;
+                    }
+                }
+            }
+
+            // Se na primeira linha associar, senão mover para baixo
+            nodeFirstCol = i == 0 ? nodeLayerTopLeft : nodeFirstCol->s;
+            nodeTop = nodeFirstCol;
+        }
+    }
+
+    return origin;
+}
+
+int initCandidates(Node *origin, Node *sudoku_first) {
+    int count = 0;
+    Node *nodeSudoku = sudoku_first;
+    Node *nodeSudokuLine = sudoku_first;
+    Node *node = origin->ascend->fRule, *nodeRemove;
+
+    while (nodeSudokuLine != NULL) {
+        while (nodeSudoku != NULL) {
+            if (nodeSudoku->num != 0) {
+                count++;
+                nodeRemove = node;
+                node = node->bRule;
+                while (nodeRemove->num != nodeSudoku->num) {
+                    nodeRemove = nodeRemove->ascend;
+                }
+                removeConnectedNodes(nodeRemove);
+                free(nodeRemove);
+            }
+            nodeSudoku = nodeSudoku->e;
+            node = node->fRule;
+        }
+        nodeSudokuLine = nodeSudokuLine->s;
+        nodeSudoku = nodeSudokuLine;
+    }
+
+    return count;
+}
+
+int isPossible(Node *origin) {
+    return isRuleConsistent(origin, nodeE)
+           && isRuleConsistent(origin, nodeS)
+           && isRuleConsistent(origin, nodeSE)
+           && isRuleConsistent(origin, nodeSW)
+           && isRuleConsistent(origin, nodeASCEND);
+}
+
+int isRuleConsistent(Node *origin, Node *(*nextNode)(Node *)) {
+    Node *rule = nextNode(origin)->fRule;
+    while (rule != NULL) {
+        if (nextNode(rule) == NULL) {
+            return 0;
+        }
+        rule = rule->fRule;
+    }
+    return 1;
+}
+
+/**
+ * @brief Se um candidato for válido adiciona o ao tabuleiro
+ * @param first
+ * @param new
+ */
+void addNumber(Node *first, Node *new) {
+    Node *node = first;
+    for (int row = 0; row < new->row; row++) {
+        node = node->s;
+    }
+    for (int col = 0; col < new->col; col++) {
+        node = node->e;
+    }
+
+    node->num = new->num;
 }
 
 /**
@@ -172,14 +437,14 @@ void solveSudokuOptimizedLink(SudokuLinkedNode sudoku) {
  * @param count
  * @return
  */
-
 int stratSingles(Node *origin, Node *first, int *count) {
-    if(checkSingles(origin, first, nodeE)           // Hidden Single na linha
-       || checkSingles(origin, first, nodeS)    // Hidden Single na coluna
-       || checkSingles(origin, first, nodeFBOX) // Hidden Single na região
-       || checkSingles(origin, first, nodeSE)   // Hidden Single na diagonal principal
-       || checkSingles(origin, first, nodeSW)   // Hidden Single na diagonal secundária
-       || checkSingles(origin, first, nodeUP)) {// Naked Single
+    if (checkSingles(origin, first, nodeE)          // Hidden Single na linha
+        || checkSingles(origin, first, nodeS)       // Hidden Single na coluna
+        || checkSingles(origin, first, nodeFBOX)    // Hidden Single na região
+        || checkSingles(origin, first, nodeSE)      // Hidden Single na diagonal principal
+        || checkSingles(origin, first, nodeSW)      // Hidden Single na diagonal secundária
+        || checkSingles(origin, first, nodeASCEND)) // Naked Single
+    {
         (*count)++;
         return 1;
     }
@@ -192,7 +457,6 @@ int stratSingles(Node *origin, Node *first, int *count) {
  * @param origin
  * @return
  */
-
 int stratIntersectionRemoval(Node *origin) {
     return checkIntersectionRemoval(origin, nodeS, nodeFBOX, nodeBBOX, isSameBox)     // Box/Line reduct. na coluna
            || checkIntersectionRemoval(origin, nodeE, nodeFBOX, nodeBBOX, isSameBox)  // Box/Line reduct. na linha
@@ -212,7 +476,6 @@ int stratIntersectionRemoval(Node *origin) {
  * @param origin
  * @return
  */
-
 int stratNakedGroups(Node *origin) {
     int maxGroups = FLAG_DYNAMIC_GROUPS ? origin->num / 2 : 4;
     for (int groupSize = 2; groupSize <= maxGroups; groupSize++) {
@@ -232,9 +495,9 @@ int stratNakedGroups(Node *origin) {
  * @param origin
  * @return
  */
-
 int stratXWing(Node *origin) {
-    return checkXWing(origin, nodeE, nodeW, nodeS, nodeN, unitCol) || checkXWing(origin, nodeS, nodeN, nodeE, nodeW, unitRow);
+    return checkXWing(origin, nodeE, nodeW, nodeS, nodeN, unitCol) ||
+           checkXWing(origin, nodeS, nodeN, nodeE, nodeW, unitRow);
 }
 
 /**
@@ -244,7 +507,6 @@ int stratXWing(Node *origin) {
  * @param nextNode
  * @return
  */
-
 int checkSingles(Node *origin, Node *first, Node *(*nextNode)(Node *)) {
     Node *rule = nextNode(origin)->fRule, *node;
     while (rule != NULL) {
@@ -270,7 +532,6 @@ int checkSingles(Node *origin, Node *first, Node *(*nextNode)(Node *)) {
  * @param isSameUnit
  * @return
  */
-
 int checkIntersectionRemoval(Node *origin, Node *(*nextNode)(Node *), Node *(*nextRemoveNode)(Node *),
                              Node *(*prevRemoveNode)(Node *), int (*isSameUnit)(Node *, Node *, int)) {
     Node *rule = nextNode(origin)->fRule, *node;
@@ -310,25 +571,25 @@ int checkIntersectionRemoval(Node *origin, Node *(*nextNode)(Node *), Node *(*ne
  */
 
 int checkNakedGroups(Node *origin, int groupSize, Node *(*nextNode)(Node *), Node *(*prevNode)(Node *)) {
-    Node *rule = origin->up->fRule, *node;
+    Node *rule = origin->ascend->fRule, *node;
     int *dict = (int *) calloc(origin->num + 1, sizeof(int)), count = 0;
 
     while (rule != NULL) {
         for (int i = 0; i <= origin->num; i++) {
             *(dict + i) = 0;
         }
-        node = rule->up;
+        node = rule->ascend;
         while (node != NULL) {
             (*(dict + node->num))++;
             (*dict)++;
-            node = node->up;
+            node = node->ascend;
         }
 
         if (findGroup(rule, dict, groupSize, groupSize - 1, &count, nextNode)) {
             count = removeGroupNodes(rule, NULL, dict, prevNode) + count;
 
             if (count > 0) {
-                //printf("<-------------------> Group %d, %d: (%d,%d)\n", rule->up->num, rule->up->up->num, rule->up->row, rule->up->col);
+                //printf("<-------------------> Group %d, %d: (%d,%d)\n", rule->ascend->num, rule->ascend->ascend->num, rule->ascend->row, rule->ascend->col);
                 return 1;
             }
 
@@ -353,20 +614,12 @@ int checkNakedGroups(Node *origin, int groupSize, Node *(*nextNode)(Node *), Nod
 int checkXWing(Node *origin, Node *(*nextNode)(Node *), Node *(*prevNode)(Node *), Node *(*nextRemoveNode)(Node *),
                Node *(*prevRemoveNode)(Node *), int (*unitNode)(Node *)) {
     Node *rule = nextNode(origin)->fRule, *node;
-    int count;
 
     while (rule != NULL) {
-        count = 0;
         node = nextNode(rule);
-        while (nextNode(node) != NULL) {
-            if(isSameBox(node, nextNode(node), origin->num)) {
-                count = 0;
-                break;
-            }
-            count++;
-            node = nextNode(node);
-        }
-        if (count == 1) {
+        if (nextNode(node) != NULL && nextNode(nextNode(node)) == NULL &&
+            !isSameBox(node, nextNode(node), origin->num)) {
+
             node = prevRemoveNode(nextNode(rule));
             while (node->num != 0) {
                 if (prevNode(node)->num == 0 && unitNode(nextNode(node)) == unitNode(nextNode(nextNode(rule))) &&
@@ -389,9 +642,7 @@ int checkXWing(Node *origin, Node *(*nextNode)(Node *), Node *(*prevNode)(Node *
                     }
                 }
                 node = nextRemoveNode(node);
-
             }
-
         }
         rule = rule->fRule;
     }
@@ -455,13 +706,13 @@ int findGroup(Node *rule, int *dict, int total, int num, int *count, Node *(*nex
     Node *node, *nextRule = nextNode(rule);
 
     while (nextRule != NULL) {
-        node = nextRule->up;
+        node = nextRule->ascend;
         while (node != NULL) {
             if (*(dict + node->num) == 0) {
                 (*dict)++;
             }
             (*(dict + node->num))++;
-            node = node->up;
+            node = node->ascend;
         }
 
         if (findGroup(nextRule, dict, total, num - 1, count, nextNode)) {
@@ -469,13 +720,13 @@ int findGroup(Node *rule, int *dict, int total, int num, int *count, Node *(*nex
             return 1;
         }
 
-        node = nextRule->up;
+        node = nextRule->ascend;
         while (node != NULL) {
             (*(dict + node->num))--;
             if (*(dict + node->num) == 0) {
                 (*dict)--;
             }
-            node = node->up;
+            node = node->ascend;
         }
 
         nextRule = nextNode(nextRule);
@@ -498,9 +749,9 @@ int removeGroupNodes(Node *ruleStart, Node *ruleStop, const int *dict, Node *(*n
     int count = 0;
 
     while (rule != ruleStop) {
-        node = rule->up;
+        node = rule->ascend;
         while (node != NULL) {
-            nodeNext = node->up;
+            nodeNext = node->ascend;
             if (*(dict + node->num) != 0) {
                 count++;
                 disconnectNode(node);
@@ -516,24 +767,6 @@ int removeGroupNodes(Node *ruleStart, Node *ruleStop, const int *dict, Node *(*n
 }
 
 /**
- * @brief Se um candidato for válido adiciona o ao tabuleiro
- * @param first
- * @param new
- */
-
-void addNumber(Node *first, Node *new) {
-    Node *node = first;
-    for (int row = 0; row < new->row; row++) {
-        node = node->s;
-    }
-    for (int col = 0; col < new->col; col++) {
-        node = node->e;
-    }
-
-    node->num = new->num;
-}
-
-/**
  * @brief Remove as ligações com um nó
  * @param nodeRule
  * @param nextNode
@@ -541,7 +774,6 @@ void addNumber(Node *first, Node *new) {
  * @param prevRemoveNode
  * @return
  */
-
 int clearIntersection(Node *nodeRule, Node *(*nextNode)(Node *), Node *(*nextRemoveNode)(Node *),
                       Node *(*prevRemoveNode)(Node *)) {
     int count = 0;
@@ -564,226 +796,6 @@ int clearIntersection(Node *nodeRule, Node *(*nextNode)(Node *), Node *(*nextRem
     return count;
 }
 
-/**
- * @brief cria os candidatos
- * @param size
- * @return
- */
-
-Node *createPossibilities(int size) {
-    Node *node, *node_line = NULL, *node_prevline = NULL, *node_prev = NULL, *node_layer = NULL, *nodeAux = NULL;
-    Node *node_sudoku, *node_sudoku_line;
-    int root = (int) sqrt(size), rrow, rcol;
-
-    Node *origin = (Node *) calloc(1, sizeof(Node));
-    Node *row = (Node *) calloc(1, sizeof(Node)), *col = (Node *) calloc(1, sizeof(Node));
-    Node *box = (Node *) calloc(1, sizeof(Node)), *number = (Node *) calloc(1, sizeof(Node));
-    Node *pdiag = (Node *) calloc(1, sizeof(Node)), *sdiag = (Node *) calloc(1, sizeof(Node));
-
-    origin->num = size;
-    origin->e = row;
-    origin->s = col;
-    origin->fbox = box;
-    origin->se = pdiag;
-    origin->sw = sdiag;
-    origin->up = number;
-
-    for (int num = 0; num <= size; num++) {
-
-        node_prevline = NULL;
-        node_line = NULL;
-
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                node = (Node *) calloc(1, sizeof(Node));
-
-                node->num = num;
-                node->row = i;
-                node->col = j;
-
-                // Se não existir um primeiro nó então é este
-                if (i == 0 && j == 0 && num == 0) {
-                    node_layer = node;
-                }
-
-                // Ligar linha
-                if (j != 0) {
-                    // Não está na primeira coluna, ligar ao nó anterior
-                    node_prev->e = node;
-                    node->w = node_prev;
-                    node_prev = node_prev->e;
-                } else {
-                    // Está na primeira coluna, não existe um nó anterior, associa-se
-                    node_prev = node;
-
-                    // Ligar à unidade das linhas
-                    if (num > 0) {
-                        row->fRule = (Node *) calloc(1, sizeof(Node));
-                        row->fRule->bRule = row;
-                        row = row->fRule;
-
-                        row->e = node;
-                        node->w = row;
-                    }
-                }
-
-                // Ligar coluna
-                if (i != 0) {
-                    // Não está na primeira linha, ligar ao nó anterior
-                    node_prevline->s = node;
-                    node->n = node_prevline;
-                    node_prevline = node_prevline->e;
-                } else if (num > 0) {
-                    // Está na primeira linha, ligar à unidade das colunas
-                    col->fRule = (Node *) calloc(1, sizeof(Node));
-                    col->fRule->bRule = col;
-                    col = col->fRule;
-
-                    col->s = node;
-                    node->n = col;
-                }
-
-                // Ligar entre camadas, se estiver acima da primeira
-                if (num > 0) {
-                    if (i == 0 && j == 0) {
-                        node->down = node_layer;
-                        node_layer = node;
-                    } else if (j == 0) {
-                        node->down = node->n->down->s;
-                    } else {
-                        node->down = node->w->down->e;
-                    }
-                    node->down->up = node;
-                }
-
-                // Ligar a regra dos números únicos se estiver na primeira camada
-                if (num == 0) {
-                    number->fRule = node;
-                    number->fRule->bRule = number;
-                    number = number->fRule;
-                }
-
-                // Ligar diagonais se o tabuleiro for do tamanho do SudokuX
-                if (size <= 16) {
-
-                    // Diagonal principal
-                    if (i == j) {
-                        if (i != 0) {
-                            // Não está na primeira linha, ligar ao nó anterior
-                            node->nw = node->w->n;
-                            node->nw->se = node;
-                        } else if (num > 0) {
-                            // Está na primeira linha, ligar à unidade das diagonais principais
-                            pdiag->fRule = (Node *) calloc(1, sizeof(Node));
-                            pdiag->fRule->bRule = pdiag;
-                            pdiag = pdiag->fRule;
-
-                            pdiag->se = node;
-                            node->nw = pdiag;
-                        }
-                    }
-
-                    // Diagonal secundária
-                    if (i == size - j - 1) {
-                        if (i != 0) {
-                            // Não está na primeira linha, ligar ao nó anterior
-                            node->ne = node->n->e;
-                            node->ne->sw = node;
-                        } else if (num > 0) {
-                            // Está na primeira linha, ligar à unidade das diagonais secundárias
-                            sdiag->fRule = (Node *) calloc(1, sizeof(Node));
-                            sdiag->fRule->bRule = sdiag;
-                            sdiag = sdiag->fRule;
-
-                            sdiag->sw = node;
-                            node->ne = sdiag;
-                        }
-                    }
-                }
-
-                //Ligar Regiões
-                rcol = j % root;
-                rrow = i % root;
-                nodeAux = node;
-                if (rcol == 0 && rrow == 0) {
-                    // Está no ínicio da região, ligar à unidade das regiões
-                    if (num > 0) {
-                        box->fRule = (Node *) calloc(1, sizeof(Node));
-                        box->fRule->bRule = box;
-                        box = box->fRule;
-
-                        box->fbox = node;
-                        node->bbox = box;
-                    }
-                } else {
-                    // Não está no ínicio da região, ligar ao nó anterior da região
-                    if (rcol == 0) {
-                        nodeAux = nodeAux->n;
-                        while (nodeAux->col % root != (root - 1)) {
-                            nodeAux = nodeAux->e;
-                        }
-                        node->bbox = nodeAux;
-                        nodeAux->fbox = node;
-                    } else {
-                        node->bbox = node->w;
-                        node->w->fbox = node;
-                    }
-                }
-            }
-
-            //Se não existe linha associar
-            if (i == 0) {
-                node_line = node_layer;
-            } else {
-                node_line = node_line->s;
-            }
-            node_prevline = node_line;
-        }
-    }
-
-    return origin;
-}
-
-/**
- * @brief inicializa o tabuleiros removendo os candidatos não viáveis
- * @param origin
- * @param sudoku_first
- * @return
- */
-
-int initPossibilities(Node *origin, Node *sudoku_first) {
-    int count = 0;
-    Node *nodeSudoku = sudoku_first;
-    Node *nodeSudokuLine = sudoku_first;
-    Node *node = origin->up->fRule, *nodeRemove;
-
-    while (nodeSudokuLine != NULL) {
-        while (nodeSudoku != NULL) {
-            if (nodeSudoku->num != 0) {
-                count++;
-                nodeRemove = node;
-                node = node->bRule;
-                while (nodeRemove->num != nodeSudoku->num) {
-                    nodeRemove = nodeRemove->up;
-                }
-                removeConnectedNodes(nodeRemove);
-                free(nodeRemove);
-            }
-            nodeSudoku = nodeSudoku->e;
-            node = node->fRule;
-        }
-        nodeSudokuLine = nodeSudokuLine->s;
-        nodeSudoku = nodeSudokuLine;
-    }
-
-    return count;
-}
-
-/**
- * @brief remove conexões entre nós
- * @param node
- */
-
 void removeConnectedNodes(Node *node) {
     removeNodesBetweenTwoNodes(node, NULL, nodeN);
     removeNodesBetweenTwoNodes(node, NULL, nodeS);
@@ -793,8 +805,8 @@ void removeConnectedNodes(Node *node) {
     removeNodesBetweenTwoNodes(node, NULL, nodeNW);
     removeNodesBetweenTwoNodes(node, NULL, nodeSE);
     removeNodesBetweenTwoNodes(node, NULL, nodeSW);
-    removeNodesBetweenTwoNodes(node, NULL, nodeUP);
-    removeNodesBetweenTwoNodes(node, NULL, nodeDOWN);
+    removeNodesBetweenTwoNodes(node, NULL, nodeASCEND);
+    removeNodesBetweenTwoNodes(node, NULL, nodeDESCEND);
     removeNodesBetweenTwoNodes(node, NULL, nodeFBOX);
     removeNodesBetweenTwoNodes(node, NULL, nodeBBOX);
 }
@@ -868,12 +880,12 @@ void disconnectNode(Node *node) {
         node->fbox->bbox = node->bbox;
     }
 
-    if (node->down != NULL) {
-        node->down->up = node->up;
+    if (node->descend != NULL) {
+        node->descend->ascend = node->ascend;
     }
 
-    if (node->up != NULL) {
-        node->up->down = node->down;
+    if (node->ascend != NULL) {
+        node->ascend->descend = node->descend;
     }
 
     if (node->bRule != NULL) {
@@ -942,7 +954,7 @@ int isSameSDiag(Node *node1, Node *node2, int size) {
  */
 
 int isSameBox(Node *node1, Node *node2, int size) {
-    int root = sqrt(size);
+    int root = (int) sqrt(size);
     return node1->row / root == node2->row / root && node1->col / root == node2->col / root;
 }
 
@@ -1041,7 +1053,6 @@ Node *nodeSE(Node *node) {
  * @param node
  * @return
  */
-
 Node *nodeSW(Node *node) {
     return node->sw;
 }
@@ -1051,9 +1062,8 @@ Node *nodeSW(Node *node) {
  * @param node
  * @return
  */
-
-Node *nodeUP(Node *node) {
-    return node->up;
+Node *nodeASCEND(Node *node) {
+    return node->ascend;
 }
 
 /**
@@ -1061,9 +1071,8 @@ Node *nodeUP(Node *node) {
  * @param node
  * @return
  */
-
-Node *nodeDOWN(Node *node) {
-    return node->down;
+Node *nodeDESCEND(Node *node) {
+    return node->descend;
 }
 
 /**
@@ -1084,12 +1093,4 @@ Node *nodeFBOX(Node *node) {
 
 Node *nodeBBOX(Node *node) {
     return node->bbox;
-}
-
-Node *nodeFRULE(Node *node) {
-    return node->fRule;
-}
-
-Node *nodeBRULE(Node *node) {
-    return node->bRule;
 }

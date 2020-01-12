@@ -6,4 +6,9 @@ void client_linked_read_txt();
 void client_linked_write_txt();
 void client_linked_read_bin();
 void client_linked_write_bin();
+void client_linked_check_consistency();
+void client_linked_random_generation();
+void client_linked_solve_variable_size();
+void client_linked_search_solutions();
+void client_linked_compare_algorithms();
 #endif //SUDOKU_CLIENTS_LINKED_H
