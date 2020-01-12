@@ -28,8 +28,12 @@ int main(int argc, char const *argv[]) {
     client_linked_read_txt();
     client_linked_write_txt();
     client_linked_read_bin();
-    client_linked_write_bin();*/
-
+    client_linked_write_bin();
+    client_linked_check_consistency();
+    client_linked_random_generation();
+    client_linked_solve_variable_size();
+    client_linked_search_solutions();
+    client_linked_compare_algorithms();*/
 
     //main_menu();
     return 0;

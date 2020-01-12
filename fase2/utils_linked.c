@@ -1,6 +1,7 @@
 #include "utils_linked.h"
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
 void enqueueSudoku(SudokuQueue *sudokuQueue, SudokuQueueNode *sudoku) {
     if (sudokuQueue->total == 0) {
@@ -129,6 +130,126 @@ int isConsistentLinked(SudokuQueueNode *sudoku) {
     }
 
     return 1;
+}
+
+SudokuQueueNode *createEmptySudokuLinked(int size) {
+    SudokuQueueNode *sudoku = (SudokuQueueNode *) malloc(sizeof(SudokuQueueNode));
+    Node *node, *node_line = NULL, *node_prevline = NULL, *node_prev, *rnode;
+
+    int root = (int) sqrt(size), rcol, rrow;
+
+    sudoku->size = size;
+    sudoku->next = NULL;
+    node_prevline = NULL;
+    node_line = NULL;
+
+    for (int i = 0; i < size; i++) {
+        node_prev = NULL;
+        for (int j = 0; j < size; j++) {
+            // Criar nó e colocar valor do tabuleiro
+            node = (Node *) calloc(1, sizeof(Node));
+            node->num = 0;
+            node->row = i;
+            node->col = j;
+
+            // Se não existir um primeiro nó então é este
+            if (sudoku->first == NULL) {
+                sudoku->first = node;
+            }
+
+            // Se não existir um nó anterior cria-se
+            if (node_prev == NULL) {
+                node_prev = node;
+            } else {
+                // Existe nó anterior logo liga-se (Este <--> Oeste)
+                node_prev->e = node;
+                node->w = node_prev;
+                node_prev = node_prev->e;
+            }
+
+            // Se existir nó da linha anterior liga-se (Norte <--> Sul)
+            if (node_prevline != NULL) {
+                node_prevline->s = node;
+                node->n = node_prevline;
+                node_prevline = node_prevline->e;
+            }
+
+            // Ligar se estiver na diagonal principal e não na primeira linha
+            if (i == j && i != 0) {
+                node->nw = node->w->n;
+                node->nw->se = node;
+            }
+
+            // Ligar se estiver na diagonal secundária e não na primeira linha
+            if (i == size - j - 1 && i != 0) {
+                node->ne = node->n->e;
+                node->ne->sw = node;
+            }
+            //Ligar Regiões
+            rcol = j % root;
+            rrow = i % root;
+            rnode = node;
+            if (!(rcol == 0 && rrow == 0)) {
+                if (rcol == 0) {
+                    rnode = rnode->n;
+                    while (rnode->col % root != (root - 1)) {
+                        rnode = rnode->e;
+                    }
+                    node->bbox = rnode;
+                    rnode->fbox = node;
+                } else {
+                    node->bbox = node->w;
+                    node->w->fbox = node;
+                }
+            }
+        }
+
+        //Se não existe linha associar
+        if (node_line == NULL) {
+            node_line = sudoku->first;
+        } else {
+            node_line = node_line->s;
+        }
+        node_prevline = node_line;
+    }
+
+    return sudoku;
+}
+
+SudokuQueueNode *generateRandomSudokuLinked(int size, int n) {
+    srand(time(NULL));
+
+    SudokuQueueNode *sudoku = createEmptySudokuLinked(size);
+    Node *node;
+    int row, col, num;
+
+    for (int i = 0; i < n; i++) {
+        row = rand() % size;
+        col = rand() % size;
+
+        node = sudoku->first;
+
+        for(int j = 0; j < row; j++) {
+            node = node->s;
+        }
+
+        for(int j = 0; j < col; j++) {
+            node = node->e;
+        }
+
+        num = (rand() % size) + 1;
+        if (node->num == 0 && isValidPlacementLinked(node, num)) {
+            node->num = num;
+        } else {
+            i--;
+        }
+    }
+    return sudoku;
+}
+
+void freeSudokuQueue(SudokuQueue *sudokuQueue) {
+    while(sudokuQueue->total != 0) freeSudoku(dequeueSudoku(sudokuQueue));
+    free(sudokuQueue);
 }
 
 void freeSudoku(SudokuQueueNode *sudokuQueueNode) {
