@@ -1,7 +1,6 @@
 #include "algorithms_linked.h"
 #include <stdio.h>
 #include <math.h>
-#include <stdlib.h>
 #include "../fase1/utils.h"
 
 void writePossibilities(SudokuLinkedNode sudoku);
