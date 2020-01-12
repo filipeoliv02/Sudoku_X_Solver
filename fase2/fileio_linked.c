@@ -6,6 +6,12 @@
 #include <stdlib.h>
 
 
+/**
+ * @brief carrega os sudokus do ficheiro
+ * @param file
+ * @return
+ */
+
 SudokuLinkedNode *load_sudokus_link(char *file) {
     int size;
     SudokuLinkedNode *pqueue, *pqueue_pfirst = NULL, *pqueue_pprev = NULL;
@@ -113,6 +119,12 @@ SudokuLinkedNode *load_sudokus_link(char *file) {
     return pqueue_pfirst;
 }
 
+/**
+ * @brief guarda os sudokus no ficheiro
+ * @param sudokuLinked
+ * @param file
+ */
+
 void save_sudokus_linked(SudokuLinked sudokuLinked, char *file) {
     SudokuList list = load_sudokus(file);
     //list = merge_sudokus(list, newlist);
@@ -132,6 +144,12 @@ void save_sudokus_linked(SudokuLinked sudokuLinked, char *file) {
     }*/
 
 }
+
+/**
+ * @brief guarda os sudokus em binário
+ * @param sudokuLinked
+ * @param file
+ */
 
 void save_binary_linked(SudokuLinked sudokuLinked, char *file) {
     FILE *fp = fopen(file, "wb");
