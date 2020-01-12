@@ -3,75 +3,26 @@
 
 typedef struct node {
     int num, row, col;
-    struct node *n, *ne, *e, *se, *s, *sw, *w, *nw, *up, *down, *fbox, *bbox;
+    struct node *n, *ne, *e, *se, *s, *sw, *w, *nw, *ascend, *descend, *fbox, *bbox;
     struct node *fRule, *bRule;
 } Node;
 
-typedef struct sudoku_linked_node {
+typedef struct sudokuQueueNode {
     int size;
     Node *first;
-    struct sudoku_linked_node *next;
-} SudokuLinkedNode;
+    struct sudokuQueueNode *next;
+} SudokuQueueNode;
 
-typedef struct sudoku_linked {
+typedef struct sudoku_queue {
     int total;
-    SudokuLinkedNode *first, *last;
-} SudokuLinked;
+    SudokuQueueNode *first, *last;
+} SudokuQueue;
 
-void solveSudokuBruteForceLink(SudokuLinkedNode queue, Node *node);
+void solveLinkedSudokuBruteForce(SudokuQueue *sudokuSolvedQueue, SudokuQueueNode *sudoku, Node *node);
 
-void solveSudokuOptimizedLink(SudokuLinkedNode sudoku);
+void solveLinkedSudokuOptimized(SudokuQueue *sudokuSolvedQueue, SudokuQueueNode *sudoku);
 
-void addNumber(Node *first, Node *new);
-
-int stratSingles(Node *origin, Node *first, int *count);
-
-int stratIntersectionRemoval(Node *origin);
-
-int stratNakedGroups(Node *origin);
-
-int stratXWing(Node *origin);
-
-int removeXWing(Node *node1, Node *node2, Node *(*nextNode)(Node *), Node *(*nextRemoveNode)(Node *),
-                Node *(*prevRemoveNode)(Node *));
-
-int checkSingles(Node *origin, Node *first, Node *(*nextNode)(Node *));
-
-int checkIntersectionRemoval(Node *origin, Node *(*nextNode)(Node *), Node *(*nextRemoveNode)(Node *),
-                             Node *(*prevRemoveNode)(Node *), int (*isSameUnit)(Node *, Node *, int));
-
-int clearIntersection(Node *nodeRule, Node *(*nextNode)(Node *), Node *(*nextRemoveNode)(Node *),
-                      Node *(*prevRemoveNode)(Node *));
-
-int checkNakedGroups(Node *origin, int groupSize, Node *(*nextNode)(Node *), Node *(*prevNode)(Node *));
-
-
-int checkXWing(Node *origin, Node *(*nextNode)(Node *), Node *(*prevNode)(Node *), Node *(*nextRemoveNode)(Node *),
-               Node *(*prevRemoveNode)(Node *), int (*unitNode)(Node *));
-
-int findGroup(Node *rule, int *dict, int total, int num, int *count, Node *(*nextNode)(Node *));
-
-int removeGroupNodes(Node *ruleStart, Node *ruleStop, const int *dict, Node *(*nextNode)(Node *));
-
-void removeConnectedNodes(Node *node);
-
-int removeNodesBetweenTwoNodes(Node *nodeStart, Node *nodeStop, Node *(*nextNode)(Node *));
-
-void disconnectNode(Node *node);
-
-int isSameRow(Node *node1, Node *node2, int size);
-
-int isSameCol(Node *node1, Node *node2, int size);
-
-int isSamePDiag(Node *node1, Node *node2, int size);
-
-int isSameSDiag(Node *node1, Node *node2, int size);
-
-int isSameBox(Node *node1, Node *node2, int size);
-
-int unitRow(Node *node);
-
-int unitCol(Node *node);
+int isValidPlacementLinked(Node *node, int num);
 
 Node *nodeN(Node *node);
 
@@ -89,16 +40,12 @@ Node *nodeSE(Node *node);
 
 Node *nodeSW(Node *node);
 
-Node *nodeUP(Node *node);
+Node *nodeASCEND(Node *node);
 
-Node *nodeDOWN(Node *node);
+Node *nodeDESCEND(Node *node);
 
 Node *nodeFBOX(Node *node);
 
 Node *nodeBBOX(Node *node);
-
-Node *nodeFRULE(Node *node);
-
-Node *nodeBRULE(Node *node);
 
 #endif //SUDOKU_ALGORITHMS_LINKED_H

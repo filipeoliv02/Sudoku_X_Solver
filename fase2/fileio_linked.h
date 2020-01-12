@@ -3,10 +3,12 @@
 
 #include "../fase2/algorithms_linked.h"
 
-SudokuLinkedNode *load_sudokus_link(char *file);
+SudokuQueue *loadSudokuQueueFromFile(char *file);
 
-void save_sudokus_linked(SudokuLinked sudokuLinked, char *file);
+void saveSudokuQueueToFile(SudokuQueue *sudokuQueue, char *file);
 
-void save_binary_linked(SudokuLinked sudokuLinked, char *file);
+SudokuQueue *loadSudokuQueueFromBinFile(char *file);
+
+void saveSudokuQueueToBinFile(SudokuQueue *sudokuQueue, char *file);
 
 #endif //SUDOKU_FILEIO_LINKED_H
