@@ -58,8 +58,12 @@ void printAllStoredBoards(SudokuList s, int flagOrdered) {
  * @brief Imprime o tabuleiro (usando linked lists) passado
  * @param board
  */
-void print_linked_board(SudokuLinkedNode board) {
-    Node *node = board.first, *node_line = board.first;
+void print_linked_board(SudokuQueueNode *sudoku) {
+    if(sudoku == NULL) {
+        return;
+    }
+
+    Node *node = sudoku->first, *node_line = sudoku->first;
     while (node_line != NULL) {
         while (node != NULL) {
             printf(" %d ", node->num);
@@ -75,17 +79,17 @@ void print_linked_board(SudokuLinkedNode board) {
 void print_linked_boards(Node *first, int size) {
     Node *node, *nodeAux;
     for (int num = 1; num <= size; num++) {
-        node = first->up->fRule;
+        node = first->ascend->fRule;
         for (int row = 0; row < size; ++row) {
             for (int col = 0; col < size; ++col) {
-                if (node != NULL && node->up->row == row && node->up->col == col) {
+                if (node != NULL && node->ascend->row == row && node->ascend->col == col) {
                     nodeAux = node;
                     while (nodeAux != NULL) {
                         if (nodeAux->num == num) {
                             printf("%d ", num);
                             break;
                         }
-                        nodeAux = nodeAux->up;
+                        nodeAux = nodeAux->ascend;
                     }
                     if (nodeAux == NULL) {
                         printf("0 ");

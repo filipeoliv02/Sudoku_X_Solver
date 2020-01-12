@@ -12,8 +12,6 @@ void menu_gen_sudoku(SudokuList unsolved, SudokuList *solved);
 
 void menu_choose_type(SudokuList *unsolved, SudokuList *solved);
 
-void print_linked_board(SudokuLinkedNode board);
-
 /**
  * @brief Menu Principal
  */
