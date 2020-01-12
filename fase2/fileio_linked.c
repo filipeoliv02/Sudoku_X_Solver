@@ -80,6 +80,12 @@ void saveSudokuQueueToFile(SudokuQueue *sudokuQueue, char *file) {
     fclose(fp);
 }
 
+
+/**
+ * @brief carrega os sudokus do ficheiro binário
+ * @param file
+ * @return
+ */
 SudokuQueue *loadSudokuQueueFromBinFile(char *file) {
     FILE *fp = fopen(file, "rb");
     if (fp == NULL) {
