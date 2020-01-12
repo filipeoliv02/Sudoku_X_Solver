@@ -1,4 +1,9 @@
 #ifndef SUDOKU_CLIENTS_LINKED_H
 #define SUDOKU_CLIENTS_LINKED_H
-void client_linked_algorithms();
+void client_linked_bruteforce();
+void client_linked_optimized();
+void client_linked_read_txt();
+void client_linked_write_txt();
+void client_linked_read_bin();
+void client_linked_write_bin();
 #endif //SUDOKU_CLIENTS_LINKED_H
