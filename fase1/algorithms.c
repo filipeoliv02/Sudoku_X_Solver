@@ -306,6 +306,8 @@ void solveSudokuOptimized(Sudoku unsolved, SudokuList *solved, long long *cost) 
     while (prev_count != count && count < s.size * s.size) {
         prev_count = count;
 
+
+        //Hidden singles and naked
         for (int row = 0; row < s.size; row++) {
             for (int col = 0; col < s.size; col++) {
                 if (*(*(s.board + row) + col) == UNASSIGNED) {
@@ -554,7 +556,7 @@ void computeOrderBySize(SudokuList *a) {
     for (r = 0; r < R; r++)
         count[r + 1] += count[r];
 
-    // Distribuir
+   // Distribuir
     for (i = 0; i < a->total; i++) {
         c = (a->sudokus + i)->size - 1;
         *(a->orderedList + count[c]) = i;
