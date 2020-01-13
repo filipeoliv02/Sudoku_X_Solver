@@ -261,7 +261,7 @@ int isConsistentLinked(SudokuQueueNode *sudoku) {
  * @return
  */
 SudokuQueueNode *createEmptySudokuLinked(int size) {
-    SudokuQueueNode *sudoku = (SudokuQueueNode *) malloc(sizeof(SudokuQueueNode));
+    SudokuQueueNode *sudoku = (SudokuQueueNode *) calloc(1, sizeof(SudokuQueueNode));
     Node *node, *node_line = NULL, *node_prevline = NULL, *node_prev, *rnode;
 
     int root = (int) sqrt(size), rcol, rrow;
