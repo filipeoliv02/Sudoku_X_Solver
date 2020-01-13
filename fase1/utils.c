@@ -55,58 +55,6 @@ void printAllStoredBoards(SudokuList s, int flagOrdered) {
 }
 
 /**
- * @brief Imprime o tabuleiro (usando linked lists) passado
- * @param board
- */
-void print_linked_board(SudokuQueueNode *sudoku) {
-    if(sudoku == NULL) {
-        return;
-    }
-
-    Node *node = sudoku->first, *node_line = sudoku->first;
-    while (node_line != NULL) {
-        while (node != NULL) {
-            printf(" %d ", node->num);
-            node = node->e;
-        }
-        printf("\n");
-        node_line = node_line->s;
-        node = node_line;
-    }
-    printf("\n");
-}
-
-void print_linked_boards(Node *first, int size) {
-    Node *node, *nodeAux;
-    for (int num = 1; num <= size; num++) {
-        node = first->ascend->fRule;
-        for (int row = 0; row < size; ++row) {
-            for (int col = 0; col < size; ++col) {
-                if (node != NULL && node->ascend->row == row && node->ascend->col == col) {
-                    nodeAux = node;
-                    while (nodeAux != NULL) {
-                        if (nodeAux->num == num) {
-                            printf("%d ", num);
-                            break;
-                        }
-                        nodeAux = nodeAux->ascend;
-                    }
-                    if (nodeAux == NULL) {
-                        printf("0 ");
-                    }
-                    node = node->fRule;
-                }
-                else {
-                    printf("0 ");
-                }
-            }
-            printf("\n");
-        }
-        printf("\n");
-    }
-}
-
-/**
  * @brief Aumenta uma Lista de sudokus
  * @param ptr
  * @param size
