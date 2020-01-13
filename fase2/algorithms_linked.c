@@ -454,7 +454,7 @@ void addNumber(Node *first, Node *new) {
 
 /**
  * @brief Estratégia dos Hidden Singles e dos Naked Singles
- * @details Encontra os Hidden Singles nas Colunas, Linhas, Diagonais e Regiões e os Naked Singles.
+ * @details Encontra os Hidden Singles nas Colunas, Linhas, Diagonais e Regiões e os Naked Singles. O(N²)
  * https://www.sudokuwiki.org/Getting_Started
  * @param origin
  * @param first
@@ -478,7 +478,7 @@ int stratSingles(Node *origin, Node *first, int *count) {
 /**
  * @brief Estratégia de Intersection Removal
  * @details Chama as sub estratégias de intersection removal: Box/Line Reduction e pointing groups nas linhas,
- * colunas, regiões e diagonais https://www.sudokuwiki.org/Intersection_Removal
+ * colunas, regiões e diagonais https://www.sudokuwiki.org/Intersection_Removal. O(sqrt(N)xN²)
  * @param origin
  * @return
  */
@@ -496,6 +496,7 @@ int stratIntersectionRemoval(Node *origin) {
 /**
  * @brief Estratégia dos naked groups (pairs, triples, etc)
  * @details Encontra os naked groups nas linhas, colunas, diagonais e regiões https://www.sudokuwiki.org/Naked_Candidates
+ * O(NxN!)
  * @param origin
  * @return
  */
@@ -515,6 +516,7 @@ int stratNakedGroups(Node *origin) {
 
 /**
  * @brief Estratégia X-Wing
+ * @details O(N³)
  * @param origin
  * @return
  */
@@ -641,8 +643,7 @@ int checkXWing(Node *origin, Node *(*nextNode)(Node *), Node *(*prevNode)(Node *
 
     while (rule != NULL) {
         node = nextNode(rule);
-        if (nextNode(node) != NULL && nextNode(nextNode(node)) == NULL &&
-            !isSameBox(node, nextNode(node), origin->num)) {
+        if (nextNode(node) != NULL && nextNode(nextNode(node)) == NULL && !isSameBox(node, nextNode(node), origin->num)) {
 
             node = prevRemoveNode(nextNode(rule));
             while (node->num != 0) {
