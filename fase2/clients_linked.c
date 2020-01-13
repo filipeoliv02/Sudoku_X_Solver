@@ -7,98 +7,92 @@
 #include "utils_linked.h"
 
 void client_linked_bruteforce() {
-    SudokuQueue *sudokuUnsolvedQueue = loadSudokuQueueFromFile("unsolved.txt");
+    SudokuQueue *sudokuUnsolvedQueue = loadSudokuQueueFromFile("./data/unsolved/unsolved.txt");
     SudokuQueue *sudokuSolvedQueue = (SudokuQueue *) calloc(1, sizeof(SudokuQueue));
     SudokuQueueNode *sudoku;
 
-    while(sudokuUnsolvedQueue->total != 0) {
+    while(sudokuUnsolvedQueue->first != NULL) {
         sudoku = dequeueSudoku(sudokuUnsolvedQueue);
         if(isConsistentLinked(sudoku)) {
             solveLinkedSudokuBruteForce(sudokuSolvedQueue, sudoku, sudoku->first);
-            //solveLinkedSudokuOptimized(sudokuSolvedQueue, sudoku);
         }
         else {
-            printf("Erro tabuleiro nao consistente\n");
+            printf("Erro, tabuleiro nao consistente\n");
         }
 
         freeSudoku(sudoku);
     }
-    saveSudokuQueueToFile(sudokuSolvedQueue, "solved_linked.txt");
+    saveSudokuQueueToFile(sudokuSolvedQueue, "./data/solved/solved.txt");
 
     freeSudokuQueue(sudokuUnsolvedQueue);
     freeSudokuQueue(sudokuSolvedQueue);
 }
 
 void client_linked_optimized() {
-    SudokuQueue *sudokuUnsolvedQueue = loadSudokuQueueFromFile("unsolved.txt");
+    SudokuQueue *sudokuUnsolvedQueue = loadSudokuQueueFromFile("./data/unsolved/unsolved.txt");
     SudokuQueue *sudokuSolvedQueue = (SudokuQueue *) calloc(1, sizeof(SudokuQueue));
     SudokuQueueNode *sudoku;
 
-    while(sudokuUnsolvedQueue->total != 0) {
+    while(sudokuUnsolvedQueue->first != NULL) {
         sudoku = dequeueSudoku(sudokuUnsolvedQueue);
         if(isConsistentLinked(sudoku)) {
             solveLinkedSudokuOptimized(sudokuSolvedQueue, sudoku);
         }
         else {
-            printf("Erro tabuleiro nao consistente\n");
+            printf("Erro, tabuleiro nao consistente\n");
         }
         freeSudoku(sudoku);
     }
-    saveSudokuQueueToFile(sudokuSolvedQueue, "solved_linked.txt");
+    saveSudokuQueueToFile(sudokuSolvedQueue, "./data/unsolved/solved.txt");
 
     freeSudokuQueue(sudokuUnsolvedQueue);
     freeSudokuQueue(sudokuSolvedQueue);
 }
 
-void client_linked_read_txt() {
-    SudokuQueue *sudokuUnsolvedQueue = loadSudokuQueueFromFile("unsolved.txt");
+void client_linked_read_write_txt() {
+    SudokuQueue *sudokuUnsolvedQueue = loadSudokuQueueFromFile("./data/unsolved/unsolved_read.txt");
+    //saveSudokuQueueToBinFile(sudokuUnsolvedQueue, "./data/unsolved/unsolved_read.bin");
+    SudokuQueue *sudokuSolvedQueue = (SudokuQueue *) calloc(1, sizeof(SudokuQueue));
     SudokuQueueNode *sudoku;
 
-    while(sudokuUnsolvedQueue->total != 0) {
+    while(sudokuUnsolvedQueue->first != NULL) {
         sudoku = dequeueSudoku(sudokuUnsolvedQueue);
-        print_linked_board(sudoku);
+        solveLinkedSudokuOptimized(sudokuSolvedQueue, sudoku);
         freeSudoku(sudoku);
     }
+    saveSudokuQueueToFile(sudokuSolvedQueue, "./data/solved/solved_write.txt");
     freeSudokuQueue(sudokuUnsolvedQueue);
 }
 
-void client_linked_write_txt() {
-    SudokuQueue *sudokuUnsolvedQueue = loadSudokuQueueFromFile("unsolved.txt");
-    saveSudokuQueueToFile(sudokuUnsolvedQueue, "unsolved_write.txt");
-    freeSudokuQueue(sudokuUnsolvedQueue);
-}
-
-void client_linked_read_bin() {
-    SudokuQueue *sudokuUnsolvedQueue = loadSudokuQueueFromBinFile("unsolved.bin");
+void client_linked_read_write_bin() {
+    SudokuQueue *sudokuUnsolvedQueue = loadSudokuQueueFromBinFile("./data/unsolved/unsolved_read.bin");
+    SudokuQueue *sudokuSolvedQueue = (SudokuQueue *) calloc(1, sizeof(SudokuQueue));
     SudokuQueueNode *sudoku;
 
-    while(sudokuUnsolvedQueue->total != 0) {
+    while(sudokuUnsolvedQueue->first != NULL) {
         sudoku = dequeueSudoku(sudokuUnsolvedQueue);
-        print_linked_board(sudoku);
+        solveLinkedSudokuOptimized(sudokuSolvedQueue, sudoku);
         freeSudoku(sudoku);
     }
-    freeSudokuQueue(sudokuUnsolvedQueue);
-}
-
-void client_linked_write_bin() {
-    SudokuQueue *sudokuUnsolvedQueue = loadSudokuQueueFromBinFile("unsolved.bin");
-    saveSudokuQueueToFile(sudokuUnsolvedQueue, "unsolved_write.bin");
+    saveSudokuQueueToBinFile(sudokuSolvedQueue, "./data/solved/solved_write.bin");
     freeSudokuQueue(sudokuUnsolvedQueue);
 }
 
 void client_linked_check_consistency() {
-    SudokuQueue *sudokuUnsolvedQueue = loadSudokuQueueFromBinFile("client_consistency.txt");
+    SudokuQueue *sudokuUnsolvedQueue = loadSudokuQueueFromFile("./data/unsolved/unsolved_consistency.txt");
     SudokuQueueNode *sudoku;
 
-    while(sudokuUnsolvedQueue->total != 0) {
+    while(sudokuUnsolvedQueue->first != NULL) {
         sudoku = dequeueSudoku(sudokuUnsolvedQueue);
         if(isConsistentLinked(sudoku)) {
             printf("Sudoku consistente:\n");
+            solveLinkedSudokuOptimized(NULL, sudoku);
         }
         else {
-            printf("Sudoku consistente:\n");
+            printf("Sudoku inconsistente:\n");
         }
-        print_linked_board(sudoku);
+        printSudokuLinked(sudoku);
+
         freeSudoku(sudoku);
     }
 
@@ -106,25 +100,36 @@ void client_linked_check_consistency() {
 }
 
 void client_linked_random_generation() {
-    SudokuQueueNode *sudoku = generateRandomSudokuLinked(9, 10);
+    SudokuQueueNode *sudoku = generateRandomSudokuLinked(9, 16);
     if(isConsistentLinked(sudoku)) {
         printf("Sudoku consistente, tentar resolver\n");
         solveLinkedSudokuOptimized(NULL, sudoku);
     }
     else {
-        printf("Sudoku inconsistente:\n");
-        print_linked_board(sudoku);
+        printf("Sudoku inconsistente\n");
+        printSudokuLinked(sudoku);
     }
+
+    freeSudoku(sudoku);
 }
 
 void client_linked_solve_variable_size() {
+    SudokuQueue *sudokuUnsolvedQueue = loadSudokuQueueFromFile("./data/unsolved/unsolved_all_sizes.txt");
+    SudokuQueue *sudokuSolvedQueue = (SudokuQueue *) calloc(1, sizeof(SudokuQueue));
+    SudokuQueueNode *sudoku;
 
-}
+    while(sudokuUnsolvedQueue->first != NULL) {
+        sudoku = dequeueSudoku(sudokuUnsolvedQueue);
+        if(isConsistentLinked(sudoku)) {
+            solveLinkedSudokuOptimized(sudokuSolvedQueue, sudoku);
+        }
+        else {
+            printf("Erro, tabuleiro nao consistente\n");
+        }
+        freeSudoku(sudoku);
+    }
+    saveSudokuQueueToFile(sudokuSolvedQueue, "./data/solved/solved_all_sizes.txt");
 
-void client_linked_search_solutions() {
-
-}
-
-void client_linked_compare_algorithms() {
-
+    freeSudokuQueue(sudokuUnsolvedQueue);
+    freeSudokuQueue(sudokuSolvedQueue);
 }

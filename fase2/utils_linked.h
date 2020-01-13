@@ -2,6 +2,9 @@
 
 #ifndef SUDOKU_UTILS_LINKED_H
 #define SUDOKU_UTILS_LINKED_H
+void printSudokuLinked(SudokuQueueNode *sudoku);
+void printCandidates(Node *first, int size);
+int isSudokuLinkedEqual(SudokuQueueNode *sudoku1, SudokuQueueNode *sudoku2);
 SudokuQueueNode *createEmptySudokuLinked(int size);
 int isConsistentLinked(SudokuQueueNode *sudoku);
 SudokuQueueNode *cloneSudoku(SudokuQueueNode *sudoku);

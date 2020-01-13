@@ -24,16 +24,13 @@ int main(int argc, char const *argv[]) {
 
     // Fase 2
     client_linked_bruteforce();
-    /*client_linked_optimized();
-    client_linked_read_txt();
-    client_linked_write_txt();
-    client_linked_read_bin();
-    client_linked_write_bin();
-    client_linked_check_consistency();
-    client_linked_random_generation();
-    client_linked_solve_variable_size();
-    client_linked_search_solutions();
-    client_linked_compare_algorithms();*/
+    //client_linked_optimized();
+    //client_linked_random_generation();
+    //client_linked_solve_variable_size();
+    //client_linked_read_write_txt();
+    //client_linked_read_write_bin();
+    //client_linked_check_consistency();
+    //client_linked_random_generation();
 
     //main_menu();
     return 0;

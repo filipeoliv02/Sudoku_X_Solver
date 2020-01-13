@@ -5,18 +5,18 @@
 #include <stdlib.h>
 
 /**
- * @brief carrega os sudokus do ficheiro
+ * @brief Carrega os sudokus de um ficheiro de texto
  * @param file
  * @return
  */
 SudokuQueue *loadSudokuQueueFromFile(char *file) {
+    SudokuQueue *sudokuQueue = (SudokuQueue *) calloc(1, sizeof(SudokuQueue));
     FILE *fp = fopen(file, "r");
     if (fp == NULL) {
         printf("Erro ao abrir o ficheiro texto do sudoku em listas ligadas!\n");
-        return NULL;
+        return sudokuQueue;
     }
 
-    SudokuQueue *sudokuQueue = (SudokuQueue *) calloc(1, sizeof(SudokuQueue));
     SudokuQueueNode *sudokuQueueNode;
     Node *node, *nodeFirstCol;
     int size;
@@ -43,7 +43,7 @@ SudokuQueue *loadSudokuQueueFromFile(char *file) {
 }
 
 /**
- * @brief guarda os sudokus no ficheiro
+ * @brief Guarda os sudokus num ficheiro de texto
  * @param sudokuLinked
  * @param file
  */
@@ -82,18 +82,18 @@ void saveSudokuQueueToFile(SudokuQueue *sudokuQueue, char *file) {
 
 
 /**
- * @brief carrega os sudokus do ficheiro binário
+ * @brief Carrega os sudokus de um ficheiro binário
  * @param file
  * @return
  */
 SudokuQueue *loadSudokuQueueFromBinFile(char *file) {
+    SudokuQueue *sudokuQueue = (SudokuQueue *) calloc(1, sizeof(SudokuQueue));
     FILE *fp = fopen(file, "rb");
     if (fp == NULL) {
         printf("Erro ao abrir o ficheiro binário do sudoku em listas ligadas!\n");
-        return NULL;
+        return sudokuQueue;
     }
 
-    SudokuQueue *sudokuQueue = (SudokuQueue *) calloc(1, sizeof(SudokuQueue));
     SudokuQueueNode *sudokuQueueNode;
     Node *node, *nodeFirstCol;
     int total, size;
@@ -122,7 +122,7 @@ SudokuQueue *loadSudokuQueueFromBinFile(char *file) {
 }
 
 /**
- * @brief guarda os sudokus em binário
+ * @brief Guarda os sudokus num ficheiro binário
  * @param sudokuLinked
  * @param file
  */
