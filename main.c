@@ -23,7 +23,7 @@ int main(int argc, char const *argv[]) {
     //client_compare_algorithms();
 
     // Fase 2
-    client_linked_bruteforce();
+    //client_linked_bruteforce();
     //client_linked_optimized();
     //client_linked_random_generation();
     //client_linked_solve_variable_size();
@@ -32,7 +32,7 @@ int main(int argc, char const *argv[]) {
     //client_linked_check_consistency();
     //client_linked_random_generation();
 
-    //main_menu();
+    main_menu();
     return 0;
 }
 
