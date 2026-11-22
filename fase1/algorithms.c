@@ -3,29 +3,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "../common/sudoku_common.h"
 
 #define UNASSIGNED 0
 
 // Tamanho máximo para um tabuleiro de SudokuX, tabuleiros de tamanho superior são considerados como Sudoku normal
-#define MAX_SUDOKUX_SIZE 16
+#define MAX_SUDOKUX_SIZE SUDOKUX_MAX_DIAGONAL_SIZE
 
-int checkSudokuCell(SudokuList list, int k, int row, int col, int size);
+static int checkSudokuCell(SudokuList list, int k, int row, int col, int size);
 
-void sudokuFillCell(SudokuList list, int k, int row, int col);
+static void sudokuFillCell(SudokuList list, int k, int row, int col);
 
-void update_solved(SudokuList *solved, Sudoku sudoku);
+static void update_solved(SudokuList *solved, Sudoku sudoku);
 
-int existsInPrincipalDiagonal(Sudoku sudoku, int num, int row, int col);
+static int existsInPrincipalDiagonal(Sudoku sudoku, int num, int row, int col);
 
-int existsInSecundaryDiagonal(Sudoku sudoku, int num, int row, int col);
+static int existsInSecundaryDiagonal(Sudoku sudoku, int num, int row, int col);
 
-int existsInCol(Sudoku sudoku, int num, int col);
+static int existsInCol(Sudoku sudoku, int num, int col);
 
-int existsInRow(Sudoku sudoku, int num, int row);
+static int existsInRow(Sudoku sudoku, int num, int row);
 
-int existsInRegion(Sudoku sudoku, int num, int row, int col, int regionSize);
+static int existsInRegion(Sudoku sudoku, int num, int row, int col, int regionSize);
 
-int findPairs(SudokuList cube);
+static int findPairs(SudokuList cube);
 
 /**
  * @brief Verifica o número passado pode ser colocado na (linha, coluna) do tabuleiro
@@ -53,7 +54,7 @@ int isValidPlacement(Sudoku sudoku, int num, int row, int col) {
  * @param side
  * @return 1 - Verdadeiro / 0 - Falso
  */
-int existsInCol(Sudoku sudoku, int num, int col) {
+static int existsInCol(Sudoku sudoku, int num, int col) {
     for (int i = 0; i < sudoku.size; i++) {
         if (*(*(sudoku.board + i) + col) == num)
             return 1;
@@ -70,7 +71,7 @@ int existsInCol(Sudoku sudoku, int num, int col) {
  * @param side
  * @return 1 - Verdadeiro / 0 - Falso
  */
-int existsInRow(Sudoku sudoku, int num, int row) {
+static int existsInRow(Sudoku sudoku, int num, int row) {
     for (int i = 0; i < sudoku.size; i++) {
         if (*(*(sudoku.board + row) + i) == num)
             return 1;
@@ -88,7 +89,7 @@ int existsInRow(Sudoku sudoku, int num, int row) {
  * @param regionSide
  * @return 1 - Verdadeiro / 0 - Falso
  */
-int existsInRegion(Sudoku sudoku, int num, int rowStart, int colStart, int regionSize) {
+static int existsInRegion(Sudoku sudoku, int num, int rowStart, int colStart, int regionSize) {
     for (int i = rowStart; i < rowStart + regionSize; i++) {
         for (int j = colStart; j < colStart + regionSize; j++) {
             if (*(*(sudoku.board + i) + j) == num) {
@@ -110,7 +111,7 @@ int existsInRegion(Sudoku sudoku, int num, int rowStart, int colStart, int regio
  * @return 1 - Verdadeiro / 0 - Falso
  *
  */
-int existsInPrincipalDiagonal(Sudoku sudoku, int num, int row, int col) {
+static int existsInPrincipalDiagonal(Sudoku sudoku, int num, int row, int col) {
     if (sudoku.size <= MAX_SUDOKUX_SIZE && row == col) {
         for (int i = 0; i < sudoku.size; i++) {
             if (*(*(sudoku.board + i) + i) == num)
@@ -130,7 +131,7 @@ int existsInPrincipalDiagonal(Sudoku sudoku, int num, int row, int col) {
  * @param side
  * @return 1 - Verdadeiro / 0 - Falso
  */
-int existsInSecundaryDiagonal(Sudoku sudoku, int num, int row, int col) {
+static int existsInSecundaryDiagonal(Sudoku sudoku, int num, int row, int col) {
     if (sudoku.size <= MAX_SUDOKUX_SIZE && row == sudoku.size - col - 1) {
         for (int i = 0; i < sudoku.size; i++) {
             if (*(*(sudoku.board + i) + sudoku.size - i - 1) == num)
@@ -175,7 +176,7 @@ void solveSudokuBruteForce(SudokuList *solved, Sudoku sudoku, int row, int col, 
  * @param solved
  * @param sudoku
  */
-void update_solved(SudokuList *solved, Sudoku sudoku) {
+static void update_solved(SudokuList *solved, Sudoku sudoku) {
     for (int j = 0; j < solved->total; j++) {
         if (isEqual(*(solved->sudokus + j), sudoku)) {
             return;
@@ -183,13 +184,8 @@ void update_solved(SudokuList *solved, Sudoku sudoku) {
     }
     solved->sudokus = resizeSudokus(solved->sudokus, solved->total, solved->total + 1);
     solved->orderedList = resizeList(solved->orderedList, solved->total, solved->total + 1);
-    (solved->sudokus + solved->total)->size = sudoku.size;
-    (solved->sudokus + solved->total)->board = createBoard(sudoku.size);
-    for (int i = 0; i < sudoku.size; i++) {
-        for (int j = 0; j < sudoku.size; j++) {
-            *(*((solved->sudokus + solved->total)->board + i) + j) = *(*(sudoku.board + i) + j);
-        }
-    }
+    *(solved->sudokus + solved->total) = copySudoku(sudoku);
+    *(solved->orderedList + solved->total) = solved->total;
     solved->total++;
 }
 
@@ -201,7 +197,7 @@ void update_solved(SudokuList *solved, Sudoku sudoku) {
  * @param row
  * @param col
  */
-void sudokuFillCell(SudokuList list, int k, int row, int col) {
+static void sudokuFillCell(SudokuList list, int k, int row, int col) {
     int region_size = sqrt(list.total);
     for (int i = 0; i < list.total; i++) {
         *(*((list.sudokus + k - 1)->board + row) + i) = 1;
@@ -235,7 +231,7 @@ void sudokuFillCell(SudokuList list, int k, int row, int col) {
  * @param col
  * @return
  */
-int checkSudokuCell(SudokuList list, int k, int row, int col, int size) {
+static int checkSudokuCell(SudokuList list, int k, int row, int col, int size) {
     int region_size = sqrt(size);
     int count[6] = {0}, rowStart = (row / region_size) * region_size, colStart = (col / region_size) * region_size;
     for (int i = 0; i < size; i++) {
@@ -276,14 +272,7 @@ int checkSudokuCell(SudokuList list, int k, int row, int col, int size) {
  */
 void solveSudokuOptimized(Sudoku unsolved, SudokuList *solved, long long *cost) {
     SudokuList cube;
-    Sudoku s;
-    s.size = unsolved.size;
-    s.board = createBoard(s.size);
-    for (int row = 0; row < s.size; row++) {
-        for (int col = 0; col < s.size; col++) {
-            *(*(s.board + row) + col) = *(*(unsolved.board + row) + col);
-        }
-    }
+    Sudoku s = copySudoku(unsolved);
 
     cube.sudokus = NULL;
     cube.sudokus = resizeSudokus(cube.sudokus, 0, s.size);
@@ -335,7 +324,7 @@ void solveSudokuOptimized(Sudoku unsolved, SudokuList *solved, long long *cost) 
     }
 
     for (int i = 0; i < cube.total; i++)
-        free((cube.sudokus + i)->board);
+        freeBoard((cube.sudokus + i)->board, (cube.sudokus + i)->size);
     free(cube.sudokus);
 
     if (count != s.size * s.size) {
@@ -345,13 +334,14 @@ void solveSudokuOptimized(Sudoku unsolved, SudokuList *solved, long long *cost) 
         printSudoku(s.board, s.size);
     }
     solveSudokuBruteForce(solved, s, 0, 0, cost);
+    freeBoard(s.board, s.size);
 }
 
 /**
  * @brief Procurar pares de numeros no tabuleiro
  * @param cube
  */
-int findPairs(SudokuList cube) {
+static int findPairs(SudokuList cube) {
     int size = (cube.sudokus)->size, count = 0, found;
     for (int row = 0; row < size; row++) {
         for (int col = 0; col < size; col++) {
@@ -398,7 +388,7 @@ int findPairs(SudokuList cube) {
                         }
                         if (found) {
                             for (int col_remove = 0; col_remove < size; col_remove++) {
-                                if (col_remove != row && col_remove != col_pair) {
+                                if (col_remove != col && col_remove != col_pair) {
                                     for (int num_remove = 0; num_remove < size; num_remove++) {
                                         if (*(*((cube.sudokus + num_remove)->board + row) + col) == 0) {
                                             *(*((cube.sudokus + num_remove)->board + row) + col_remove) = 1;
@@ -545,12 +535,23 @@ int searchSudokus(SudokuList searchList, Sudoku sudoku) {
  */
 void computeOrderBySize(SudokuList *a) {
     int i, r, c;
-    int R = 100;
-    int count[100] = {0};
+    // Chaves possíveis: tamanhos 1..SUDOKU_MAX_SIZE, guardadas deslocadas de 1 (count[size]), logo R + 1 posições.
+    // A versão anterior usava count[100] e lia/escrevia count[100] (fora dos limites) ao acumular as frequências.
+    enum { R = SUDOKU_MAX_SIZE + 1 };
+    int count[R + 1] = {0};
+
+    if (a->total == 0 || a->orderedList == NULL) {
+        return;
+    }
 
     //Frequência absoluta.
-    for (i = 0; i < a->total; i++)
-        count[(a->sudokus + i)->size]++;
+    for (i = 0; i < a->total; i++) {
+        int size = (a->sudokus + i)->size;
+        if (size < 1 || size > SUDOKU_MAX_SIZE) {
+            return; // nunca deveria acontecer: os tamanhos são validados na leitura
+        }
+        count[size]++;
+    }
 
     // Frequências acumuladas.
     for (r = 0; r < R; r++)

@@ -1,21 +1,51 @@
 #include "menus.h"
 #include "fileio.h"
 #include "utils.h"
-#include <math.h>
+#include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-void menu_choose_sudoku(SudokuList list, SudokuList *solved, int flagOrdered);
+static void menu_choose_sudoku(SudokuList list, SudokuList *solved, int flagOrdered);
 
-void menu_sudoku(Sudoku s, SudokuList *solved);
+static void menu_sudoku(Sudoku s, SudokuList *solved);
 
-void menu_gen_sudoku(SudokuList unsolved, SudokuList *solved);
+static void menu_gen_sudoku(SudokuList *solved);
 
-void menu_choose_type(SudokuList *unsolved, SudokuList *solved);
+static void menu_choose_type(SudokuList *unsolved, SudokuList *solved);
+
+/**
+ * @brief Lê um inteiro do stdin de forma segura
+ * @details Descarta o resto da linha. Em caso de entrada inválida devolve -1 (opção inválida); em caso de EOF devolve
+ * 0, que em todos os menus significa sair/voltar, evitando ciclos infinitos quando o stdin termina.
+ * @return
+ */
+static int read_int(void) {
+    char line[64];
+    if (fgets(line, sizeof line, stdin) == NULL) {
+        return 0;
+    }
+    // Linha demasiado longa: descartar o resto
+    if (strchr(line, '\n') == NULL) {
+        int ch;
+        while ((ch = getchar()) != '\n' && ch != EOF) {
+        }
+    }
+    char *end;
+    long value = strtol(line, &end, 10);
+    if (end == line || value < INT_MIN || value > INT_MAX) {
+        return -1;
+    }
+    while (*end == ' ' || *end == '\t' || *end == '\r' || *end == '\n') {
+        end++;
+    }
+    return *end == '\0' ? (int) value : -1;
+}
 
 /**
  * @brief Menu Principal
  */
-void main_menu() {
+void main_menu(void) {
     SudokuList unsolved = {0, NULL, NULL}, solved = {0, NULL, NULL};
     int selection, exit = 0;
     while (!exit) {
@@ -26,22 +56,28 @@ void main_menu() {
                "4 - Criar Ficheiro Binario com os Tabuleiros Resolvidos \n"
                "5 - Gerar novos tabuleiros\n"
                "0 - Sair\n");
-        scanf("%d", &selection);
+        selection = read_int();
         switch (selection) {
             case 1:
                 menu_choose_type(&unsolved, &solved);
                 break;
             case 2:
+                free_list_sudoku(unsolved);
                 unsolved = load_sudokus("unsolved.txt");
+                printf("%d tabuleiros carregados\n", unsolved.total);
                 break;
             case 3:
-                save_sudokus(solved, "solved.txt");
+                if (save_sudokus(solved, "solved.txt")) {
+                    printf("Tabuleiros guardados em solved.txt\n");
+                }
                 break;
             case 4:
-                save_binary(solved, "binary_solved.bin");
+                if (save_binary(solved, "binary_solved.bin")) {
+                    printf("Tabuleiros guardados em binary_solved.bin\n");
+                }
                 break;
             case 5:
-                menu_gen_sudoku(unsolved, &solved);
+                menu_gen_sudoku(&solved);
                 break;
             case 0:
                 exit = 1;
@@ -60,19 +96,19 @@ void main_menu() {
  * @param unsolved
  * @param solved
  */
-void menu_choose_type(SudokuList *unsolved, SudokuList *solved) {
+static void menu_choose_type(SudokuList *unsolved, SudokuList *solved) {
     int selection, selection_order = 0, exit = 0;
     while (!exit) {
         printf("\nTipo de tabuleiro:\n");
         printf("1 - Tabuleiros resolvidos\n"
                "2 - Tabuleiros nao resolvidos\n"
                "0 - Voltar\n");
-        scanf("%d", &selection);
+        selection = read_int();
         if (selection == 1 || selection == 2) {
             printf("\nTipo de ordenacao:\n"
                    "1 - Ordenar por tamanho\n"
                    "0 - Ordenar por insercao\n");
-            scanf("%d", &selection_order);
+            selection_order = read_int();
         }
         switch (selection) {
             case 1:
@@ -103,7 +139,7 @@ void menu_choose_type(SudokuList *unsolved, SudokuList *solved) {
  * @param solved
  * @param flagOrdered
  */
-void menu_choose_sudoku(SudokuList list, SudokuList *solved, int flagOrdered) {
+static void menu_choose_sudoku(SudokuList list, SudokuList *solved, int flagOrdered) {
     int selection, exit = 0;
     while (!exit) {
 
@@ -114,7 +150,7 @@ void menu_choose_sudoku(SudokuList list, SudokuList *solved, int flagOrdered) {
         printAllStoredBoards(list, flagOrdered);
         printf("------------------------------------------------\n"
                "Escolha o tabuleiro [1 - %d] ou 0 para sair:\n", list.total);
-        scanf("%d", &selection);
+        selection = read_int();
         if (selection > 0 && selection <= list.total) {
             menu_sudoku(*(list.sudokus + selection - 1), solved);
         } else if (selection == 0) {
@@ -130,7 +166,7 @@ void menu_choose_sudoku(SudokuList list, SudokuList *solved, int flagOrdered) {
  * @param s
  * @param solved
  */
-void menu_sudoku(Sudoku s, SudokuList *solved) {
+static void menu_sudoku(Sudoku s, SudokuList *solved) {
     int selection, exit = 0, searchResult;
     long long time_usec_init, time_usec_end, cost = 0;
     long elapsed_time;
@@ -142,7 +178,7 @@ void menu_sudoku(Sudoku s, SudokuList *solved) {
                "3 - Pesquisar em tabuleiros ja resolvidos\n"
                "4 - Testar se o tabuleiro e consistente\n"
                "0 - Sair\n");
-        scanf("%d", &selection);
+        selection = read_int();
         switch (selection) {
             case 1:
                 if (!isConsistent(s)) {
@@ -154,7 +190,7 @@ void menu_sudoku(Sudoku s, SudokuList *solved) {
                 gettimeuseconds(&time_usec_end); // end time
 
                 elapsed_time = (long) (time_usec_end - time_usec_init);
-                printf("Bruteforce\nusec: %ld - sec: %lf\ncost: %lld\n", elapsed_time, (elapsed_time * pow(10, -6)),
+                printf("Bruteforce\nusec: %ld - sec: %lf\ncost: %lld\n", elapsed_time, (elapsed_time / 1e6),
                        cost);
                 cost = 0;
                 break;
@@ -168,7 +204,7 @@ void menu_sudoku(Sudoku s, SudokuList *solved) {
                 gettimeuseconds(&time_usec_end); // end time
 
                 elapsed_time = (long) (time_usec_end - time_usec_init);
-                printf("Optimized\nusec: %ld - sec: %lf\ncost: %lld\n", elapsed_time, (elapsed_time * pow(10, -6)),
+                printf("Optimized\nusec: %ld - sec: %lf\ncost: %lld\n", elapsed_time, (elapsed_time / 1e6),
                        cost);
                 cost = 0;
                 break;
@@ -180,13 +216,14 @@ void menu_sudoku(Sudoku s, SudokuList *solved) {
 
                     // Procurar no ficheiro em segundo
                     searchResult = searchSudokus(file_solved, s);
-                    if (searchResult == -1) {
+                    if (searchResult < 0) {
                         printf("Tabuleiro nao encontrado\n");
 
                     } else {
                         printf("Solucao encontrada com sucesso:\n");
                         printSudoku((file_solved.sudokus + searchResult)->board, s.size);
                     }
+                    free_list_sudoku(file_solved);
                 } else {
                     printf("Solucao encontrada com sucesso:\n");
                     printSudoku((solved->sudokus + searchResult)->board, s.size);
@@ -212,10 +249,9 @@ void menu_sudoku(Sudoku s, SudokuList *solved) {
 
 /**
  * @brief Menu para Gerar tabuleiros novos
- * @param unsolved
  * @param solved
  */
-void menu_gen_sudoku(SudokuList unsolved, SudokuList *solved) {
+static void menu_gen_sudoku(SudokuList *solved) {
 
     Sudoku s;
     int selection, exit = 0, size = 0, input;
@@ -226,18 +262,23 @@ void menu_gen_sudoku(SudokuList unsolved, SudokuList *solved) {
                "3 - 25x25\n"
                "4 - 36x36\n"
                "0 - Sair\n");
-        scanf("%d", &selection);
+        selection = read_int();
         switch (selection) {
             case 1:
             case 2:
             case 3:
             case 4:
                 printf("Quantos numeros pretende gerar?\n");
-                scanf("%d", &input);
+                input = read_int();
                 size = selection + 2;
                 size *= size;
+                if (input < 0) {
+                    printf("Escolha um numero valido\n");
+                    break;
+                }
                 s = gen_sudoku(size, input);
-                menu_sudoku(s, solved);
+                menu_sudoku(s, solved); // as soluções são copiadas para 'solved'
+                freeBoard(s.board, s.size);
 
                 break;
             case 0:

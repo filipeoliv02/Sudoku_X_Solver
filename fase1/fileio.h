@@ -3,10 +3,10 @@
 
 #include "algorithms.h"
 
-SudokuList load_sudokus(char *file);
+SudokuList load_sudokus(const char *file);
 
-void save_sudokus(SudokuList newlist, char *file);
+int save_sudokus(SudokuList newlist, const char *file);
 
-void save_binary(SudokuList solved, char *file);
+int save_binary(SudokuList solved, const char *file);
 
-#endif
+#endif // SUDOKU_FILEIO_H

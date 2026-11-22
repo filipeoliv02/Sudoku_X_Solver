@@ -2,13 +2,18 @@
 #define SUDOKU_UTILS_H
 
 #include "fileio.h"
-#include "../fase2/algorithms_linked.h"
 
 void printSudoku(int **sudoku, int size);
 
 Sudoku *resizeSudokus(Sudoku *ptr, int size, int newSize);
 
 int **createBoard(int size);
+
+void freeBoard(int **board, int size);
+
+Sudoku copySudoku(Sudoku sudoku);
+
+void seedRandomOnce(void);
 
 void printAllStoredBoards(SudokuList s, int flagOrdered);
 
@@ -26,4 +31,4 @@ int gettimeuseconds(long long *time_usec);
 
 void free_list_sudoku(SudokuList l);
 
-#endif
+#endif // SUDOKU_UTILS_H

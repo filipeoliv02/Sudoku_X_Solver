@@ -1,14 +1,14 @@
 #ifndef SUDOKU_FILEIO_LINKED_H
 #define SUDOKU_FILEIO_LINKED_H
 
-#include "../fase2/algorithms_linked.h"
+#include "algorithms_linked.h"
 
-SudokuQueue *loadSudokuQueueFromFile(char *file);
+SudokuQueue *loadSudokuQueueFromFile(const char *file);
 
-void saveSudokuQueueToFile(SudokuQueue *sudokuQueue, char *file);
+int saveSudokuQueueToFile(SudokuQueue *sudokuQueue, const char *file);
 
-SudokuQueue *loadSudokuQueueFromBinFile(char *file);
+SudokuQueue *loadSudokuQueueFromBinFile(const char *file);
 
-void saveSudokuQueueToBinFile(SudokuQueue *sudokuQueue, char *file);
+int saveSudokuQueueToBinFile(SudokuQueue *sudokuQueue, const char *file);
 
-#endif //SUDOKU_FILEIO_LINKED_H
+#endif // SUDOKU_FILEIO_LINKED_H

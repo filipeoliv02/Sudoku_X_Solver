@@ -1,41 +1,59 @@
 #include "fileio_linked.h"
 #include "utils_linked.h"
+#include "../common/sudoku_common.h"
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 
 /**
  * @brief Carrega os sudokus de um ficheiro de texto
+ * @details Os dados são validados (tamanho suportado, valores em [0, tamanho], tabuleiro completo). Perante dados
+ * inválidos a leitura termina e mantêm-se os tabuleiros válidos lidos até aí.
  * @param file
- * @return
+ * @return Fila de sudokus (nunca NULL; vazia em caso de erro)
  */
-SudokuQueue *loadSudokuQueueFromFile(char *file) {
-    SudokuQueue *sudokuQueue = (SudokuQueue *) calloc(1, sizeof(SudokuQueue));
+SudokuQueue *loadSudokuQueueFromFile(const char *file) {
+    SudokuQueue *sudokuQueue = createSudokuQueue();
     FILE *fp = fopen(file, "r");
     if (fp == NULL) {
-        printf("Erro ao abrir o ficheiro texto do sudoku em listas ligadas!\n");
+        fprintf(stderr, "Erro ao abrir o ficheiro texto do sudoku em listas ligadas: '%s'\n", file);
         return sudokuQueue;
     }
 
     SudokuQueueNode *sudokuQueueNode;
     Node *node, *nodeFirstCol;
-    int size;
+    int size, scanned;
 
-    while (fscanf(fp, "%d", &size) != EOF) {
+    while ((scanned = sudoku_read_int(fp, &size)) == 1) {
+        if (!sudoku_is_valid_size(size)) {
+            fprintf(stderr, "%s: tamanho de tabuleiro invalido (%d)\n", file, size);
+            break;
+        }
         sudokuQueueNode = createEmptySudokuLinked(size);
-        enqueueSudoku(sudokuQueue, sudokuQueueNode);
 
+        int ok = 1;
         node = sudokuQueueNode->first;
         nodeFirstCol = node;
-
-        while (nodeFirstCol != NULL) {
-            while (node != NULL) {
-                fscanf(fp, "%d ", &node->num);
+        while (nodeFirstCol != NULL && ok) {
+            while (node != NULL && ok) {
+                if (sudoku_read_int(fp, &node->num) != 1 || node->num < 0 || node->num > size) {
+                    fprintf(stderr, "%s: valor invalido ou em falta (linha %d, coluna %d)\n", file,
+                            node->row + 1, node->col + 1);
+                    ok = 0;
+                }
                 node = node->e;
             }
             nodeFirstCol = nodeFirstCol->s;
             node = nodeFirstCol;
         }
+
+        if (!ok) {
+            freeSudoku(sudokuQueueNode);
+            break;
+        }
+        enqueueSudoku(sudokuQueue, sudokuQueueNode);
+    }
+    if (scanned == 0) {
+        fprintf(stderr, "%s: conteudo nao numerico no ficheiro\n", file);
     }
 
     fclose(fp);
@@ -44,20 +62,22 @@ SudokuQueue *loadSudokuQueueFromFile(char *file) {
 
 /**
  * @brief Guarda os sudokus num ficheiro de texto
- * @param sudokuLinked
+ * @details A fila é esvaziada (os tabuleiros são libertados), mas a estrutura da fila continua a pertencer ao chamador.
+ * @param sudokuQueue
  * @param file
+ * @return 1 em caso de sucesso, 0 em caso de erro
  */
-void saveSudokuQueueToFile(SudokuQueue *sudokuQueue, char *file) {
+int saveSudokuQueueToFile(SudokuQueue *sudokuQueue, const char *file) {
     FILE *fp = fopen(file, "w");
     if (fp == NULL) {
-        printf("Erro ao guardar os tabuleiros no ficheiro!");
-        return;
+        fprintf(stderr, "Erro ao guardar os tabuleiros no ficheiro '%s'\n", file);
+        return 0;
     }
 
     SudokuQueueNode *sudoku;
     Node *node, *nodeFirstCol;
 
-    for (int i = sudokuQueue->total; i > 0; i--) {
+    while (sudokuQueue->total > 0) {
         sudoku = dequeueSudoku(sudokuQueue);
         fprintf(fp, "%d\n", sudoku->size);
 
@@ -77,44 +97,74 @@ void saveSudokuQueueToFile(SudokuQueue *sudokuQueue, char *file) {
         freeSudoku(sudoku);
     }
 
-    fclose(fp);
+    int ok = !ferror(fp);
+    ok = (fclose(fp) == 0) && ok;
+    if (!ok) {
+        fprintf(stderr, "Erro ao escrever o ficheiro '%s'\n", file);
+    }
+    return ok;
 }
 
+/**
+ * @brief Lê um byte sem sinal do ficheiro
+ * @return O valor lido (0-255) ou -1 em caso de EOF/erro
+ */
+static int readByte(FILE *fp) {
+    int c = fgetc(fp);
+    return c == EOF ? -1 : c;
+}
 
 /**
  * @brief Carrega os sudokus de um ficheiro binário
+ * @details Formato: 1 byte com o número de tabuleiros; para cada tabuleiro 1 byte com o tamanho seguido de
+ * tamanho*tamanho bytes com os valores. Todos os valores são validados.
  * @param file
- * @return
+ * @return Fila de sudokus (nunca NULL; vazia em caso de erro)
  */
-SudokuQueue *loadSudokuQueueFromBinFile(char *file) {
-    SudokuQueue *sudokuQueue = (SudokuQueue *) calloc(1, sizeof(SudokuQueue));
+SudokuQueue *loadSudokuQueueFromBinFile(const char *file) {
+    SudokuQueue *sudokuQueue = createSudokuQueue();
     FILE *fp = fopen(file, "rb");
     if (fp == NULL) {
-        printf("Erro ao abrir o ficheiro binário do sudoku em listas ligadas!\n");
+        fprintf(stderr, "Erro ao abrir o ficheiro binario do sudoku em listas ligadas: '%s'\n", file);
         return sudokuQueue;
     }
 
     SudokuQueueNode *sudokuQueueNode;
     Node *node, *nodeFirstCol;
-    int total, size;
 
-    fread(&total, 1, 1, fp);
+    int total = readByte(fp);
+    if (total < 0) {
+        fprintf(stderr, "%s: ficheiro binario vazio\n", file);
+    }
     for (int i = 0; i < total; i++) {
-        fread(&size, 1, 1, fp);
+        int size = readByte(fp);
+        if (!sudoku_is_valid_size(size)) {
+            fprintf(stderr, "%s: tamanho de tabuleiro invalido (%d) no tabuleiro %d\n", file, size, i + 1);
+            break;
+        }
         sudokuQueueNode = createEmptySudokuLinked(size);
-        enqueueSudoku(sudokuQueue, sudokuQueueNode);
 
+        int ok = 1;
         node = sudokuQueueNode->first;
         nodeFirstCol = node;
-
-        while (nodeFirstCol != NULL) {
-            while (node != NULL) {
-                fread(&node->num, 1, 1, fp);
+        while (nodeFirstCol != NULL && ok) {
+            while (node != NULL && ok) {
+                node->num = readByte(fp);
+                if (node->num < 0 || node->num > size) {
+                    fprintf(stderr, "%s: valor invalido ou em falta no tabuleiro %d\n", file, i + 1);
+                    ok = 0;
+                }
                 node = node->e;
             }
             nodeFirstCol = nodeFirstCol->s;
             node = nodeFirstCol;
         }
+
+        if (!ok) {
+            freeSudoku(sudokuQueueNode);
+            break;
+        }
+        enqueueSudoku(sudokuQueue, sudokuQueueNode);
     }
 
     fclose(fp);
@@ -123,30 +173,36 @@ SudokuQueue *loadSudokuQueueFromBinFile(char *file) {
 
 /**
  * @brief Guarda os sudokus num ficheiro binário
- * @param sudokuLinked
+ * @details A fila é esvaziada (os tabuleiros são libertados), mas a estrutura da fila continua a pertencer ao chamador.
+ * @param sudokuQueue
  * @param file
+ * @return 1 em caso de sucesso, 0 em caso de erro
  */
-void saveSudokuQueueToBinFile(SudokuQueue *sudokuQueue, char *file) {
+int saveSudokuQueueToBinFile(SudokuQueue *sudokuQueue, const char *file) {
+    if (sudokuQueue->total > SUDOKU_BIN_MAX_VALUE) {
+        fprintf(stderr, "O formato binario suporta no maximo %d tabuleiros\n", SUDOKU_BIN_MAX_VALUE);
+        return 0;
+    }
     FILE *fp = fopen(file, "wb");
     if (fp == NULL) {
-        printf("Erro ao guardar o ficheiro binário do sudoku em listas ligadas!\n");
-        return;
+        fprintf(stderr, "Erro ao guardar o ficheiro binario do sudoku em listas ligadas: '%s'\n", file);
+        return 0;
     }
 
     SudokuQueueNode *sudoku;
     Node *node, *nodeLine;
 
-    fwrite(&sudokuQueue->total, 1, 1, fp);
-    for (int i = sudokuQueue->total; i > 0; i--) {
+    int ok = fputc((unsigned char) sudokuQueue->total, fp) != EOF;
+    while (sudokuQueue->total > 0) {
         sudoku = dequeueSudoku(sudokuQueue);
-        fwrite(&sudoku->size, 1, 1, fp);
+        ok = ok && fputc((unsigned char) sudoku->size, fp) != EOF;
 
         node = sudoku->first;
         nodeLine = node;
 
         for (int row = 0; row < sudoku->size; row++) {
             for (int col = 0; col < sudoku->size; col++) {
-                fwrite(&node->num, 1, 1, fp);
+                ok = ok && fputc((unsigned char) node->num, fp) != EOF;
                 node = node->e;
             }
 
@@ -156,6 +212,9 @@ void saveSudokuQueueToBinFile(SudokuQueue *sudokuQueue, char *file) {
         freeSudoku(sudoku);
     }
 
-    fclose(fp);
+    ok = (fclose(fp) == 0) && ok;
+    if (!ok) {
+        fprintf(stderr, "Erro ao escrever o ficheiro binario '%s'\n", file);
+    }
+    return ok;
 }
-

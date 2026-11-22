@@ -1,7 +1,9 @@
+#define _POSIX_C_SOURCE 200809L
+
 #include "utils.h"
 #include "algorithms.h"
+#include "../common/sudoku_common.h"
 #include <time.h>
-#include <sys/time.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -62,14 +64,8 @@ void printAllStoredBoards(SudokuList s, int flagOrdered) {
  * @return
  */
 Sudoku *resizeSudokus(Sudoku *ptr, int size, int newSize) {
-    Sudoku *pAux = (Sudoku *) malloc(newSize * sizeof(Sudoku));
-
-    for (int i = 0; i < size; i++) {
-        *(pAux + i) = *(ptr + i);
-    }
-    free(ptr);
-
-    return pAux;
+    (void) size; // realloc preserves the existing elements
+    return (Sudoku *) xreallocarray(ptr, (size_t) newSize, sizeof(Sudoku));
 }
 
 /**
@@ -80,15 +76,8 @@ Sudoku *resizeSudokus(Sudoku *ptr, int size, int newSize) {
  * @return
  */
 int *resizeList(int *pList, int size, int newSize) {
-
-    int *pAux = (int *) malloc(newSize * sizeof(int));
-
-    for (int i = 0; i < size; i++) {
-        *(pAux + i) = *(pList + i);
-    }
-    free(pList);
-
-    return pAux;
+    (void) size; // realloc preserves the existing elements
+    return (int *) xreallocarray(pList, (size_t) newSize, sizeof(int));
 }
 
 
@@ -98,12 +87,55 @@ int *resizeList(int *pList, int size, int newSize) {
  * @return
  */
 int **createBoard(int size) {
-    int **pAux = (int **) malloc(size * sizeof(int *));
+    int **pAux = (int **) xcalloc((size_t) size, sizeof(int *));
 
     for (int i = 0; i < size; i++) {
-        *(pAux + i) = (int *) calloc(size, sizeof(int));
+        *(pAux + i) = (int *) xcalloc((size_t) size, sizeof(int));
     }
     return pAux;
+}
+
+/**
+ * @brief Liberta a matriz de um tabuleiro
+ * @param board
+ * @param size
+ */
+void freeBoard(int **board, int size) {
+    if (board == NULL) {
+        return;
+    }
+    for (int i = 0; i < size; i++) {
+        free(*(board + i));
+    }
+    free(board);
+}
+
+/**
+ * @brief Cria uma cópia independente (deep copy) de um tabuleiro
+ * @param sudoku
+ * @return
+ */
+Sudoku copySudoku(Sudoku sudoku) {
+    Sudoku copy;
+    copy.size = sudoku.size;
+    copy.board = createBoard(sudoku.size);
+    for (int i = 0; i < sudoku.size; i++) {
+        for (int j = 0; j < sudoku.size; j++) {
+            *(*(copy.board + i) + j) = *(*(sudoku.board + i) + j);
+        }
+    }
+    return copy;
+}
+
+/**
+ * @brief Inicializa o gerador de números aleatórios apenas uma vez
+ */
+void seedRandomOnce(void) {
+    static int seeded = 0;
+    if (!seeded) {
+        srand((unsigned) time(NULL));
+        seeded = 1;
+    }
 }
 
 /**
@@ -113,22 +145,32 @@ int **createBoard(int size) {
  * @return
  */
 Sudoku gen_sudoku(int size, int n) {
-    srand(time(NULL));
+    seedRandomOnce();
     int row, col, num;
     Sudoku s;
-    s.board = NULL;
     s.size = size;
     s.board = createBoard(size);
-    for (int i = 0; i < n; i++) {
+
+    // Limitar o número de células e de tentativas: sem limite, pedidos impossíveis (ex.: mais células do que o
+    // tabuleiro permite) ficavam num ciclo infinito.
+    if (n > size * size) {
+        n = size * size;
+    }
+    long long attempts = 0;
+    const long long maxAttempts = 1000LL * size * size;
+    int placed = 0;
+    while (placed < n && attempts < maxAttempts) {
+        attempts++;
         row = rand() % size;
         col = rand() % size;
         num = (rand() % size) + 1;
-        if (isValidPlacement(s, num, row, col) && *(*(s.board + row) + col) == 0) {
+        if (*(*(s.board + row) + col) == 0 && isValidPlacement(s, num, row, col)) {
             *(*(s.board + row) + col) = num;
-
-        } else {
-            i--;
+            placed++;
         }
+    }
+    if (placed < n) {
+        fprintf(stderr, "Aviso: so foi possivel gerar %d de %d celulas\n", placed, n);
     }
     return s;
 }
@@ -169,9 +211,11 @@ SudokuList merge_sudokus(SudokuList target, SudokuList source) {
             }
         }
         if (alreadyExists == 0) {
+            // Copia profunda: a lista de origem continua a ser dona dos seus tabuleiros, evitando double free
             target.sudokus = resizeSudokus(target.sudokus, target.total, target.total + 1);
-            (target.sudokus + target.total)->size = (source.sudokus + i)->size;
-            (target.sudokus + target.total)->board = (source.sudokus + i)->board;
+            target.orderedList = resizeList(target.orderedList, target.total, target.total + 1);
+            *(target.sudokus + target.total) = copySudoku(*(source.sudokus + i));
+            *(target.orderedList + target.total) = target.total;
             target.total++;
         }
     }
@@ -185,10 +229,7 @@ SudokuList merge_sudokus(SudokuList target, SudokuList source) {
  */
 void free_list_sudoku(SudokuList l) {
     for (int i = 0; i < l.total; i++) {
-        for (int row = 0; row < (l.sudokus + i)->size; row++) {
-            free(*((l.sudokus + i)->board + row));
-        }
-        free((l.sudokus + i)->board);
+        freeBoard((l.sudokus + i)->board, (l.sudokus + i)->size);
     }
     free(l.sudokus);
     free(l.orderedList);
@@ -217,28 +258,16 @@ int isConsistent(Sudoku sudoku) {
     return 1;
 }
 /**
- * Obter o tempo atual do computador
+ * @brief Obter o tempo atual (relógio monotónico) em microssegundos
  * @param time_usec
- * @return
+ * @return 0 em caso de sucesso, -1 em caso de erro
  */
-/*#ifdef WIN32
-int gettimeuseconds(long long * time_usec) {
-    union {
-        long long ns100; //time since 1 Jan 1601 in 100ns units
-        FILETIME ft;
-    } now;
-
-    GetSystemTimeAsFileTime( &(now.ft) ); // win32 function!
-    *time_usec=(long long) (now.ns100 / 10LL);
-    return 0;
-}
-#else*/
 int gettimeuseconds(long long *time_usec) {
-    struct timeval time;
-    gettimeofday(&time, NULL);
-
-    *time_usec = (long long) (time.tv_sec * 1000000 + time.tv_usec);
+    struct timespec now;
+    if (clock_gettime(CLOCK_MONOTONIC, &now) != 0) {
+        *time_usec = 0;
+        return -1;
+    }
+    *time_usec = (long long) now.tv_sec * 1000000LL + (long long) (now.tv_nsec / 1000);
     return 0;
 }
-
-//#endif

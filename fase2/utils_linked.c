@@ -1,8 +1,10 @@
 #include "utils_linked.h"
+#include "../common/sudoku_common.h"
+#include "../fase1/utils.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
-#include <time.h>
+
+static void freeCandidateUnit(Node *candidatesOrigin, Node *(*nextNode)(Node *));
 
 /**
  * @brief Imprime o tabuleiro (usando linked lists) passado
@@ -109,7 +111,8 @@ int isSudokuLinkedEqual(SudokuQueueNode *sudoku1, SudokuQueueNode *sudoku2) {
  * @param sudoku
  */
 void enqueueSudoku(SudokuQueue *sudokuQueue, SudokuQueueNode *sudoku) {
-    if (sudokuQueue->total == 0) {
+    sudoku->next = NULL;
+    if (sudokuQueue->last == NULL) {
         sudokuQueue->first = sudoku;
     } else {
         sudokuQueue->last->next = sudoku;
@@ -124,16 +127,18 @@ void enqueueSudoku(SudokuQueue *sudokuQueue, SudokuQueueNode *sudoku) {
  * @return
  */
 SudokuQueueNode *dequeueSudoku(SudokuQueue *sudokuQueue) {
+    // Os ponteiros first/last são a fonte de verdade (antes dependia de 'total', e uma divergência entre os dois
+    // levava a use-after-free em freeSudokuQueue)
     SudokuQueueNode *sudoku = sudokuQueue->first;
-    if (sudokuQueue->total != 0) {
-        if (sudokuQueue->total == 1) {
-            sudokuQueue->first = NULL;
-            sudokuQueue->last = NULL;
-        } else {
-            sudokuQueue->first = sudokuQueue->first->next;
-        }
-        sudokuQueue->total--;
+    if (sudoku == NULL) {
+        return NULL;
     }
+    sudokuQueue->first = sudoku->next;
+    if (sudokuQueue->first == NULL) {
+        sudokuQueue->last = NULL;
+    }
+    sudokuQueue->total--;
+    sudoku->next = NULL;
     return sudoku;
 }
 
@@ -143,91 +148,24 @@ SudokuQueueNode *dequeueSudoku(SudokuQueue *sudokuQueue) {
  * @return
  */
 SudokuQueueNode *cloneSudoku(SudokuQueueNode *sudoku) {
-    SudokuQueueNode *sudokuClone = calloc(1, sizeof(SudokuQueueNode));
-    sudokuClone->size = sudoku->size;
+    // Reutiliza a criação do tabuleiro vazio (mesmas ligações) e copia apenas os valores
+    SudokuQueueNode *sudokuClone = createEmptySudokuLinked(sudoku->size);
+    if (sudokuClone == NULL) {
+        return NULL;
+    }
 
-    Node *node, *node_prevline = NULL, *node_line  = NULL, *node_prev;
+    Node *node = sudokuClone->first, *nodeLine = sudokuClone->first;
     Node *nodeSudoku = sudoku->first, *nodeSudokuLine = sudoku->first;
-
-    for (int i = 0; i < sudokuClone->size; i++) {
-        node_prev = NULL;
-        for (int j = 0; j < sudokuClone->size; j++) {
-            // Criar nó e colocar valor do tabuleiro
-            node = (Node *) calloc(1, sizeof(Node));
+    while (nodeLine != NULL && nodeSudokuLine != NULL) {
+        while (node != NULL && nodeSudoku != NULL) {
             node->num = nodeSudoku->num;
-            node->row = i;
-            node->col = j;
-            // Se não existir um primeiro nó então é este
-            if (sudokuClone->first == NULL) {
-                sudokuClone->first = node;
-            }
-
-            // Se não existir um nó anterior cria-se
-            if (node_prev == NULL) {
-                node_prev = node;
-            } else {
-                // Existe nó anterior logo liga-se (Este <--> Oeste)
-                node_prev->e = node;
-                node->w = node_prev;
-                node_prev = node_prev->e;
-            }
-
-            // Se existir nó da linha anterior liga-se (Norte <--> Sul)
-            if (node_prevline != NULL) {
-                node_prevline->s = node;
-                node->n = node_prevline;
-                node_prevline = node_prevline->e;
-            }
-
-            // Ligar diagonais se o tabuleiro for do tamanho do SudokuX
-            if (sudokuClone->size <= 16) {
-                // Ligar se estiver na diagonal principal e não na primeira linha
-                if (i == j && i != 0) {
-                    node->nw = node->w->n;
-                    node->nw->se = node;
-                }
-
-                // Ligar se estiver na diagonal secundária e não na primeira linha
-                if (i == sudokuClone->size - j - 1 && i != 0) {
-                    node->ne = node->n->e;
-                    node->ne->sw = node;
-                }
-            }
-
-            //Ligar Regiões
-            int root = (int) sqrt(sudokuClone->size);
-            int rcol, rrow;
-            rcol = j % root;
-            rrow = i % root;
-            Node *rnode = node;
-            if (!(rcol == 0 && rrow == 0)) {
-                if (rcol == 0) {
-                    rnode = rnode->n;
-                    while (rnode->col % root != (root - 1)) {
-                        rnode = rnode->e;
-                    }
-                    node->bBox = rnode;
-                    rnode->fBox = node;
-                } else {
-                    node->bBox = node->w;
-                    node->w->fBox = node;
-                }
-            }
-
+            node = node->e;
             nodeSudoku = nodeSudoku->e;
         }
-
-        //Se não existe linha associar
-        if (node_line == NULL) {
-            node_line = sudokuClone->first;
-        } else {
-            node_line = node_line->s;
-        }
-        node_prevline = node_line;
-
+        nodeLine = nodeLine->s;
         nodeSudokuLine = nodeSudokuLine->s;
+        node = nodeLine;
         nodeSudoku = nodeSudokuLine;
-
     }
 
     return sudokuClone;
@@ -261,10 +199,16 @@ int isConsistentLinked(SudokuQueueNode *sudoku) {
  * @return
  */
 SudokuQueueNode *createEmptySudokuLinked(int size) {
-    SudokuQueueNode *sudoku = (SudokuQueueNode *) calloc(1, sizeof(SudokuQueueNode));
+    // Um tamanho que não seja um quadrado perfeito (ou 0) levava a divisões por zero e a percorrer ponteiros NULL
+    if (!sudoku_is_valid_size(size)) {
+        fprintf(stderr, "Tamanho de tabuleiro invalido: %d\n", size);
+        return NULL;
+    }
+
+    SudokuQueueNode *sudoku = (SudokuQueueNode *) xcalloc(1, sizeof(SudokuQueueNode));
     Node *node, *node_line = NULL, *node_prevline = NULL, *node_prev, *rnode;
 
-    int root = (int) sqrt(size), rcol, rrow;
+    int root = sudoku_box_size(size), rcol, rrow;
 
     sudoku->size = size;
     sudoku->next = NULL;
@@ -275,7 +219,7 @@ SudokuQueueNode *createEmptySudokuLinked(int size) {
         node_prev = NULL;
         for (int j = 0; j < size; j++) {
             // Criar nó e colocar valor do tabuleiro
-            node = (Node *) calloc(1, sizeof(Node));
+            node = (Node *) xcalloc(1, sizeof(Node));
             node->num = 0;
             node->row = i;
             node->col = j;
@@ -303,7 +247,7 @@ SudokuQueueNode *createEmptySudokuLinked(int size) {
             }
 
             // Ligar diagonais se o tabuleiro for do tamanho do SudokuX
-            if (size <= 16) {
+            if (size <= SUDOKUX_MAX_DIAGONAL_SIZE) {
                 // Ligar se estiver na diagonal principal e não na primeira linha
                 if (i == j && i != 0) {
                     node->nw = node->w->n;
@@ -355,13 +299,22 @@ SudokuQueueNode *createEmptySudokuLinked(int size) {
  * @return
  */
 SudokuQueueNode *generateRandomSudokuLinked(int size, int n) {
-    srand(time(NULL));
+    seedRandomOnce();
 
     SudokuQueueNode *sudoku = createEmptySudokuLinked(size);
+    if (sudoku == NULL) {
+        return NULL;
+    }
     Node *node;
     int row, col, num;
 
-    for (int i = 0; i < n; i++) {
+    // Limitar células e tentativas para evitar um ciclo infinito com pedidos impossíveis
+    if (n > size * size) {
+        n = size * size;
+    }
+    long long attempts = 0;
+    const long long maxAttempts = 1000LL * size * size;
+    for (int i = 0; i < n && attempts < maxAttempts; i++, attempts++) {
         row = rand() % size;
         col = rand() % size;
 
@@ -387,10 +340,21 @@ SudokuQueueNode *generateRandomSudokuLinked(int size, int n) {
 
 
 /**
+ * @brief Cria uma fila de sudokus vazia
+ * @return
+ */
+SudokuQueue *createSudokuQueue(void) {
+    return (SudokuQueue *) xcalloc(1, sizeof(SudokuQueue));
+}
+
+/**
  * @brief Liberta a memória ocupada pela fila de sudokus
  * @param sudokuQueue
  */
 void freeSudokuQueue(SudokuQueue *sudokuQueue) {
+    if (sudokuQueue == NULL) {
+        return;
+    }
     while(sudokuQueue->first != NULL) freeSudoku(dequeueSudoku(sudokuQueue));
     free(sudokuQueue);
 }
@@ -400,6 +364,9 @@ void freeSudokuQueue(SudokuQueue *sudokuQueue) {
  * @param sudokuQueueNode
  */
 void freeSudoku(SudokuQueueNode *sudokuQueueNode) {
+    if (sudokuQueueNode == NULL) {
+        return;
+    }
     Node *nodeCurr = sudokuQueueNode->first, *nodeFirstCol = sudokuQueueNode->first, *nodeNext;
 
     while(nodeFirstCol != NULL) {
@@ -436,7 +403,7 @@ void freeCandidates(Node *candidatesOrigin) {
  * @param candidatesOrigin
  * @param nextNode
  */
-void freeCandidateUnit(Node *candidatesOrigin, Node *(*nextNode)(Node *)) {
+static void freeCandidateUnit(Node *candidatesOrigin, Node *(*nextNode)(Node *)) {
     Node *rule = nextNode(candidatesOrigin)->fRule, *ruleNext, *node, *nodeNext;
     while(rule != NULL) {
         node = nextNode(rule);

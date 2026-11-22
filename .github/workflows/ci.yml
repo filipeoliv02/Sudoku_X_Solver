@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.compiler }} / ${{ matrix.build_type }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+        build_type: [Release, Debug]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Configure
+        env:
+          CC: ${{ matrix.compiler }}
+        run: >
+          cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DSUDOKU_WARNINGS_AS_ERRORS=ON
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure --parallel 4
+
+  sanitizers:
+    name: ASan + UBSan (${{ matrix.compiler }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+    env:
+      ASAN_OPTIONS: detect_leaks=1:abort_on_error=1:strict_string_checks=1
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Configure
+        env:
+          CC: ${{ matrix.compiler }}
+        run: >
+          cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=Debug
+          -DSUDOKU_ENABLE_SANITIZERS=ON
+          -DSUDOKU_WARNINGS_AS_ERRORS=ON
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure --parallel 4
+
+      - name: Run demo clients under sanitizers
+        # Clients read/write the sample files relative to the repository root
+        run: |
+          for client in advanced read show-stored write check-consistency random-generation \
+                        solve-variable-size search-solutions compare \
+                        linked-bruteforce linked-optimized linked-random-generation \
+                        linked-solve-variable-size linked-read-write-txt linked-read-write-bin \
+                        linked-check-consistency; do
+            echo "::group::$client"
+            ./build/sudoku --client "$client" > /dev/null
+            echo "::endgroup::"
+          done
+          # Interactive menu fed with invalid input and an early EOF must terminate cleanly
+          printf '2\n1\n2\n0\n1\n2\n0\n0\n0\nabc\n5\n1\n20\n0\n' | ./build/sudoku > /dev/null
