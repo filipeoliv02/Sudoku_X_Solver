@@ -5,8 +5,10 @@
 #include "fase2/clients_linked.h"
 #include "fase2/fileio_linked.h"
 #include "fase2/utils_linked.h"
+#include "solvers/bitmask.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 typedef struct {
@@ -42,7 +44,37 @@ static const ClientEntry CLIENTS[] = {
         {"linked-check-consistency", client_linked_check_consistency,   "fase2: consistency check"},
 };
 
-static const char *const ALGORITHMS[] = {"optimized", "bruteforce", "linked-optimized", "linked-bruteforce"};
+static const char *const ALGORITHMS[] = {"optimized", "bruteforce", "linked-optimized", "linked-bruteforce", "bitmask"};
+
+static int solve_file_bitmask(const char *file) {
+    SudokuList unsolved = load_sudokus(file);
+    if (unsolved.total == 0) {
+        fprintf(stderr, "No boards loaded from '%s'\n", file);
+        return 2;
+    }
+    int unsolvedCount = 0;
+    for (int i = 0; i < unsolved.total; i++) {
+        Sudoku s = unsolved.sudokus[i];
+        int *givens = (int *)malloc((size_t)s.size * s.size * sizeof(int));
+        int *solution = (int *)malloc((size_t)s.size * s.size * sizeof(int));
+        if (!givens || !solution) {
+            free(givens); free(solution); free_list_sudoku(unsolved);
+            fprintf(stderr, "Out of memory\n");
+            return 2;
+        }
+        for (int r = 0; r < s.size; r++)
+            for (int c = 0; c < s.size; c++)
+                givens[r * s.size + c] = s.board[r][c];
+        SolverStats stats;
+        int count = bitmask_solve(s.size, givens, solution, NULL, &stats);
+        printf("=== Board %d (%dx%d) ===\n", i + 1, s.size, s.size);
+        printf("Solutions: %d, nodes: %lld, backtracks: %lld\n", count, stats.nodes, stats.backtracks);
+        if (count == 0) unsolvedCount++;
+        free(givens); free(solution);
+    }
+    free_list_sudoku(unsolved);
+    return unsolvedCount == 0 ? 0 : 1;
+}
 
 static void usage(FILE *out, const char *prog) {
     fprintf(out,
@@ -54,7 +86,7 @@ static void usage(FILE *out, const char *prog) {
             "  %s --client NAME           run one of the original demo clients\n"
             "  %s --list-clients          list the demo clients\n"
             "  %s --help\n\n"
-            "Algorithms: optimized (default), bruteforce, linked-optimized, linked-bruteforce\n"
+            "Algorithms: optimized (default), bruteforce, linked-optimized, linked-bruteforce, bitmask\n"
             "Exit status: 0 = every board solved, 1 = at least one board unsolved/invalid, 2 = usage or I/O error\n",
             prog, prog, prog, prog, prog);
 }
@@ -186,6 +218,9 @@ int main(int argc, char const *argv[]) {
     if (!is_known_algorithm(algorithm)) {
         fprintf(stderr, "Unknown algorithm '%s'\n", algorithm);
         return 2;
+    }
+    if (strcmp(algorithm, "bitmask") == 0) {
+        return solve_file_bitmask(solveFile);
     }
     if (strncmp(algorithm, "linked-", 7) == 0) {
         return solve_file_linked(solveFile, strcmp(algorithm, "linked-bruteforce") == 0);

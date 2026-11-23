@@ -41,7 +41,8 @@ add_library(sudoku_core STATIC
         fase2/algorithms_linked.c
         fase2/clients_linked.c
         fase2/fileio_linked.c
-        fase2/utils_linked.c)
+        fase2/utils_linked.c
+        solvers/bitmask.c)
 target_include_directories(sudoku_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(sudoku_core PUBLIC sudoku_options)
 if (NOT WIN32)

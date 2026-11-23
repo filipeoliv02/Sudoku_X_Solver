@@ -229,7 +229,8 @@ Run from the repository root, because the menu and the demo clients use paths re
 # Solve every board in a file (exit code 0 = all solved)
 ./build/sudoku --solve data/unsolved/unsolved_9x9.txt
 ./build/sudoku --solve data/unsolved/unsolved_16x16.txt --algorithm linked-optimized
-#   algorithms: optimized (default) | bruteforce | linked-optimized | linked-bruteforce
+./build/sudoku --solve data/unsolved/unsolved_9x9.txt --algorithm bitmask
+#   algorithms: optimized (default) | bruteforce | linked-optimized | linked-bruteforce | bitmask
 
 # Run one of the original demo programs ("clients") for each project requirement
 ./build/sudoku --list-clients
@@ -240,6 +241,12 @@ Run from the repository root, because the menu and the demo clients use paths re
 ```
 
 > Some demo clients write their results back into `data/` and `client_test_files/`, as they did originally.
+
+### Bitmask MRV solver
+
+`--algorithm bitmask` uses a 64-bit candidate mask for every cell and repeatedly chooses the empty cell with the fewest candidates (MRV). It supports the project’s valid perfect-square board sizes from 4×4 through 64×64; the `uint64_t` representation is therefore limited to 64 possible values. Boards up to 16×16 enforce both main diagonals, while larger boards use classic row/column/box rules, matching the rest of the project.
+
+The solver does not modify the input board. It reports one or more solutions as first-solution counting, node count and backtrack count. The `solvers/dlx.h` file documents a planned Dancing Links interface, but no DLX implementation is included or selectable until it can be proven safe and complete.
 
 ### Test
 

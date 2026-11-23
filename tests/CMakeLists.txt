@@ -5,6 +5,8 @@ target_link_libraries(test_sudoku PRIVATE sudoku_core)
 add_test(NAME robustness COMMAND test_sudoku robustness)
 set_tests_properties(robustness PROPERTIES WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
+add_test(NAME bitmask COMMAND test_sudoku bitmask)
+
 # Solve the sample puzzles with every algorithm and validate each solution independently.
 # The last argument is the largest board size also solved with the (exhaustive) brute force solvers.
 set(SUDOKU_SAMPLE_PUZZLES

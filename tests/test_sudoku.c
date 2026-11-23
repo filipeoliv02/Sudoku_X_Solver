@@ -18,6 +18,7 @@
 #include "fase2/algorithms_linked.h"
 #include "fase2/fileio_linked.h"
 #include "fase2/utils_linked.h"
+#include "solvers/bitmask.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -266,6 +267,37 @@ static void expect_bin_boards(const char *name, const unsigned char *content, si
 
 static const char VALID_4X4[] = "4\n1 0 0 0\n0 0 0 0\n0 0 0 0\n0 0 0 0\n";
 
+static int test_bitmask(void) {
+    int givens4[16];
+    memset(givens4, 0, sizeof(givens4));
+    int solution4[16];
+    SolverStats stats;
+    int count = bitmask_solve(4, givens4, solution4, NULL, &stats);
+    char why[128];
+    CHECK(count > 0, "bitmask 4x4 should solve");
+    if (count > 0) {
+        CHECK(is_valid_solution(4, solution4, givens4, why, sizeof(why)), "invalid 4x4 solution: %s", why);
+    }
+
+    int duplicate4[] = {1,1,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
+    count = bitmask_solve(4, duplicate4, NULL, NULL, &stats);
+    CHECK(count == 0, "duplicate givens should be rejected");
+
+    int empty4[16];
+    memset(empty4, 0, sizeof(empty4));
+    BitmaskOptions two = {2, 0};
+    count = bitmask_solve(4, empty4, NULL, &two, &stats);
+    CHECK(count == 2, "maxSolutions=2 should stop after two solutions");
+
+    int invalid[] = {0};
+    CHECK(bitmask_solve(3, invalid, NULL, NULL, &stats) == 0, "unsupported size should be rejected");
+    CHECK(bitmask_count_solutions(4, empty4, 2, 1000, &stats) >= 1,
+          "bitmask count should find solutions");
+
+    fprintf(stderr, "bitmask: %s\n", failures == 0 ? "all checks passed" : "FAILURES");
+    return failures == 0 ? 0 : 1;
+}
+
 static int test_robustness(void) {
     /* Text loaders: malformed or hostile input must be rejected without crashing */
     expect_text_boards("empty file", "", 0);
@@ -437,6 +469,9 @@ int main(int argc, char **argv) {
     if (argc == 2 && strcmp(argv[1], "robustness") == 0) {
         return test_robustness();
     }
-    fprintf(stderr, "usage: %s solve FILE [BRUTEFORCE_MAX_SIZE] | robustness\n", argv[0]);
+    if (argc == 2 && strcmp(argv[1], "bitmask") == 0) {
+        return test_bitmask();
+    }
+    fprintf(stderr, "usage: %s solve FILE [BRUTEFORCE_MAX_SIZE] | robustness | bitmask\n", argv[0]);
     return 2;
 }
